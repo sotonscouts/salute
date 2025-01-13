@@ -32,7 +32,7 @@ class Group(TSAUnit):
     local_unit_number = models.PositiveSmallIntegerField(unique=True)
     location_name = models.CharField(max_length=255)
 
-    TSA_FIELDS = TSAObject.TSA_FIELDS + ("district", "group_type", "charity_number")
+    TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group_type", "charity_number")
 
 
 class Section(TSAUnit):
@@ -53,7 +53,7 @@ class Section(TSAUnit):
     )
     section_type = models.CharField(max_length=10, choices=SectionType, editable=False)
 
-    TSA_FIELDS = TSAObject.TSA_FIELDS + ("district", "group", "group_type")
+    TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
     class Meta:
         constraints = [

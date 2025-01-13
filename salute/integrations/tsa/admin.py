@@ -11,7 +11,6 @@ class TSAObjectModelAdminMixin:
                 "fields": (
                     "id",
                     "tsa_id",
-                    "shortcode",
                 )
             },
         ),
