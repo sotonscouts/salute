@@ -7,8 +7,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^5.1.4"
-factory-boy = "^3.3.1"
-django-phonenumber-field = "^8.0.0"
+django-phonenumber-field = {extras = ["phonenumberslite"], version = "^8.0.0"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -16,6 +15,7 @@ ruff = "^0.9.1"
 pytest = "^8.3.4"
 mypy = "^1.13.0"  # 1.14.1 isn't compatible with django-stubs
 django-stubs = {version = "^5.1.1", extras = ["compatible-mypy"]}
+factory-boy = "^3.3.1"
 pytest-cov = "^6.0.0"
 pytest-django = "^4.9.0"
 
@@ -72,7 +72,7 @@ disallow_untyped_decorators = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["factory.*"]
+module = ["factory.*", "phonenumber_field.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

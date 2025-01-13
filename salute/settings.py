@@ -33,6 +33,10 @@ INSTALLED_APPS = [
     "salute.core",
     "salute.hierarchy",
     "salute.integrations.tsa",
+    "salute.people",
+    # Third Party
+    "phonenumber_field",
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -126,3 +130,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
+
+# django-phonenumber-field
+PHONENUMBER_DEFAULT_FORMAT = "E164"
+PHONENUMBER_DEFAULT_REGION = "GB"
+PHONENUMBER_DB_FORMAT = "E164"
