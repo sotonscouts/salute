@@ -30,6 +30,9 @@ ALLOWED_HOSTS: list[str] = []
 
 INSTALLED_APPS = [
     "salute.accounts",
+    "salute.core",
+    "salute.hierarchy",
+    "salute.integrations.tsa",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
