@@ -4,7 +4,6 @@ from salute.integrations.tsa.models import TSAObject
 
 
 class TSAObjectModelAdminMixin:
-
     FIELDSETS = (
         (
             "IDs",
@@ -28,7 +27,8 @@ class TSAObjectModelAdminMixin:
         ),
     )
 
-    def get_readonly_fields(self, request: HttpRequest, obj: TSAObject | None =None) -> tuple[str, ...]:
+    def get_readonly_fields(self, request: HttpRequest, obj: TSAObject | None = None) -> tuple[str, ...]:
+        assert obj is not None
         return (
             "id",
             "tsa_id",

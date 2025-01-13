@@ -16,6 +16,7 @@ pytest = "^8.3.4"
 mypy = "^1.13.0"  # 1.14.1 isn't compatible with django-stubs
 django-stubs = {version = "^5.1.1", extras = ["compatible-mypy"]}
 pytest-cov = "^6.0.0"
+pytest-django = "^4.9.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -68,6 +69,10 @@ disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 
 check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["factory.*"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["*.tests.*"]

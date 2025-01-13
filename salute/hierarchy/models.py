@@ -9,7 +9,7 @@ class TSAUnit(TSAObject):
     unit_name = models.CharField(max_length=255, editable=False)
     shortcode = models.CharField(max_length=9, editable=False)  # Used for census data
 
-    TSA_FIELDS = ('unit_name', 'shortcode')
+    TSA_FIELDS: tuple[str, ...] = ("unit_name", "shortcode")
 
     class Meta:
         abstract = True
@@ -32,7 +32,7 @@ class Group(TSAUnit):
     local_unit_number = models.PositiveSmallIntegerField(unique=True)
     location_name = models.CharField(max_length=255)
 
-    TSA_FIELDS = TSAObject.TSA_FIELDS + ('district', 'group_type', 'charity_number')
+    TSA_FIELDS = TSAObject.TSA_FIELDS + ("district", "group_type", "charity_number")
 
 
 class Section(TSAUnit):
@@ -53,12 +53,12 @@ class Section(TSAUnit):
     )
     section_type = models.CharField(max_length=10, choices=SectionType, editable=False)
 
-    TSA_FIELDS = TSAObject.TSA_FIELDS + ('district', 'group', 'group_type')
+    TSA_FIELDS = TSAObject.TSA_FIELDS + ("district", "group", "group_type")
 
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(section_type__in=DISTRICT_SECTION_TYPES, district__isnull=False, group__isnull=True)
+                condition=models.Q(section_type__in=DISTRICT_SECTION_TYPES, district__isnull=False, group__isnull=True)
                 | models.Q(section_type__in=GROUP_SECTION_TYPES, district__isnull=True, group__isnull=False),
                 violation_error_message="A section must be associated with one group or district.",
                 name="section_is_either_group_or_district",

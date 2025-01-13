@@ -1,24 +1,20 @@
+import uuid
+import zoneinfo
+
 import factory
 
-from salute.integrations.tsa.models import TSAObject
-
-from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, SectionType
-from .models import District, Group, Section
+from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType
+from .models import District, Group, Section, TSAUnit
 
 
-class TSAObjectFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = TSAObject
-        abstract = True
-
-
-class TSAUnitFactory(TSAObjectFactory):
+class TSAUnitFactory(factory.django.DjangoModelFactory):
     unit_name = factory.Faker("company")
     shortcode = factory.Faker("bothify", text="#######??")
+    tsa_id = factory.LazyFunction(uuid.uuid4)
+    tsa_last_modified = factory.Faker("past_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))
 
     class Meta:
-        model = District
-        abstract = True
+        model = TSAUnit
 
 
 class DistrictFactory(TSAUnitFactory):
@@ -37,18 +33,19 @@ class GroupFactory(TSAUnitFactory):
         model = Group
 
 
-class SectionFactory(TSAUnitFactory):
-    district = factory.Maybe(
-        lambda o: o.section_type in DISTRICT_SECTION_TYPES,
-        yes_declaration=factory.SubFactory(DistrictFactory),
-        no_declaration=None,
-    )
-    group = factory.Maybe(
-        lambda o: o.section_type in GROUP_SECTION_TYPES,
-        yes_declaration=factory.SubFactory(GroupFactory),
-        no_declaration=None,
-    )
-    section_type = factory.Iterator([choice[0] for choice in SectionType.choices])
+class DistrictSectionFactory(TSAUnitFactory):
+    section_type = factory.Iterator(DISTRICT_SECTION_TYPES)
+    district = factory.SubFactory(DistrictFactory)
+    group = None
+
+    class Meta:
+        model = Section
+
+
+class GroupSectionFactory(TSAUnitFactory):
+    section_type = factory.Iterator(GROUP_SECTION_TYPES)
+    group = factory.SubFactory(GroupFactory)
+    district = None
 
     class Meta:
         model = Section

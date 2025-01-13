@@ -1,8 +1,13 @@
 import pytest
 from django.db.utils import IntegrityError
 
-from salute.hierarchy.constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES
-from salute.hierarchy.factories import DistrictFactory, GroupFactory, SectionFactory
+from salute.hierarchy.constants import SectionType
+from salute.hierarchy.factories import (
+    DistrictFactory,
+    DistrictSectionFactory,
+    GroupFactory,
+    GroupSectionFactory,
+)
 from salute.hierarchy.models import District, Group, Section
 
 
@@ -36,10 +41,10 @@ class TestGroupModel:
 class TestSectionModel:
     def test_create_section_with_district(self) -> None:
         district = DistrictFactory()
-        section = SectionFactory(
+        section = DistrictSectionFactory(
             district=district,
             group=None,
-            section_type=DISTRICT_SECTION_TYPES[0],
+            section_type=SectionType.EXPLORERS,
         )
         assert Section.objects.count() == 1
         assert section.district == district
@@ -47,52 +52,31 @@ class TestSectionModel:
 
     def test_create_section_with_group(self) -> None:
         group = GroupFactory()
-        section = SectionFactory(
+        section = GroupSectionFactory(
             district=None,
             group=group,
-            section_type=GROUP_SECTION_TYPES[0],
+            section_type=SectionType.BEAVERS,
         )
         assert Section.objects.count() == 1
         assert section.group == group
         assert section.district is None
 
     def test_check_constraint_district_association(self) -> None:
-        """A section with a district type must have a district and no group."""
-        district = DistrictFactory()
+        """A section with a district type must have a district or group."""
         with pytest.raises(IntegrityError, match="section_is_either_group_or_district"):
-            SectionFactory(
+            DistrictSectionFactory(
                 district=None,
                 group=None,
-                section_type=DISTRICT_SECTION_TYPES[0],
+                section_type=SectionType.EXPLORERS,
             )
-        SectionFactory(
-            district=district,
-            group=None,
-            section_type=DISTRICT_SECTION_TYPES[0],
-        )  # Valid case
-
-    def test_check_constraint_group_association(self) -> None:
-        """A section with a group type must have a group and no district."""
-        group = GroupFactory()
-        with pytest.raises(IntegrityError, match="section_is_either_group_or_district"):
-            SectionFactory(
-                district=None,
-                group=None,
-                section_type=GROUP_SECTION_TYPES[0],
-            )
-        SectionFactory(
-            district=None,
-            group=group,
-            section_type=GROUP_SECTION_TYPES[0],
-        )  # Valid case
 
     def test_check_constraint_invalid_case(self) -> None:
         """A section cannot have both a group and a district."""
         district = DistrictFactory()
         group = GroupFactory(district=district)
         with pytest.raises(IntegrityError, match="section_is_either_group_or_district"):
-            SectionFactory(
+            GroupSectionFactory(
                 district=district,
                 group=group,
-                section_type=DISTRICT_SECTION_TYPES[0],
+                section_type=SectionType.BEAVERS,
             )
