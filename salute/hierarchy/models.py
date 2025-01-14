@@ -29,8 +29,8 @@ class Group(TSAUnit):
     charity_number = models.PositiveIntegerField(null=True, editable=False)
 
     # Salute Fields
-    local_unit_number = models.PositiveSmallIntegerField(unique=True)
-    location_name = models.CharField(max_length=255)
+    local_unit_number = models.PositiveSmallIntegerField(unique=True, null=True)
+    location_name = models.CharField(max_length=255, null=True)  # noqa: DJ001
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group_type", "charity_number")
 

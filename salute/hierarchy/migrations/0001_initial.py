@@ -1,6 +1,5 @@
-import uuid
-
 import django.db.models.deletion
+import uuid
 from django.db import migrations, models
 
 
@@ -28,11 +27,15 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "tsa_id",
-                    models.UUIDField(editable=False, unique=True, verbose_name="TSA ID"),
+                    models.UUIDField(
+                        editable=False, unique=True, verbose_name="TSA ID"
+                    ),
                 ),
                 (
                     "tsa_last_modified",
-                    models.DateTimeField(editable=False, verbose_name="TSA Last Modified at"),
+                    models.DateTimeField(
+                        editable=False, verbose_name="TSA Last Modified at"
+                    ),
                 ),
                 ("unit_name", models.CharField(editable=False, max_length=255)),
                 ("shortcode", models.CharField(editable=False, max_length=9)),
@@ -59,11 +62,15 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "tsa_id",
-                    models.UUIDField(editable=False, unique=True, verbose_name="TSA ID"),
+                    models.UUIDField(
+                        editable=False, unique=True, verbose_name="TSA ID"
+                    ),
                 ),
                 (
                     "tsa_last_modified",
-                    models.DateTimeField(editable=False, verbose_name="TSA Last Modified at"),
+                    models.DateTimeField(
+                        editable=False, verbose_name="TSA Last Modified at"
+                    ),
                 ),
                 ("unit_name", models.CharField(editable=False, max_length=255)),
                 ("shortcode", models.CharField(editable=False, max_length=9)),
@@ -79,8 +86,11 @@ class Migration(migrations.Migration):
                     "charity_number",
                     models.PositiveIntegerField(editable=False, null=True),
                 ),
-                ("local_unit_number", models.PositiveSmallIntegerField(unique=True)),
-                ("location_name", models.CharField(max_length=255)),
+                (
+                    "local_unit_number",
+                    models.PositiveSmallIntegerField(null=True, unique=True),
+                ),
+                ("location_name", models.CharField(max_length=255, null=True)),
                 (
                     "district",
                     models.ForeignKey(
@@ -112,11 +122,15 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "tsa_id",
-                    models.UUIDField(editable=False, unique=True, verbose_name="TSA ID"),
+                    models.UUIDField(
+                        editable=False, unique=True, verbose_name="TSA ID"
+                    ),
                 ),
                 (
                     "tsa_last_modified",
-                    models.DateTimeField(editable=False, verbose_name="TSA Last Modified at"),
+                    models.DateTimeField(
+                        editable=False, verbose_name="TSA Last Modified at"
+                    ),
                 ),
                 ("unit_name", models.CharField(editable=False, max_length=255)),
                 ("shortcode", models.CharField(editable=False, max_length=9)),
