@@ -1,11 +1,11 @@
 from django.db import models
 
-from salute.integrations.tsa.models import TSAObject
+from salute.integrations.tsa.models import TSATimestampedObject
 
 from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, SectionType
 
 
-class TSAUnit(TSAObject):
+class TSAUnit(TSATimestampedObject):
     unit_name = models.CharField(max_length=255, editable=False)
     shortcode = models.CharField(max_length=9, editable=False)  # Used for census data
 
