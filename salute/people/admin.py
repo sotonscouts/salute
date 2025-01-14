@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpRequest
 
 from salute.integrations.tsa.admin import TSAObjectModelAdminMixin
-from salute.integrations.tsa.models import TSAObject
+from salute.integrations.tsa.models import TSATimestampedObject
 from salute.people.models import Person
 
 
@@ -34,8 +34,5 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
         ),
     ) + TSAObjectModelAdminMixin.FIELDSETS
 
-    def get_readonly_fields(self, request: HttpRequest, obj: TSAObject | None = None) -> tuple[str, ...]:
+    def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> tuple[str, ...]:
         return super().get_readonly_fields(request, obj) + ("contact_email",)
-
-    def has_change_permission(self, request: HttpRequest, obj: Person | None = None) -> bool:
-        return False  # Currently nothing to change

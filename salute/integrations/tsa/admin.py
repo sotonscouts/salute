@@ -1,9 +1,10 @@
 from django.http import HttpRequest
 
-from salute.integrations.tsa.models import TSAObject
+from salute.core.admin import BaseModelAdminMixin
+from salute.integrations.tsa.models import TSATimestampedObject
 
 
-class TSAObjectModelAdminMixin:
+class TSATimestampedObjectModelAdminMixin(BaseModelAdminMixin):
     FIELDSETS = (
         (
             "IDs",
@@ -26,7 +27,7 @@ class TSAObjectModelAdminMixin:
         ),
     )
 
-    def get_readonly_fields(self, request: HttpRequest, obj: TSAObject | None = None) -> tuple[str, ...]:
+    def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> tuple[str, ...]:
         assert obj is not None
         return (
             "id",
@@ -37,8 +38,34 @@ class TSAObjectModelAdminMixin:
             "tsa_last_modified",
         ) + obj.TSA_FIELDS
 
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        return False
 
-    def has_delete_permission(self, request: HttpRequest, obj: TSAObject | None = None) -> bool:
-        return False
+class TSAObjectModelAdminMixin(BaseModelAdminMixin):
+    FIELDSETS = (
+        (
+            "IDs",
+            {
+                "fields": (
+                    "id",
+                    "tsa_id",
+                )
+            },
+        ),
+        (
+            "Dates",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
+
+    def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> tuple[str, ...]:
+        assert obj is not None
+        return (
+            "id",
+            "tsa_id",
+            "created_at",
+            "updated_at",
+        ) + obj.TSA_FIELDS
