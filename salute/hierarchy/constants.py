@@ -16,5 +16,5 @@ class SectionType(models.TextChoices):
     NETWORK = "Network"
 
 
-DISTRICT_SECTION_TYPES = {SectionType.EXPLORERS, SectionType.NETWORK}
-GROUP_SECTION_TYPES = set(SectionType) - DISTRICT_SECTION_TYPES
+DISTRICT_SECTION_TYPES = [SectionType.EXPLORERS, SectionType.NETWORK]
+GROUP_SECTION_TYPES = [SectionType.SQUIRRELS, SectionType.BEAVERS, SectionType.CUBS, SectionType.SCOUTS]
