@@ -10,6 +10,7 @@ class TSAObject(BaseModel):
     class Meta:
         abstract = True
 
+
 class TSATimestampedObject(TSAObject):
     tsa_last_modified = models.DateTimeField(verbose_name="TSA Last Modified at", editable=False)
 

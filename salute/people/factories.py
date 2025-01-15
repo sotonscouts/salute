@@ -1,5 +1,4 @@
 import uuid
-import zoneinfo
 
 import factory
 
@@ -33,4 +32,3 @@ class PersonFactory(factory.django.DjangoModelFactory):
     phone_number = factory.Faker("phone_number")
 
     tsa_id = factory.LazyFunction(uuid.uuid4)
-    tsa_last_modified = factory.Faker("past_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))

@@ -18,7 +18,7 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     list_filter = ("is_suspended",)
     search_fields = ("display_name", "membership_number", "tsa_id")
 
-    fieldsets = (  # type: ignore[assignment]
+    fieldsets = (
         (None, {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended")}),
         (
             "Contact Info",
@@ -34,5 +34,5 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
         ),
     ) + TSAObjectModelAdminMixin.FIELDSETS
 
-    def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> tuple[str, ...]:
-        return super().get_readonly_fields(request, obj) + ("contact_email",)
+    def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> list[str]:  # type: ignore[override]
+        return super().get_readonly_fields(request, obj) + ["contact_email"]

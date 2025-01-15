@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.http import HttpRequest
 
+from salute.core.models import BaseModel
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.admin import TSATimestampedObjectModelAdminMixin
 
@@ -10,12 +11,7 @@ class DistrictAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     list_display = ("unit_name",)
     search_fields = ("unit_name", "tsa_id")
 
-    fieldsets = (  # type: ignore[assignment]
-        (None, {"fields": ("unit_name", "shortcode")}),
-    ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
-
-    def has_change_permission(self, request: HttpRequest, obj: District | None = None) -> bool:
-        return False  # Currently nothing to change
+    fieldsets = ((None, {"fields": ("unit_name", "shortcode")}),) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
 
 @admin.register(Group)
@@ -30,7 +26,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     list_filter = ("group_type",)
     search_fields = ("unit_name", "tsa_id", "location_name")
 
-    fieldsets = (  # type: ignore[assignment]
+    fieldsets = (
         (None, {"fields": ("unit_name", "shortcode", "district")}),
         (
             "Group",
@@ -45,7 +41,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         ),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
-    def has_change_permission(self, request: HttpRequest, obj: Group | None = None) -> bool:
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
         return request.user.is_superuser
 
 
@@ -55,7 +51,7 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     list_filter = ("section_type", "group")
     search_fields = ("unit_name", "tsa_id")
 
-    fieldsets = (  # type: ignore[assignment]
+    fieldsets = (
         (None, {"fields": ("unit_name", "shortcode", "district", "group")}),
         ("Section", {"fields": ("section_type",)}),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS

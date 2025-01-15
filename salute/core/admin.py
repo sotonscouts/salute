@@ -7,11 +7,7 @@ class BaseModelAdminMixin:
     FIELDSETS = (
         (
             "IDs",
-            {
-                "fields": (
-                    "id",
-                )
-            },
+            {"fields": ("id",)},
         ),
         (
             "Dates",
@@ -24,13 +20,13 @@ class BaseModelAdminMixin:
         ),
     )
 
-    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> tuple[str, ...]:
+    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
         assert obj is not None
-        return (
+        return [
             "id",
             "created_at",
             "updated_at",
-        ) + obj.TSA_FIELDS
+        ]
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
