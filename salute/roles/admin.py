@@ -41,19 +41,19 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RoleType)
-class RoleTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
+class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name", "tsa_id")
 
-    fieldsets = ((None, {"fields": ("name",)}),) + TSAObjectModelAdminMixin.FIELDSETS
+    fieldsets = ((None, {"fields": ("name",)}),)
 
 
 @admin.register(RoleStatus)
-class RoleStatusAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
+class RoleStatusAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     list_display = ("name",)
-    search_fields = ("name", "tsa_id")
+    search_fields = ("name",)
 
-    fieldsets = ((None, {"fields": ("name",)}),) + TSAObjectModelAdminMixin.FIELDSETS
+    fieldsets = ((None, {"fields": ("name",)}),)
 
 
 @admin.register(Team)
@@ -77,7 +77,6 @@ class TeamAdmin(BaseModelAdminMixin, admin.ModelAdmin):
                 "fields": (
                     "created_at",
                     "updated_at",
-                    "tsa_last_modified",
                 )
             },
         ),
