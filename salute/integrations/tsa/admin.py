@@ -46,19 +46,21 @@ class TSAObjectModelAdminMixin(BaseModelAdminMixin):
         (
             "IDs",
             {
+                "classes": ("collapse",),
                 "fields": (
                     "id",
                     "tsa_id",
-                )
+                ),
             },
         ),
         (
             "Dates",
             {
+                "classes": ("collapse",),
                 "fields": (
                     "created_at",
                     "updated_at",
-                )
+                ),
             },
         ),
     )

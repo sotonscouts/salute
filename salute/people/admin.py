@@ -26,7 +26,7 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
         "membership_number",
         "is_suspended",
     )
-    list_filter = ("is_suspended",)
+    list_filter = ("is_suspended", ("workspace_account", admin.EmptyFieldListFilter))
     search_fields = ("display_name", "membership_number", "tsa_id")
     inlines = (PersonRoleInlineAdmin, PersonAccreditationInlineAdmin)
 
@@ -36,15 +36,25 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
             "Contact Info",
             {
                 "fields": (
+                    "workspace_account",
+                    "contact_email",
+                    "phone_number",
+                ),
+            },
+        ),
+        (
+            "Email Addresses",
+            {
+                "classes": ("collapse",),
+                "fields": (
                     "tsa_email",
                     "primary_email",
                     "default_email",
                     "alternate_email",
-                    "phone_number",
                 ),
             },
         ),
     ) + TSAObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> list[str]:  # type: ignore[override]
-        return super().get_readonly_fields(request, obj) + ["contact_email"]
+        return super().get_readonly_fields(request, obj) + ["contact_email", "workspace_account"]

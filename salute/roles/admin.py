@@ -96,6 +96,7 @@ class RoleAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     list_filter = (
         "role_type",
         "team__team_type",
+        ("person__workspace_account", admin.EmptyFieldListFilter),
     )
     search_fields = ("person__display_name", "team__team_type__name", "role_type__name")
 

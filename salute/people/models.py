@@ -57,7 +57,12 @@ class Person(TSAObject):
     def __str__(self) -> str:
         return f"{self.display_name} ({self.formatted_membership_number})"
 
-    # TODO: Contact Email
+    @property
+    def contact_email(self) -> str:
+        try:
+            return self.workspace_account.primary_email
+        except Person.workspace_account.RelatedObjectDoesNotExist:
+            return self.tsa_email
 
     @property
     def formatted_membership_number(self) -> str:

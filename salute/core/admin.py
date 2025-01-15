@@ -1,10 +1,12 @@
+from typing import Any
+
 from django.http import HttpRequest
 
 from salute.core.models import BaseModel
 
 
 class BaseModelAdminMixin:
-    FIELDSETS = (
+    FIELDSETS: Any = (
         (
             "IDs",
             {"fields": ("id",)},
