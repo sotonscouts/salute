@@ -4,6 +4,17 @@ from django.http import HttpRequest
 from salute.integrations.tsa.admin import TSAObjectModelAdminMixin
 from salute.integrations.tsa.models import TSATimestampedObject
 from salute.people.models import Person
+from salute.roles.models import Accreditation, Role
+
+
+class PersonRoleInlineAdmin(admin.TabularInline):
+    model = Role
+    readonly_fields = Role.TSA_FIELDS
+
+
+class PersonAccreditationInlineAdmin(admin.TabularInline):
+    model = Accreditation
+    readonly_fields = Accreditation.TSA_FIELDS
 
 
 @admin.register(Person)
@@ -17,6 +28,7 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     )
     list_filter = ("is_suspended",)
     search_fields = ("display_name", "membership_number", "tsa_id")
+    inlines = (PersonRoleInlineAdmin, PersonAccreditationInlineAdmin)
 
     fieldsets = (
         (None, {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended")}),
