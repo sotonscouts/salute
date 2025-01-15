@@ -11,3 +11,14 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Taxonomy(BaseModel):
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        abstract = True
+        ordering = ("name",)
+
+    def __str__(self) -> str:
+        return self.name

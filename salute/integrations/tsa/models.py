@@ -18,3 +18,16 @@ class TSATimestampedObject(TSAObject):
 
     class Meta:
         abstract = True
+
+
+class TSATaxonomy(TSAObject):
+    name = models.CharField(max_length=255)
+
+    TSA_FIELDS = ("name",)
+
+    class Meta:
+        abstract = True
+        ordering = ("name",)
+
+    def __str__(self) -> str:
+        return self.name
