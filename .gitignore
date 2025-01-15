@@ -1,3 +1,6 @@
+# Salute
+.requests-cache/
+
 ### Django ###
 *.log
 *.pot
