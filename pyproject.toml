@@ -82,3 +82,9 @@ disable_error_code = ["arg-type"]
 [tool.django-stubs]
 django_settings_module = "salute.settings"
 
+[tool.coverage.run]
+omit = [
+    # omit migrations and tests from test coverage
+    "*/migrations/*",
+    "*/tests/*",
+]
