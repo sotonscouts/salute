@@ -1,5 +1,7 @@
 from uuid import UUID
 
+import phonenumbers
+from django.conf import settings
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -13,8 +15,22 @@ class PersonDetail(BaseModel):
     default_email: str | None = Field(alias="defaultemail>>email")
     alternate_email: str | None = Field(alias="alternateemail>>email")
     is_suspended: bool = Field(alias="suspended")
+    phone_number: str | None = Field(alias="defaultphone>>phone")
+    alternate_phone_number: str | None = Field(alias="alternatephone>>phone")
 
     @field_validator("preferred_name", "primary_email", "default_email", "alternate_email", mode="after")
     @classmethod
     def normalise_empty_value(cls, val: str) -> str | None:
         return val or None
+
+    @field_validator("phone_number", "alternate_phone_number", mode="after")
+    @classmethod
+    def normalise_phone_number(cls, val: str) -> str | None:
+        if val:
+            try:
+                phone_number = phonenumbers.parse(val, region=settings.PHONENUMBER_DEFAULT_REGION)
+                if phonenumbers.is_valid_number(phone_number):
+                    return val
+            except phonenumbers.phonenumberutil.NumberParseException:
+                return None
+        return None

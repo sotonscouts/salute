@@ -39,6 +39,7 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
                     "workspace_account",
                     "contact_email",
                     "phone_number",
+                    "alternate_phone_number",
                 ),
             },
         ),

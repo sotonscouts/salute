@@ -30,5 +30,10 @@ class PersonFactory(factory.django.DjangoModelFactory):
         None,
     )
     phone_number = factory.Faker("phone_number")
+    alternate_phone_number = factory.Maybe(
+        factory.Faker("boolean"),
+        factory.Faker("phone_number"),
+        None,
+    )
 
     tsa_id = factory.LazyFunction(uuid.uuid4)

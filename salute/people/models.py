@@ -15,7 +15,8 @@ class Person(TSAObject):
     primary_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
     default_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
     alternate_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
-    phone_number = PhoneNumberField(blank=True)
+    phone_number = PhoneNumberField(null=True, editable=False)
+    alternate_phone_number = PhoneNumberField(null=True, editable=False)
 
     # Generated Fields
     first_name = models.GeneratedField(
@@ -48,6 +49,7 @@ class Person(TSAObject):
         "default_email",
         "alternate_email",
         "phone_number",
+        "alternate_phone_number",
     )
 
     class Meta:
