@@ -35,7 +35,7 @@ class Team(BaseModel):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(  # District
                         district__isnull=False, group__isnull=True, section__isnull=True, parent_team__isnull=True
                     )
