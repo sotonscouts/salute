@@ -2,13 +2,17 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 from google.oauth2 import service_account
-from googleapiclient.discovery import build  # type: ignore[import-untyped]
+from googleapiclient.discovery import build
+from tqdm import tqdm  # type: ignore[import-untyped]
 
 from salute.people.models import Person
-from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias
+from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias, WorkspaceGroup, WorkspaceGroupAlias
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/admin.directory.user"]
+SCOPES = [
+    "https://www.googleapis.com/auth/admin.directory.user",
+    "https://www.googleapis.com/auth/admin.directory.group",
+]
 DISABLED_ACCOUNT_ORG_UNIT_PATH = "/Disabled Accounts"
 SERVICE_ACCOUNT_ORG_UNIT_PATH = "/Service Accounts"
 
@@ -29,6 +33,8 @@ class Command(BaseCommand):
         for workspace_account in WorkspaceAccount.objects.exclude(org_unit_path=SERVICE_ACCOUNT_ORG_UNIT_PATH):
             self.audit_workspace_user(workspace_account)
 
+        self.sync_workspace_groups(service)
+
     def sync_workspace_users(self, directory_service: Any) -> None:
         # Initial request
         results = directory_service.users().list(customer="my_customer", maxResults=100).execute()
@@ -42,7 +48,7 @@ class Command(BaseCommand):
             )
             users.extend(results.get("users", []))
 
-        for workspace_user in users:
+        for workspace_user in tqdm(users, "Syncing Workspace Users"):
             account, _ = WorkspaceAccount.objects.update_or_create(
                 {
                     "primary_email": workspace_user["primaryEmail"],
@@ -122,3 +128,41 @@ class Command(BaseCommand):
         # TODO: Identify suspended accounts for existing members
         # TODO: Identify suspended members with active accounts
         # TODO: Move print statements into an audit function, it's not the same as sync.
+
+    def sync_workspace_groups(self, directory_service: Any) -> None:
+        # Initial request
+        results = directory_service.groups().list(customer="my_customer", maxResults=100).execute()
+        groups = results.get("groups", [])
+
+        # Iterate through pages
+        while "nextPageToken" in results:
+            page_token = results["nextPageToken"]
+            results = (
+                directory_service.groups().list(customer="my_customer", pageToken=page_token, maxResults=100).execute()
+            )
+            groups.extend(results.get("groups", []))
+
+        for workspace_group in tqdm(groups, "Syncing Workspace Groups"):
+            group, _ = WorkspaceGroup.objects.update_or_create(
+                {
+                    "email": workspace_group["email"],
+                    "name": workspace_group["name"],
+                    "description": workspace_group["description"],
+                },
+                google_id=workspace_group["id"],
+            )
+
+            # Add alias
+            aliases = set(workspace_group.get("aliases", []))
+            for alias in aliases:
+                WorkspaceGroupAlias.objects.update_or_create({"group": group}, address=alias)
+            if sprurious_aliases := WorkspaceGroupAlias.objects.filter(group=group).exclude(address__in=aliases):
+                print(f"Deleting spurious aliases: {sprurious_aliases}")
+                sprurious_aliases.delete()
+
+        # Remove deleted groups
+        if spurious_workspace_groups := WorkspaceGroup.objects.exclude(
+            google_id__in=[workspace_group["id"] for workspace_group in groups]
+        ):
+            print(f"Deleting workspace groups that no longer exist: {spurious_workspace_groups}")
+            spurious_workspace_groups.delete()

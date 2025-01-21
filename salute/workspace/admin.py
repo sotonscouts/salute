@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.http import HttpRequest
 
 from salute.core.admin import BaseModelAdminMixin
-from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias
+from salute.core.models import BaseModel
+from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias, WorkspaceGroup, WorkspaceGroupAlias
 
 
 class WorkspaceAccountAliasInlineAdmin(admin.StackedInline):
@@ -69,3 +71,27 @@ class WorkspaceAccountAdmin(BaseModelAdminMixin, admin.ModelAdmin):
             },
         ),
     ) + BaseModelAdminMixin.FIELDSETS
+
+
+class WorkspaceGroupAliasInlineAdmin(admin.StackedInline):
+    model = WorkspaceGroupAlias
+    readonly_fields = ("address",)
+
+
+@admin.register(WorkspaceGroup)
+class WorkspaceGroupAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("email", "name", "salute_managed")
+    list_filter = ("salute_managed",)
+    search_fields = ("email", "name", "description", "salute_managed")
+    inlines = (WorkspaceGroupAliasInlineAdmin,)
+
+    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
+        return super().get_readonly_fields(request, obj) + [
+            "google_id",
+            "email",
+            "name",
+            "description",
+            "salute_managed",
+        ]
+
+    fieldsets = ((None, {"fields": ("email", "name", "description", "google_id")}),) + BaseModelAdminMixin.FIELDSETS

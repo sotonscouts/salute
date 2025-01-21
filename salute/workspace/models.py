@@ -49,3 +49,26 @@ class WorkspaceAccountAlias(BaseModel):
 
     def __str__(self) -> str:
         return self.address
+
+
+class WorkspaceGroup(BaseModel):
+    google_id = models.CharField(max_length=100, unique=True, editable=False)
+    email = models.CharField(max_length=255, unique=True, editable=False)
+    name = models.CharField(max_length=255, editable=False)
+    description = models.TextField(editable=False)
+    salute_managed = models.BooleanField(default=False, editable=False)
+
+    def __str__(self) -> str:
+        return self.email
+
+
+class WorkspaceGroupAlias(BaseModel):
+    group = models.ForeignKey(WorkspaceGroup, on_delete=models.CASCADE, related_name="aliases")
+    address = models.EmailField(unique=True, editable=False)
+
+    class Meta:
+        verbose_name = "Workspace Group Alias"
+        verbose_name_plural = "Workspace Group Aliases"
+
+    def __str__(self) -> str:
+        return self.address
