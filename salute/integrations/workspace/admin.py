@@ -3,7 +3,12 @@ from django.http import HttpRequest
 
 from salute.core.admin import BaseModelAdminMixin
 from salute.core.models import BaseModel
-from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias, WorkspaceGroup, WorkspaceGroupAlias
+from salute.integrations.workspace.models import (
+    WorkspaceAccount,
+    WorkspaceAccountAlias,
+    WorkspaceGroup,
+    WorkspaceGroupAlias,
+)
 
 
 class WorkspaceAccountAliasInlineAdmin(admin.StackedInline):

@@ -33,9 +33,9 @@ INSTALLED_APPS = [
     "salute.core",
     "salute.hierarchy",
     "salute.integrations.tsa",
+    "salute.integrations.workspace",
     "salute.people",
     "salute.roles",
-    "salute.workspace",
     # Third Party
     "phonenumber_field",
     # Django

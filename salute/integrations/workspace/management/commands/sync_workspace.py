@@ -5,8 +5,13 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from tqdm import tqdm  # type: ignore[import-untyped]
 
+from salute.integrations.workspace.models import (
+    WorkspaceAccount,
+    WorkspaceAccountAlias,
+    WorkspaceGroup,
+    WorkspaceGroupAlias,
+)
 from salute.people.models import Person
-from salute.workspace.models import WorkspaceAccount, WorkspaceAccountAlias, WorkspaceGroup, WorkspaceGroupAlias
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
