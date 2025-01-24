@@ -13,8 +13,9 @@ class SectionType(models.TextChoices):
     CUBS = "Cubs"
     SCOUTS = "Scouts"
     EXPLORERS = "Explorers"
+    YOUNG_LEADERS = "Young Leader"
     NETWORK = "Network"
 
 
-DISTRICT_SECTION_TYPES = [SectionType.EXPLORERS, SectionType.NETWORK]
+DISTRICT_SECTION_TYPES = [SectionType.EXPLORERS, SectionType.YOUNG_LEADERS, SectionType.NETWORK]
 GROUP_SECTION_TYPES = [SectionType.SQUIRRELS, SectionType.BEAVERS, SectionType.CUBS, SectionType.SCOUTS]

@@ -51,7 +51,7 @@ class Section(TSAUnit):
         null=True,
         editable=False,
     )
-    section_type = models.CharField(max_length=10, choices=SectionType, editable=False)
+    section_type = models.CharField(max_length=12, choices=SectionType, editable=False)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
