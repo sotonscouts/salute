@@ -14,6 +14,8 @@ google-auth-httplib2 = "^0.2.0"
 google-auth-oauthlib = "^1.2.1"
 pydantic = "^2.10.5"
 tqdm = "^4.67.1"
+strawberry-graphql = "^0.258.0"
+strawberry-graphql-django = "^0.55.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -25,6 +27,7 @@ factory-boy = "^3.3.1"
 pytest-cov = "^6.0.0"
 pytest-django = "^4.9.0"
 types-requests = "^2.32.0.20241016"
+django-debug-toolbar = "^5.0.1"
 
 [build-system]
 requires = ["poetry-core"]

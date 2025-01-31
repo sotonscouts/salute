@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     "salute.people",
     "salute.roles",
     # Third Party
+    "debug_toolbar",
     "phonenumber_field",
+    "strawberry_django",
     # Django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -52,10 +54,14 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "strawberry_django.middlewares.debug_toolbar.DebugToolbarMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
 
 ROOT_URLCONF = "salute.urls"
 
@@ -137,3 +143,8 @@ AUTH_USER_MODEL = "accounts.User"
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 PHONENUMBER_DEFAULT_REGION = "GB"
 PHONENUMBER_DB_FORMAT = "E164"
+
+if DEBUG:
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]
