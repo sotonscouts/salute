@@ -1,3 +1,4 @@
+import csv
 import tomllib
 from pathlib import Path
 from typing import Any, Literal, TypedDict
@@ -9,6 +10,7 @@ from django.db.models import Count, F, Q
 from django.utils.timezone import get_current_timezone
 from pydantic import BaseModel, TypeAdapter
 
+from salute.hierarchy.constants import Weekday
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.client import MembershipAPIClient
 from salute.integrations.tsa.schemata.units import UnitListingResult, UnitTypeID
@@ -88,17 +90,22 @@ class Command(BaseCommand):
         groups_by_tsa_id = {g.tsa_id: g for g in Group.objects.all()}
         districts_by_tsa_id = {d.tsa_id: d for d in District.objects.all()}
 
+        with Path("data/sections.csv").open("r") as fh:
+            section_weekday_data = {row["Shortcode"]: row["Weekday"] for row in csv.DictReader(fh)}
+
         section_tsa_ids: set[UUID] = set()
         added_count: int = 0
         for unit in filter(
             lambda unit: unit.unit_type_id in [UnitTypeID.DISTRICT_SECTION, UnitTypeID.GROUP_SECTION],
             units_for_district,
         ):
+            weekday = section_weekday_data[unit.unit_shortcode].lower()
             unit_detail = membership.get_unit_detail(unit_id=unit.id)
             section_data: dict[str, Any] = {
                 "unit_name": unit.unit_name,
                 "shortcode": unit.unit_shortcode,
                 "section_type": unit_detail.section_type,
+                "usual_weekday": Weekday(weekday) if weekday != "-" else None,
                 "tsa_last_modified": unit_detail.admin_details.last_modified,
             }
             if unit.unit_type_id == UnitTypeID.DISTRICT_SECTION:

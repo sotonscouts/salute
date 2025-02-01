@@ -4,7 +4,14 @@ from django_choices_field import TextChoicesField
 from salute.hierarchy.utils import get_ordinal_suffix
 from salute.integrations.tsa.models import TSATimestampedObject
 
-from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, SectionType
+from .constants import (
+    DISTRICT_SECTION_TYPES,
+    GROUP_SECTION_TYPES,
+    NON_REGULAR_SECTIONS_TYPES,
+    GroupType,
+    SectionType,
+    Weekday,
+)
 
 
 class TSAUnit(TSATimestampedObject):
@@ -66,6 +73,7 @@ class Section(TSAUnit):
         editable=False,
     )
     section_type = TextChoicesField(choices_enum=SectionType, editable=False)
+    usual_weekday = TextChoicesField(choices_enum=Weekday, null=True)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
@@ -76,5 +84,10 @@ class Section(TSAUnit):
                 | models.Q(section_type__in=GROUP_SECTION_TYPES, district__isnull=True, group__isnull=False),
                 violation_error_message="A section must be associated with one group or district.",
                 name="section_is_either_group_or_district",
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(usual_weekday__isnull=False) | models.Q(section_type__in=NON_REGULAR_SECTIONS_TYPES),
+                violation_error_message="A section must have a usual weekday, unless it is network or young leaders",
+                name="regular_sections_must_have_usual_weekday",
+            ),
         ]

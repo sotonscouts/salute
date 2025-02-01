@@ -3,7 +3,7 @@ import zoneinfo
 
 import factory
 
-from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType
+from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, Weekday
 from .models import District, Group, Section, TSAUnit
 
 
@@ -35,6 +35,7 @@ class GroupFactory(TSAUnitFactory):
 
 class DistrictSectionFactory(TSAUnitFactory):
     section_type = factory.Iterator(DISTRICT_SECTION_TYPES)
+    usual_weekday = factory.Iterator(Weekday)
     district = factory.SubFactory(DistrictFactory)
     group = None
 
@@ -44,6 +45,7 @@ class DistrictSectionFactory(TSAUnitFactory):
 
 class GroupSectionFactory(TSAUnitFactory):
     section_type = factory.Iterator(GROUP_SECTION_TYPES)
+    usual_weekday = factory.Iterator(Weekday)
     group = factory.SubFactory(GroupFactory)
     district = None
 
