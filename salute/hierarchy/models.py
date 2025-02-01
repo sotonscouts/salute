@@ -1,4 +1,5 @@
 from django.db import models
+from django_choices_field import TextChoicesField
 
 from salute.hierarchy.utils import get_ordinal_suffix
 from salute.integrations.tsa.models import TSATimestampedObject
@@ -26,7 +27,7 @@ class District(TSAUnit):
 class Group(TSAUnit):
     # TSA Fields
     district = models.ForeignKey(District, on_delete=models.PROTECT, related_name="groups")
-    group_type = models.CharField(max_length=10, choices=GroupType, editable=False)
+    group_type = TextChoicesField(choices_enum=GroupType, editable=False)
     charity_number = models.PositiveIntegerField(null=True, editable=False)
 
     # Salute Fields
@@ -64,7 +65,7 @@ class Section(TSAUnit):
         null=True,
         editable=False,
     )
-    section_type = models.CharField(max_length=12, choices=SectionType, editable=False)
+    section_type = TextChoicesField(choices_enum=SectionType, editable=False)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 

@@ -7,6 +7,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^5.1.4"
+django-choices-field = "^2.3.0"
 django-phonenumber-field = {extras = ["phonenumberslite"], version = "^8.0.0"}
 google-api-python-client = "^2.156.0"
 google-auth-httplib2 = "^0.2.0"
@@ -61,6 +62,10 @@ ignore = [
     "N999",    # Invalid module name
     "S101",    # S101 Use of `assert` detected
 ]
+
+[tool.ruff.lint.isort.sections]
+# Group all Django imports into a separate section.
+"django" = ["django"]
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]

@@ -254,6 +254,21 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-choices-field"
+version = "2.3.0"
+description = "Django field that set/get django's new TextChoices/IntegerChoices enum."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "django_choices_field-2.3.0-py3-none-any.whl", hash = "sha256:4bdcccf802bff9065af19798810de494dd16337fa46dae01680ede12a10280d6"},
+    {file = "django_choices_field-2.3.0.tar.gz", hash = "sha256:bb0c85c79737ab98bfb9c0d9ddf98010d612c0585be767890e25fd192c3d1694"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+typing_extensions = ">=4.0.0"
+
+[[package]]
 name = "django-phonenumber-field"
 version = "8.0.0"
 description = "An international phone number field for django models."
@@ -1107,4 +1122,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "408c302563ac893fb50f0033c13cffe046580be4c11806e211f98ad36e1cc9e7"
+content-hash = "d1518664ab1ebae60ff2be0376be53af3c5fc79d02f472a525128f2c50605713"
