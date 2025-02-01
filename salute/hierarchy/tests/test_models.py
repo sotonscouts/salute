@@ -36,6 +36,17 @@ class TestGroupModel:
         with pytest.raises(IntegrityError):
             GroupFactory(district=district, local_unit_number=1)  # Duplicate local unit number
 
+    def test_ordinal(self) -> None:
+        district = DistrictFactory()
+        assert GroupFactory(district=district, local_unit_number=1).ordinal == "1st"
+        assert GroupFactory(district=district, local_unit_number=2).ordinal == "2nd"
+        assert GroupFactory(district=district, local_unit_number=3).ordinal == "3rd"
+        assert GroupFactory(district=district, local_unit_number=4).ordinal == "4th"
+        assert GroupFactory(district=district, local_unit_number=10).ordinal == "10th"
+        assert GroupFactory(district=district, local_unit_number=11).ordinal == "11th"
+        assert GroupFactory(district=district, local_unit_number=12).ordinal == "12th"
+        assert GroupFactory(district=district, local_unit_number=21).ordinal == "21st"
+
 
 @pytest.mark.django_db
 class TestSectionModel:

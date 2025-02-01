@@ -1,5 +1,6 @@
 from django.db import models
 
+from salute.hierarchy.utils import get_ordinal_suffix
 from salute.integrations.tsa.models import TSATimestampedObject
 
 from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, SectionType
@@ -32,7 +33,19 @@ class Group(TSAUnit):
     local_unit_number = models.PositiveSmallIntegerField(unique=True)
     location_name = models.CharField(max_length=255)
 
+    @property
+    def ordinal(self) -> str:
+        suffix = get_ordinal_suffix(self.local_unit_number)
+        return f"{self.local_unit_number}{suffix}"
+
+    @property
+    def display_name(self) -> str:
+        return f"{self.ordinal} ({self.location_name})"
+
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group_type", "charity_number")
+
+    def __str__(self) -> str:
+        return self.display_name
 
 
 class Section(TSAUnit):
