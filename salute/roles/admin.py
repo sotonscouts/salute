@@ -45,7 +45,7 @@ class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name", "tsa_id")
 
-    fieldsets = ((None, {"fields": ("name",)}),)
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
 
 
 @admin.register(RoleStatus)
@@ -53,7 +53,7 @@ class RoleStatusAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
 
-    fieldsets = ((None, {"fields": ("name",)}),)
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
 
 
 @admin.register(Team)
