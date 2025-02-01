@@ -54,11 +54,16 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
 @admin.register(Section)
 class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
-    list_display = ("unit_name", "section_type", "group", "district")
+    list_display = ("display_name", "section_type", "group", "district")
     list_filter = ("section_type", "group", "usual_weekday")
     search_fields = ("unit_name", "tsa_id")
 
     fieldsets = (
-        (None, {"fields": ("unit_name", "shortcode", "district", "group")}),
-        ("Section", {"fields": ("section_type", "usual_weekday")}),
+        (None, {"fields": ("display_name", "shortcode", "district", "group")}),
+        ("Section", {"fields": ("unit_name", "section_type", "usual_weekday")}),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
+
+    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
+        return super().get_readonly_fields(request, obj) + [  # type: ignore[arg-type]
+            "display_name",
+        ]

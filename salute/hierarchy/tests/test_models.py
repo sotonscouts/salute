@@ -91,3 +91,29 @@ class TestSectionModel:
                 group=group,
                 section_type=SectionType.BEAVERS,
             )
+
+    def test_check_constraint_missing_weekday(self) -> None:
+        """A section must have a weekday, unless it is network or young leaders."""
+        with pytest.raises(IntegrityError, match="regular_sections_must_have_usual_weekday"):
+            GroupSectionFactory(
+                usual_weekday=None,
+            )
+
+    def test_check_constraint_missing_weekday_allowed(self) -> None:
+        """A section must have a weekday, unless it is network or young leaders."""
+        DistrictSectionFactory(
+            usual_weekday=None,
+            section_type=SectionType.YOUNG_LEADERS,
+        )
+        DistrictSectionFactory(
+            usual_weekday=None,
+            section_type=SectionType.NETWORK,
+        )
+
+    def test_display_name_group_section(self) -> None:
+        section = GroupSectionFactory(usual_weekday="tuesday", section_type="Beavers", group__local_unit_number=13)
+        assert section.display_name == "13th Beavers (Tuesday)"
+
+    def test_display_name_district_section(self) -> None:
+        section = DistrictSectionFactory()
+        assert section.display_name == section.unit_name

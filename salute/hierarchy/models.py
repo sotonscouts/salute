@@ -91,3 +91,13 @@ class Section(TSAUnit):
                 name="regular_sections_must_have_usual_weekday",
             ),
         ]
+
+    @property
+    def display_name(self) -> str:
+        if self.group is not None:
+            assert self.usual_weekday is not None  # enforced by check constraint
+            return f"{self.group.ordinal} {self.section_type.title()} ({self.usual_weekday.title()})"
+        return self.unit_name
+
+    def __str__(self) -> str:
+        return self.display_name
