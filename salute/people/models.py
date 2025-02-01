@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.functions import Coalesce, Concat
+from django.db.models.functions import Concat
 from phonenumber_field.modelfields import PhoneNumberField
 
 from salute.integrations.tsa.models import TSAObject
@@ -8,19 +8,22 @@ from salute.integrations.tsa.models import TSAObject
 class Person(TSAObject):
     # Fields synced from TSA
     legal_name = models.CharField(max_length=255, editable=False)
-    preferred_name = models.CharField(null=True, max_length=255, editable=False)  # noqa: DJ001
+    preferred_name = models.CharField(max_length=255, editable=False)  # noqa: DJ001
     last_name = models.CharField(max_length=255, editable=False)
     membership_number = models.PositiveIntegerField(verbose_name="Membership Number", unique=True, editable=False)
     is_suspended = models.BooleanField(editable=False)
-    primary_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
-    default_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
-    alternate_email = models.EmailField(null=True, editable=False)  # noqa: DJ001
+    primary_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
+    default_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
+    alternate_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
     phone_number = PhoneNumberField(null=True, editable=False)
     alternate_phone_number = PhoneNumberField(null=True, editable=False)
 
     # Generated Fields
     first_name = models.GeneratedField(
-        expression=models.functions.Coalesce(models.F("preferred_name"), models.F("legal_name")),
+        expression=models.Case(
+            models.When(~models.Q(preferred_name__exact=""), models.F("preferred_name")),
+            default=models.F("legal_name"),
+        ),
         output_field=models.CharField(max_length=511),
         db_persist=True,
     )
@@ -30,10 +33,11 @@ class Person(TSAObject):
         db_persist=True,
     )
     tsa_email = models.GeneratedField(
-        expression=Coalesce(
-            models.F("primary_email"),
-            models.F("default_email"),
-            models.F("alternate_email"),
+        expression=models.Case(
+            models.When(~models.Q(primary_email__exact=""), models.F("primary_email")),
+            models.When(~models.Q(default_email__exact=""), models.F("default_email")),
+            models.When(~models.Q(alternate_email__exact=""), models.F("alternate_email")),
+            default=models.Value(None),
         ),
         output_field=models.EmailField(),
         db_persist=True,

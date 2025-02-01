@@ -20,8 +20,8 @@ class PersonDetail(BaseModel):
 
     @field_validator("preferred_name", "primary_email", "default_email", "alternate_email", mode="after")
     @classmethod
-    def normalise_empty_value(cls, val: str) -> str | None:
-        return val or None
+    def normalise_empty_value(cls, val: str) -> str:
+        return val or ""
 
     @field_validator("phone_number", "alternate_phone_number", mode="after")
     @classmethod

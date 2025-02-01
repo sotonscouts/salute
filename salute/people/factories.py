@@ -17,17 +17,17 @@ class PersonFactory(factory.django.DjangoModelFactory):
     primary_email = factory.Maybe(
         factory.Faker("boolean"),
         factory.Faker("email"),
-        None,
+        "",
     )
     default_email = factory.Maybe(
         factory.Faker("boolean"),
         factory.Faker("email"),
-        None,
+        "",
     )
     alternate_email = factory.Maybe(
         factory.Faker("boolean"),
         factory.Faker("email"),
-        None,
+        "",
     )
     phone_number = factory.Faker("phone_number")
     alternate_phone_number = factory.Maybe(

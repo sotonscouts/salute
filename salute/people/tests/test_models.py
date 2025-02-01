@@ -18,14 +18,14 @@ class TestPersonModel:
         person = PersonFactory(preferred_name="John", legal_name="Jonathan")
         assert person.first_name == "John"
 
-        person_without_preferred_name = PersonFactory(preferred_name=None, legal_name="Jonathan")
+        person_without_preferred_name = PersonFactory(preferred_name="", legal_name="Jonathan")
         assert person_without_preferred_name.first_name == "Jonathan"
 
     def test_generated_display_name(self) -> None:
         person = PersonFactory(preferred_name="John", last_name="Doe")
         assert person.display_name == "John Doe"
 
-        person_without_preferred_name = PersonFactory(preferred_name=None, legal_name="Jonathan", last_name="Doe")
+        person_without_preferred_name = PersonFactory(preferred_name="", legal_name="Jonathan", last_name="Doe")
         assert person_without_preferred_name.display_name == "Jonathan Doe"
 
     def test_generated_tsa_email(self) -> None:
@@ -37,14 +37,14 @@ class TestPersonModel:
         assert person.tsa_email == "primary@example.com"
 
         person_without_primary_email = PersonFactory(
-            primary_email=None, default_email="default@example.com", alternate_email="alternate@example.com"
+            primary_email="", default_email="default@example.com", alternate_email="alternate@example.com"
         )
         assert person_without_primary_email.tsa_email == "default@example.com"
 
         person_without_primary_and_default_email = PersonFactory(
-            primary_email=None, default_email=None, alternate_email="alternate@example.com"
+            primary_email="", default_email="", alternate_email="alternate@example.com"
         )
         assert person_without_primary_and_default_email.tsa_email == "alternate@example.com"
 
-        person_without_any_email = PersonFactory(primary_email=None, default_email=None, alternate_email=None)
+        person_without_any_email = PersonFactory(primary_email="", default_email="", alternate_email="")
         assert person_without_any_email.tsa_email is None
