@@ -35,6 +35,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--clear-cache", action="store_true")
         parser.add_argument("--fetch-existing-people", action="store_true")
+        parser.add_argument("--read-extra-data", action="store_true")
 
     def sync_groups(
         self,
@@ -42,30 +43,36 @@ class Command(BaseCommand):
         district: District,
         *,
         units_for_district: list[UnitListingResult] | None = None,
+        read_extra_data: bool = False,
     ) -> SyncReport:
         if units_for_district is None:
             units_for_district = membership.get_sub_units(parent_unit_id=district.tsa_id)
 
-        ta = TypeAdapter(dict[str, GroupInfo])
-        with Path("data/groups.toml").open("rb") as fh:
-            group_data = ta.validate_python(tomllib.load(fh))
+        if read_extra_data:
+            ta = TypeAdapter(dict[str, GroupInfo])
+            with Path("data/groups.toml").open("rb") as fh:
+                group_data = ta.validate_python(tomllib.load(fh))
 
         group_tsa_ids: set[UUID] = set()
         added_count: int = 0
         for unit in filter(lambda unit: unit.unit_type_id == UnitTypeID.GROUP, units_for_district):
             unit_detail = membership.get_unit_detail(unit_id=unit.id)
-            gdata = group_data[unit.unit_shortcode]
+
+            data = {
+                "unit_name": unit.unit_name,
+                "shortcode": unit.unit_shortcode,
+                "district": district,
+                "group_type": unit_detail.level_type,
+                "charity_number": unit_detail.charity_number,
+                "tsa_last_modified": unit_detail.admin_details.last_modified,
+            }
+            if read_extra_data:
+                gdata = group_data[unit.unit_shortcode]
+                data["local_unit_number"] = gdata.unit_number
+                data["location_name"] = gdata.location_name
+
             group, _created = Group.objects.update_or_create(
-                {
-                    "unit_name": unit.unit_name,
-                    "shortcode": unit.unit_shortcode,
-                    "district": district,
-                    "group_type": unit_detail.level_type,
-                    "local_unit_number": gdata.unit_number,
-                    "location_name": gdata.location_name,
-                    "charity_number": unit_detail.charity_number,
-                    "tsa_last_modified": unit_detail.admin_details.last_modified,
-                },
+                data,
                 tsa_id=unit.id,
             )
             group_tsa_ids.add(group.tsa_id)
@@ -84,14 +91,16 @@ class Command(BaseCommand):
         district: District,
         *,
         units_for_district: list[UnitListingResult] | None = None,
+        read_extra_data: bool = False,
     ) -> SyncReport:
         if units_for_district is None:
             units_for_district = membership.get_sub_units(parent_unit_id=district.tsa_id)
         groups_by_tsa_id = {g.tsa_id: g for g in Group.objects.all()}
         districts_by_tsa_id = {d.tsa_id: d for d in District.objects.all()}
 
-        with Path("data/sections.csv").open("r") as fh:
-            section_weekday_data = {row["Shortcode"]: row["Weekday"] for row in csv.DictReader(fh)}
+        if read_extra_data:
+            with Path("data/sections.csv").open("r") as fh:
+                section_weekday_data = {row["Shortcode"]: row["Weekday"] for row in csv.DictReader(fh)}
 
         section_tsa_ids: set[UUID] = set()
         added_count: int = 0
@@ -99,15 +108,17 @@ class Command(BaseCommand):
             lambda unit: unit.unit_type_id in [UnitTypeID.DISTRICT_SECTION, UnitTypeID.GROUP_SECTION],
             units_for_district,
         ):
-            weekday = section_weekday_data[unit.unit_shortcode].lower()
             unit_detail = membership.get_unit_detail(unit_id=unit.id)
             section_data: dict[str, Any] = {
                 "unit_name": unit.unit_name,
                 "shortcode": unit.unit_shortcode,
                 "section_type": unit_detail.section_type,
-                "usual_weekday": Weekday(weekday) if weekday != "-" else None,
                 "tsa_last_modified": unit_detail.admin_details.last_modified,
             }
+            if read_extra_data:
+                weekday = section_weekday_data[unit.unit_shortcode].lower()
+                section_data["usual_weekday"] = Weekday(weekday) if weekday != "-" else None
+
             if unit.unit_type_id == UnitTypeID.DISTRICT_SECTION:
                 section_data["district"] = districts_by_tsa_id[unit_detail.parent_unit_id]
             elif unit.unit_type_id == UnitTypeID.GROUP_SECTION:
@@ -129,7 +140,9 @@ class Command(BaseCommand):
 
         return SyncReport(total_count=len(section_tsa_ids), added_count=added_count, removed_count=0)
 
-    def sync_district(self, membership: MembershipAPIClient, district_id: UUID) -> District:
+    def sync_district(
+        self, membership: MembershipAPIClient, district_id: UUID, *, read_extra_data: bool = False
+    ) -> District:
         district_details = membership.get_unit_detail(unit_id=district_id)
 
         district, _ = District.objects.update_or_create(
@@ -243,6 +256,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: str, **options: str) -> None:
         fetch_existing_people = options["fetch_existing_people"]
+        read_extra_data = bool(options["read_extra_data"])
 
         request_cache_dir = Path(settings.BASE_DIR) / ".requests-cache"
         # token = input("Enter token: ")
@@ -262,17 +276,21 @@ class Command(BaseCommand):
         sync_reports: dict[str, SyncReport] = {}
         district_id = UUID("608a27d8-d19f-afce-c777-287339746221")
 
-        district = self.sync_district(membership, district_id)
+        district = self.sync_district(membership, district_id, read_extra_data=read_extra_data)
         self.sync_teams_for_district(membership, district)
 
         # Fetch all sub units for district first, so we only make the request once.
         units = membership.get_sub_units(parent_unit_id=district.tsa_id)
 
-        sync_reports["groups"] = self.sync_groups(membership, district, units_for_district=units)
+        sync_reports["groups"] = self.sync_groups(
+            membership, district, units_for_district=units, read_extra_data=read_extra_data
+        )
         for group in Group.objects.all():
             self.sync_teams_for_group(membership, group)
 
-        sync_reports["sections"] = self.sync_sections(membership, district, units_for_district=units)
+        sync_reports["sections"] = self.sync_sections(
+            membership, district, units_for_district=units, read_extra_data=read_extra_data
+        )
         for section in Section.objects.all():
             self.sync_teams_for_section(membership, section)
 

@@ -46,10 +46,11 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
         return super().get_readonly_fields(request, obj) + [  # type: ignore[arg-type]
             "ordinal",
-            "local_unit_number",
-            "location_name",
             "display_name",
         ]
+
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        return request.user.is_superuser
 
 
 @admin.register(Section)
@@ -67,3 +68,6 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         return super().get_readonly_fields(request, obj) + [  # type: ignore[arg-type]
             "display_name",
         ]
+
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        return request.user.is_superuser
