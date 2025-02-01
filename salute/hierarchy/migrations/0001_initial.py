@@ -213,7 +213,7 @@ class Migration(migrations.Migration):
                             _connector="OR",
                         ),
                         name="regular_sections_must_have_usual_weekday",
-                        violation_error_message="A section must have a usual weekday, unless it is network or young leaders",
+                        violation_error_message="A section must have a usual weekday, unless it is network or young leaders",  # noqa: E501
                     ),
                     models.UniqueConstraint(
                         condition=models.Q(
