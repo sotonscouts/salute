@@ -213,7 +213,18 @@ class Migration(migrations.Migration):
                             _connector="OR",
                         ),
                         name="regular_sections_must_have_usual_weekday",
-                        violation_error_message="A section must have a usual weekday, unless it is network or young leaders",  # noqa: E501
+                        violation_error_message="A section must have a usual weekday, unless it is network or young leaders",
+                    ),
+                    models.UniqueConstraint(
+                        condition=models.Q(
+                            (
+                                "section_type__in",
+                                ["Squirrels", "Beavers", "Cubs", "Scouts"],
+                            )
+                        ),
+                        fields=("group", "section_type", "usual_weekday"),
+                        name="ensure_only_one_section_type_per_weekday_per_group",
+                        violation_error_message="Only one group section of each type can be on a given weekday",
                     ),
                 ],
             },

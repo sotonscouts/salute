@@ -90,6 +90,12 @@ class Section(TSAUnit):
                 violation_error_message="A section must have a usual weekday, unless it is network or young leaders",
                 name="regular_sections_must_have_usual_weekday",
             ),
+            models.UniqueConstraint(
+                fields=["group", "section_type", "usual_weekday"],
+                condition=models.Q(section_type__in=GROUP_SECTION_TYPES),
+                violation_error_message="Only one group section of each type can be on a given weekday",
+                name="ensure_only_one_section_type_per_weekday_per_group",
+            ),
         ]
 
     @property
