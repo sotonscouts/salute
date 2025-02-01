@@ -41,8 +41,11 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         ),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
-    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
-        return request.user.is_superuser
+    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
+        return super().get_readonly_fields(request, obj) + [  # type: ignore[arg-type]
+            "local_unit_number",
+            "location_name",
+        ]
 
 
 @admin.register(Section)

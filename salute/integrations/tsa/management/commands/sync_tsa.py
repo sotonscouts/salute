@@ -1,3 +1,4 @@
+import tomllib
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 from uuid import UUID
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import Count, F, Q
 from django.utils.timezone import get_current_timezone
+from pydantic import BaseModel, TypeAdapter
 
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.client import MembershipAPIClient
@@ -18,6 +20,11 @@ class SyncReport(TypedDict):
     total_count: int
     added_count: int
     removed_count: int
+
+
+class GroupInfo(BaseModel):
+    unit_number: int
+    location_name: str
 
 
 class Command(BaseCommand):
@@ -36,16 +43,24 @@ class Command(BaseCommand):
     ) -> SyncReport:
         if units_for_district is None:
             units_for_district = membership.get_sub_units(parent_unit_id=district.tsa_id)
+
+        ta = TypeAdapter(dict[str, GroupInfo])
+        with Path("data/groups.toml").open("rb") as fh:
+            group_data = ta.validate_python(tomllib.load(fh))
+
         group_tsa_ids: set[UUID] = set()
         added_count: int = 0
         for unit in filter(lambda unit: unit.unit_type_id == UnitTypeID.GROUP, units_for_district):
             unit_detail = membership.get_unit_detail(unit_id=unit.id)
+            gdata = group_data[unit.unit_shortcode]
             group, _created = Group.objects.update_or_create(
                 {
                     "unit_name": unit.unit_name,
                     "shortcode": unit.unit_shortcode,
                     "district": district,
                     "group_type": unit_detail.level_type,
+                    "local_unit_number": gdata.unit_number,
+                    "location_name": gdata.location_name,
                     "charity_number": unit_detail.charity_number,
                     "tsa_last_modified": unit_detail.admin_details.last_modified,
                 },
