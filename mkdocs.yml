@@ -1,0 +1,11 @@
+site_name: Salute Docs
+site_url: https://sotonscouts.github.io/salute
+repo_url: https://github.com/sotonscouts/salute
+theme:
+  name: material
+  font:
+    text: Nunito Sans
+  icon:
+    logo: material/fleur-de-lis
+  palette:
+    primary: deep purple
