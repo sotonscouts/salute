@@ -124,5 +124,36 @@ class TestSectionModel:
         assert section.display_name == "13th Beavers (Tuesday)"
 
     def test_display_name_district_section(self) -> None:
-        section = DistrictSectionFactory()
-        assert section.display_name == section.unit_name
+        district = DistrictFactory(unit_name="Exampleton")
+
+        # Network no nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.NETWORK,
+            nickname="",
+            district=district,
+        )
+        assert network.display_name == "Exampleton Network"
+
+        # Network with nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.NETWORK,
+            nickname="Hive",
+            district=district,
+        )
+        assert network.display_name == "Hive Network"
+
+        # Young Leaders no nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.YOUNG_LEADERS,
+            nickname="",
+            district=district,
+        )
+        assert network.display_name == "Exampleton Young Leaders"
+
+        # Young Leaders with nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.YOUNG_LEADERS,
+            nickname="Hive",
+            district=district,
+        )
+        assert network.display_name == "Hive Young Leaders"

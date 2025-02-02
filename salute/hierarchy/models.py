@@ -30,6 +30,10 @@ class TSAUnit(TSATimestampedObject):
 class District(TSAUnit):
     """Only a single instance of this model is expected."""
 
+    @property
+    def display_name(self) -> str:
+        return self.unit_name
+
 
 class Group(TSAUnit):
     # TSA Fields
@@ -111,7 +115,19 @@ class Section(TSAUnit):
         if self.group is not None:
             assert self.usual_weekday is not None  # enforced by check constraint
             return f"{self.group.ordinal} {self.section_type.title()} ({self.usual_weekday.title()})"
-        return self.unit_name
+
+        assert self.section_type in DISTRICT_SECTION_TYPES
+
+        # Explorers always have a nickname
+        # Young Leaders and Network use the nickname, or the district name.
+        if self.section_type == SectionType.EXPLORERS or self.nickname:
+            prefix = self.nickname.title()
+        else:
+            assert self.district is not None
+            prefix = self.district.display_name
+
+        section_type_display = SectionType(self.section_type).label
+        return f"{prefix} {section_type_display}"
 
     def __str__(self) -> str:
         return self.display_name
