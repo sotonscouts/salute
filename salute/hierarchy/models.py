@@ -114,7 +114,8 @@ class Section(TSAUnit):
     def display_name(self) -> str:
         if self.group is not None:
             assert self.usual_weekday is not None  # enforced by check constraint
-            return f"{self.group.ordinal} {self.section_type.title()} ({self.usual_weekday.title()})"
+            identifier = self.nickname if self.nickname else self.usual_weekday.title()
+            return f"{self.group.ordinal} {self.section_type.title()} ({identifier})"
 
         assert self.section_type in DISTRICT_SECTION_TYPES
 

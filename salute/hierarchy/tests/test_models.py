@@ -123,6 +123,12 @@ class TestSectionModel:
         section = GroupSectionFactory(usual_weekday="tuesday", section_type="Beavers", group__local_unit_number=13)
         assert section.display_name == "13th Beavers (Tuesday)"
 
+    def test_display_name_group_section_with_nickname(self) -> None:
+        section = GroupSectionFactory(
+            usual_weekday="tuesday", nickname="Wolves", section_type="Scouts", group__local_unit_number=13
+        )
+        assert section.display_name == "13th Scouts (Wolves)"
+
     def test_display_name_district_section(self) -> None:
         district = DistrictFactory(unit_name="Exampleton")
 
