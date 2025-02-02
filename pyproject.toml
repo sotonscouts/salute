@@ -15,7 +15,6 @@ google-auth-oauthlib = "^1.2.1"
 pydantic = "^2.10.5"
 tqdm = "^4.67.1"
 
-
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.1"
 pytest = "^8.3.4"
@@ -25,6 +24,10 @@ factory-boy = "^3.3.1"
 pytest-cov = "^6.0.0"
 pytest-django = "^4.9.0"
 types-requests = "^2.32.0.20241016"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.1"
 
 [build-system]
 requires = ["poetry-core"]

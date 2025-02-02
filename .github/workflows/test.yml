@@ -28,7 +28,7 @@ jobs:
           path: .venv/
           key: ${{ runner.os }}-${{ matrix.python }}-pip-${{ hashFiles('poetry.lock') }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --without=docs
       - name: Static type checking
         run: make type
       - name: Lint
