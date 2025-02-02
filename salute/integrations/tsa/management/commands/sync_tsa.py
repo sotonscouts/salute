@@ -100,7 +100,7 @@ class Command(BaseCommand):
 
         if read_extra_data:
             with Path("data/sections.csv").open("r") as fh:
-                section_weekday_data = {row["Shortcode"]: row["Weekday"] for row in csv.DictReader(fh)}
+                section_weekday_data = {row["Shortcode"]: row for row in csv.DictReader(fh)}
 
         section_tsa_ids: set[UUID] = set()
         added_count: int = 0
@@ -116,8 +116,10 @@ class Command(BaseCommand):
                 "tsa_last_modified": unit_detail.admin_details.last_modified,
             }
             if read_extra_data:
-                weekday = section_weekday_data[unit.unit_shortcode].lower()
+                weekday = section_weekday_data[unit.unit_shortcode]["Weekday"].lower()
+                nickname = section_weekday_data[unit.unit_shortcode]["Nickname"]
                 section_data["usual_weekday"] = Weekday(weekday) if weekday != "-" else None
+                section_data["nickname"] = nickname if nickname != "-" else ""
 
             if unit.unit_type_id == UnitTypeID.DISTRICT_SECTION:
                 section_data["district"] = districts_by_tsa_id[unit_detail.parent_unit_id]

@@ -110,6 +110,15 @@ class TestSectionModel:
             section_type=SectionType.NETWORK,
         )
 
+    def test_check_constraint_explorers_require_nickname(self) -> None:
+        """An explorer unit must have a nickname."""
+        with pytest.raises(IntegrityError, match="explorers_must_have_nickname"):
+            DistrictSectionFactory(
+                usual_weekday="tuesday",
+                section_type=SectionType.EXPLORERS,
+                nickname="",
+            )
+
     def test_display_name_group_section(self) -> None:
         section = GroupSectionFactory(usual_weekday="tuesday", section_type="Beavers", group__local_unit_number=13)
         assert section.display_name == "13th Beavers (Tuesday)"

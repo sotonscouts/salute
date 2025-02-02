@@ -73,6 +73,9 @@ class Section(TSAUnit):
         editable=False,
     )
     section_type = TextChoicesField(choices_enum=SectionType, editable=False)
+
+    # Salute fields
+    nickname = models.CharField(max_length=32, blank=True)
     usual_weekday = TextChoicesField(choices_enum=Weekday, null=True)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
@@ -89,6 +92,11 @@ class Section(TSAUnit):
                 condition=models.Q(usual_weekday__isnull=False) | models.Q(section_type__in=NON_REGULAR_SECTIONS_TYPES),
                 violation_error_message="A section must have a usual weekday, unless it is network or young leaders",
                 name="regular_sections_must_have_usual_weekday",
+            ),
+            models.CheckConstraint(
+                condition=(~models.Q(section_type=SectionType.EXPLORERS) | ~models.Q(nickname="")),
+                violation_error_message="Explorer sections must have a nickname",
+                name="explorers_must_have_nickname",
             ),
             models.UniqueConstraint(
                 fields=["group", "section_type", "usual_weekday"],

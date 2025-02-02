@@ -61,7 +61,7 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district", "group")}),
-        ("Section", {"fields": ("unit_name", "section_type", "usual_weekday")}),
+        ("Section", {"fields": ("unit_name", "section_type", "nickname", "usual_weekday")}),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
