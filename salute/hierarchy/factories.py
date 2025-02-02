@@ -37,6 +37,8 @@ class DistrictSectionFactory(TSAUnitFactory):
     section_type = factory.Iterator(DISTRICT_SECTION_TYPES)
     usual_weekday = factory.Iterator(Weekday)
     district = factory.SubFactory(DistrictFactory)
+    nickname = factory.Faker("company")
+
     group = None
 
     class Meta:

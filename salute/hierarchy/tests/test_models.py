@@ -110,10 +110,56 @@ class TestSectionModel:
             section_type=SectionType.NETWORK,
         )
 
+    def test_check_constraint_explorers_require_nickname(self) -> None:
+        """An explorer unit must have a nickname."""
+        with pytest.raises(IntegrityError, match="explorers_must_have_nickname"):
+            DistrictSectionFactory(
+                usual_weekday="tuesday",
+                section_type=SectionType.EXPLORERS,
+                nickname="",
+            )
+
     def test_display_name_group_section(self) -> None:
         section = GroupSectionFactory(usual_weekday="tuesday", section_type="Beavers", group__local_unit_number=13)
         assert section.display_name == "13th Beavers (Tuesday)"
 
+    def test_display_name_group_section_with_nickname(self) -> None:
+        section = GroupSectionFactory(
+            usual_weekday="tuesday", nickname="Wolves", section_type="Scouts", group__local_unit_number=13
+        )
+        assert section.display_name == "13th Scouts (Wolves)"
+
     def test_display_name_district_section(self) -> None:
-        section = DistrictSectionFactory()
-        assert section.display_name == section.unit_name
+        district = DistrictFactory(unit_name="Exampleton")
+
+        # Network no nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.NETWORK,
+            nickname="",
+            district=district,
+        )
+        assert network.display_name == "Exampleton Network"
+
+        # Network with nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.NETWORK,
+            nickname="Hive",
+            district=district,
+        )
+        assert network.display_name == "Hive Network"
+
+        # Young Leaders no nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.YOUNG_LEADERS,
+            nickname="",
+            district=district,
+        )
+        assert network.display_name == "Exampleton Young Leaders"
+
+        # Young Leaders with nickname
+        network = DistrictSectionFactory(
+            section_type=SectionType.YOUNG_LEADERS,
+            nickname="Hive",
+            district=district,
+        )
+        assert network.display_name == "Hive Young Leaders"
