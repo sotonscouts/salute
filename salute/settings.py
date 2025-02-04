@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     "salute.people",
     "salute.roles",
     # Third Party
+    "debug_toolbar",
     "phonenumber_field",
+    "strawberry_django",
     # Django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -56,6 +58,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if DEBUG:
+    # If debug is enabled, then turn on debug toolbar and allow the local machine to use it
+    MIDDLEWARE = ["strawberry_django.middlewares.debug_toolbar.DebugToolbarMiddleware"] + MIDDLEWARE
+    INTERNAL_IPS = ["127.0.0.1"]
 
 ROOT_URLCONF = "salute.urls"
 
