@@ -23,6 +23,10 @@ SECRET_KEY = "django-insecure-)r&0lm8c%w6x%5tk9k73pepp+!-pkr%e$8&)r(n1k&mo(dv7@3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# SECURITY WARNING: Do not allow unauthenticated GraphiQL in production
+# This setting also disables query introspection
+ALLOW_UNAUTHENTICATED_GRAPHIQL = DEBUG
+
 ALLOWED_HOSTS: list[str] = []
 
 

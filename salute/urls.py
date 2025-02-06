@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path
-from strawberry.django.views import AsyncGraphQLView
 
 from salute.api.schema import schema
+from salute.api.views import SaluteAsyncGraphQLView
 
 admin.site.site_title = "Salute"
 admin.site.site_header = "Salute Backend"
@@ -11,7 +11,7 @@ admin.site.index_title = "System administration"
 
 urlpatterns = [
     path("salute-backend/", admin.site.urls),
-    path("graphql/", AsyncGraphQLView.as_view(schema=schema)),
+    path("graphql/", SaluteAsyncGraphQLView.as_view(schema=schema), name="graphql"),
 ]
 
 if settings.DEBUG:
