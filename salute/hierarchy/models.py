@@ -59,6 +59,9 @@ class Group(TSAUnit):
     def __str__(self) -> str:
         return self.display_name
 
+    class Meta:
+        ordering = ("local_unit_number",)
+
 
 class Section(TSAUnit):
     # TSA Fields
@@ -85,6 +88,7 @@ class Section(TSAUnit):
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
     class Meta:
+        ordering = ("id",)
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(section_type__in=DISTRICT_SECTION_TYPES, district__isnull=False, group__isnull=True)

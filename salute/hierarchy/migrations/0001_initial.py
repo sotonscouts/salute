@@ -98,6 +98,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "abstract": False,
+                "ordering": ("local_unit_number",),
             },
         ),
         migrations.CreateModel(
@@ -183,6 +184,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
+                "ordering": ("id",),
                 "constraints": [
                     models.CheckConstraint(
                         condition=models.Q(
