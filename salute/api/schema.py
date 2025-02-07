@@ -6,6 +6,7 @@ from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.permissions import IsAuthenticated
 
 from salute.accounts.graphql.schema import AccountsQuery
+from salute.hierarchy.graphql.schema import HierarchyQuery
 
 
 @strawberry.type
@@ -17,6 +18,7 @@ class PingQuery:
 
 APP_QUERIES = (
     AccountsQuery,
+    HierarchyQuery,
     PingQuery,
 )
 
