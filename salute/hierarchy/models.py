@@ -8,7 +8,9 @@ from .constants import (
     DISTRICT_SECTION_TYPES,
     GROUP_SECTION_TYPES,
     NON_REGULAR_SECTIONS_TYPES,
+    SECTION_TYPE_INFO,
     GroupType,
+    SectionOperatingCategory,
     SectionType,
     Weekday,
 )
@@ -121,7 +123,8 @@ class Section(TSAUnit):
             identifier = self.nickname if self.nickname else self.usual_weekday.title()
             return f"{self.group.ordinal} {self.section_type.title()} ({identifier})"
 
-        assert self.section_type in DISTRICT_SECTION_TYPES
+        section_type_info = SECTION_TYPE_INFO[SectionType(self.section_type)]
+        assert section_type_info["operating_category"] == SectionOperatingCategory.DISTRICT
 
         # Explorers always have a nickname
         # Young Leaders and Network use the nickname, or the district name.
@@ -131,7 +134,7 @@ class Section(TSAUnit):
             assert self.district is not None
             prefix = self.district.display_name
 
-        section_type_display = SectionType(self.section_type).label
+        section_type_display = section_type_info["display_name"]
         return f"{prefix} {section_type_display}"
 
     def __str__(self) -> str:
