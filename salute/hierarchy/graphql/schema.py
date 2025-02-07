@@ -1,13 +1,19 @@
 import strawberry as sb
+import strawberry_django as sd
 from strawberry_django.permissions import IsAuthenticated
 
+from salute.hierarchy import models as hierarchy_models
 from salute.hierarchy.constants import SECTION_TYPE_INFO
 
-from .graph_types import SectionTypeInfo
+from .graph_types import District, SectionTypeInfo
 
 
 @sb.type
 class HierarchyQuery:
+    @sd.field(description="Get the district", extensions=[IsAuthenticated()])
+    def district(self, info: sb.Info) -> District:
+        return hierarchy_models.District.objects.get()  # type: ignore[return-value]
+
     @sb.field(
         description="Get all possible section types",
         # For unknown reasons, this returns an empty list without fail_silently=False

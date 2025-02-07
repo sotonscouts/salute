@@ -1,8 +1,146 @@
 from __future__ import annotations
 
 import strawberry as sb
+import strawberry_django as sd
+from django.db.models import Case, OrderBy, QuerySet, Value, When
+from strawberry import auto
 
-from salute.hierarchy.constants import SectionOperatingCategory, SectionType
+from salute.hierarchy import models
+from salute.hierarchy.constants import SectionOperatingCategory, SectionType, Weekday
+
+
+@sb.interface
+class Unit:
+    unit_name: str = sd.field(description="Official name of the unit")
+    shortcode: str = sd.field(description="Shortcode reference for the unit")
+    display_name: str
+
+
+@sd.type(models.District)
+class District(Unit, sb.relay.Node):
+    display_name: str = sd.field(description="Formatted name for the unit", only="unit_name")
+    groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection()
+    sections: sd.relay.ListConnectionWithTotalCount[DistrictSection] = sd.connection()
+
+
+@sd.order(models.Group)
+class GroupOrder:
+    local_unit_number: auto
+
+
+@sd.filter(models.Group)
+class GroupFilter:
+    group_type: models.GroupType
+
+
+@sd.type(
+    models.Group,
+    order=GroupOrder,  # type: ignore[literal-required]
+    filters=GroupFilter,
+)
+class Group(Unit, sb.relay.Node):
+    display_name: str = sd.field(description="Formatted name for the unit", only=["local_unit_number", "location_name"])
+
+    district: District
+    group_type: models.GroupType
+    charity_number: int | None
+
+    ordinal: str = sd.field(description="Ordinal for the group", only=["local_unit_number"])
+    # location_name intentionally excluded whilst we work out data modelling for it
+    # local_unit_number intentionally excluded in favour of ordinal
+
+    sections: sd.relay.ListConnectionWithTotalCount[GroupSection] = sd.connection()
+
+
+@sd.order(models.Section)
+class SectionOrder:
+    group: GroupOrder
+
+    @sd.order_field(description="Order in ascending age of section type")
+    def section_type(
+        self,
+        info: sb.Info,
+        queryset: QuerySet[models.Section],
+        value: sd.Ordering,
+        prefix: str,
+        sequence: dict[str, sd.Ordering] | None,
+    ) -> tuple[QuerySet[models.Section], list[OrderBy]]:
+        queryset = queryset.alias(
+            _ordered__section_num=Case(
+                *[When(section_type=val, then=Value(idx)) for idx, val in enumerate(SectionType)]
+            )
+        )
+        ordering = value.resolve(f"{prefix}_ordered__section_num")
+        return queryset, [ordering]
+
+    @sd.order_field(description="Order by usual weekday")
+    def usual_weekday(
+        self,
+        info: sb.Info,
+        queryset: QuerySet[models.Section],
+        value: sd.Ordering,
+        prefix: str,
+        sequence: dict[str, sd.Ordering] | None,
+    ) -> tuple[QuerySet[models.Section], list[OrderBy]]:
+        queryset = queryset.alias(
+            _ordered__weekday_num=Case(*[When(usual_weekday=val, then=Value(idx)) for idx, val in enumerate(Weekday)])
+        )
+        ordering = value.resolve(f"{prefix}_ordered__weekday_num")
+        return queryset, [ordering]
+
+
+@sd.filter(models.Section, lookups=True)
+class SectionFilter:
+    section_type: sb.auto
+    usual_weekday: sb.auto
+    group: GroupFilter | None = sd.filter_field(
+        filter_none=True, description="Filter by group. Set to null for district sections"
+    )
+
+
+@sd.interface(models.Section)
+class Section(Unit, sb.relay.Node):
+    display_name: str = sd.field(
+        description="Formatted name for the unit",
+        only=["usual_weekday", "section_type", "nickname"],
+        select_related=["group", "district"],
+    )
+    section_type: models.SectionType
+    usual_weekday: models.Weekday | None
+
+
+@sd.type(
+    models.Section,
+    order=SectionOrder,  # type: ignore[literal-required]
+    filters=SectionFilter,
+)
+class DistrictSection(Section):
+    district: District
+
+
+@sd.type(
+    models.Section,
+    order=SectionOrder,  # type: ignore[literal-required]
+    filters=SectionFilter,
+)
+class GroupSection(Section):
+    group: Group
+
+
+@sd.type(
+    models.Section,
+    order=SectionOrder,  # type: ignore[literal-required]
+    filters=SectionFilter,
+)
+class DistrictOrGroupSection(Section):
+    """
+    It's not possible to persuade Strawberry to let us return a union type on a sb.relay connection currently.
+
+    So, when listing all sections, we just provide both values.
+    """
+
+    district: District | None
+    group: Group | None
 
 
 @sb.type
