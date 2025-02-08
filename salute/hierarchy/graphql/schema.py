@@ -18,9 +18,12 @@ class HierarchyQuery:
     def group(self, group_id: sb.relay.GlobalID, info: sb.Info) -> Group:
         return hierarchy_models.Group.objects.get(id=group_id.node_id)  # type: ignore[return-value]
 
+    groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection(
+        description="List groups", extensions=[IsAuthenticated(fail_silently=False)]
+    )
+
     @sb.field(
         description="Get all possible section types",
-        # For unknown reasons, this returns an empty list without fail_silently=False
         extensions=[IsAuthenticated(fail_silently=False)],
     )
     def section_types(self, info: sb.Info) -> list[SectionTypeInfo]:
