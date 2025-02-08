@@ -5,6 +5,8 @@ from strawberry.tools import merge_types
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.permissions import IsAuthenticated
 
+from salute.accounts.graphql.schema import AccountsQuery
+
 
 @strawberry.type
 class PingQuery:
@@ -13,7 +15,10 @@ class PingQuery:
         return "pong"
 
 
-APP_QUERIES = (PingQuery,)
+APP_QUERIES = (
+    AccountsQuery,
+    PingQuery,
+)
 
 
 class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
