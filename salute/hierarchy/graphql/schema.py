@@ -5,7 +5,12 @@ from strawberry_django.permissions import IsAuthenticated
 from salute.hierarchy import models as hierarchy_models
 from salute.hierarchy.constants import SECTION_TYPE_INFO
 
-from .graph_types import District, Group, SectionTypeInfo
+from .graph_types import (
+    District,
+    DistrictOrGroupSection,
+    Group,
+    SectionTypeInfo,
+)
 
 
 @sb.type
@@ -21,6 +26,10 @@ class HierarchyQuery:
     groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection(
         description="List groups", extensions=[IsAuthenticated(fail_silently=False)]
     )
+
+    @sd.field(description="Get a section by ID", extensions=[IsAuthenticated()])
+    def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
+        return hierarchy_models.Section.objects.get(id=section_id.node_id)  # type: ignore[return-value]
 
     @sb.field(
         description="Get all possible section types",

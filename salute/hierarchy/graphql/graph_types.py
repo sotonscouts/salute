@@ -6,7 +6,7 @@ from django.db.models import Case, OrderBy, QuerySet, Value, When
 from strawberry import auto
 
 from salute.hierarchy import models
-from salute.hierarchy.constants import SectionOperatingCategory, SectionType, Weekday
+from salute.hierarchy.constants import SECTION_TYPE_INFO, SectionOperatingCategory, SectionType, Weekday
 
 
 @sb.interface
@@ -107,6 +107,14 @@ class Section(Unit, sb.relay.Node):
     )
     section_type: models.SectionType
     usual_weekday: models.Weekday | None
+
+    @sb.field
+    def section_type_info(self) -> SectionTypeInfo:
+        sti = SECTION_TYPE_INFO[self.section_type]
+        return SectionTypeInfo(
+            value=self.section_type,
+            **sti,
+        )
 
 
 @sd.type(
