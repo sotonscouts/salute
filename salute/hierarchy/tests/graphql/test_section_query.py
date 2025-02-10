@@ -91,8 +91,8 @@ class TestSectionQuery:
                 "displayName": section.display_name,
                 "shortcode": section.shortcode,
                 "unitName": section.unit_name,
-                "sectionType": section.section_type.value.upper(),
-                "usualWeekday": section.usual_weekday.value.upper(),
+                "sectionType": section.section_type.name,
+                "usualWeekday": section.usual_weekday.name,
                 "district": None,
                 "group": {
                     "unitName": section.group.unit_name,
@@ -120,8 +120,8 @@ class TestSectionQuery:
                 "displayName": section.display_name,
                 "shortcode": section.shortcode,
                 "unitName": section.unit_name,
-                "sectionType": section.section_type.value.upper(),
-                "usualWeekday": section.usual_weekday.value.upper(),
+                "sectionType": section.section_type.name,
+                "usualWeekday": section.usual_weekday.name,
                 "group": None,
                 "district": {
                     "unitName": section.district.unit_name,

@@ -31,6 +31,10 @@ class HierarchyQuery:
     def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
         return hierarchy_models.Section.objects.get(id=section_id.node_id)  # type: ignore[return-value]
 
+    sections: sd.relay.ListConnectionWithTotalCount[DistrictOrGroupSection] = sd.connection(
+        description="List sections", extensions=[IsAuthenticated(fail_silently=False)]
+    )
+
     @sb.field(
         description="Get all possible section types",
         extensions=[IsAuthenticated(fail_silently=False)],
