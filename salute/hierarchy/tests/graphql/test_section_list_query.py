@@ -22,7 +22,6 @@ class TestSectionListQuery:
                     unitName
                     shortcode
                     displayName
-                    sectionType
                     usualWeekday
                     district {
                         unitName
@@ -72,7 +71,6 @@ class TestSectionListQuery:
                             "displayName": section.display_name,
                             "shortcode": section.shortcode,
                             "unitName": section.unit_name,
-                            "sectionType": section.section_type.name,
                             "usualWeekday": section.usual_weekday.name,
                             "district": {
                                 "unitName": section.district.unit_name,
@@ -107,7 +105,6 @@ class TestSectionListQuery:
                             "displayName": section.display_name,
                             "shortcode": section.shortcode,
                             "unitName": section.unit_name,
-                            "sectionType": section.section_type.name,
                             "usualWeekday": section.usual_weekday.name,
                             "group": {
                                 "unitName": section.group.unit_name,
@@ -143,7 +140,6 @@ class TestSectionListQuery:
                             "displayName": section.display_name,
                             "shortcode": section.shortcode,
                             "unitName": section.unit_name,
-                            "sectionType": section.section_type.name,
                             "usualWeekday": section.usual_weekday.name,
                             "group": {
                                 "unitName": section.group.unit_name,
@@ -158,7 +154,6 @@ class TestSectionListQuery:
                             "displayName": section.display_name,
                             "shortcode": section.shortcode,
                             "unitName": section.unit_name,
-                            "sectionType": section.section_type.name,
                             "usualWeekday": section.usual_weekday.name,
                             "district": {
                                 "unitName": section.district.unit_name,
@@ -197,7 +192,9 @@ class TestSectionListQuery:
                     sections (order: {sectionType: $order}) {
                         edges {
                             node {
-                                sectionType
+                                sectionTypeInfo {
+                                    value
+                                }
                             }
                         }
                     }
@@ -216,7 +213,9 @@ class TestSectionListQuery:
                 "edges": [
                     {
                         "node": {
-                            "sectionType": section_type.name,
+                            "sectionTypeInfo": {
+                                "value": section_type.name,
+                            }
                         }
                     }
                     for section_type in expected
@@ -350,7 +349,9 @@ class TestSectionListQuery:
                         edges {
                             node {
                                 unitName
-                                sectionType
+                                sectionTypeInfo {
+                                    value
+                                }
                             }
                         }
                     }
@@ -368,7 +369,9 @@ class TestSectionListQuery:
                     {
                         "node": {
                             "unitName": Section.objects.get(section_type=SectionType.BEAVERS).unit_name,
-                            "sectionType": "BEAVERS",
+                            "sectionTypeInfo": {
+                                "value": "BEAVERS",
+                            },
                         }
                     }
                 ],

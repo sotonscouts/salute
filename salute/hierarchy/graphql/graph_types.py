@@ -105,10 +105,10 @@ class Section(Unit, sb.relay.Node):
         only=["usual_weekday", "section_type", "nickname"],
         select_related=["group", "district"],
     )
-    section_type: models.SectionType
+    section_type: sb.Private[models.SectionType]
     usual_weekday: models.Weekday | None
 
-    @sb.field
+    @sd.field
     def section_type_info(self) -> SectionTypeInfo:
         sti = SECTION_TYPE_INFO[self.section_type]
         return SectionTypeInfo(
