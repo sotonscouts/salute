@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "salute.people",
     "salute.roles",
     # Third Party
+    "corsheaders",
     "debug_toolbar",
     "phonenumber_field",
     "strawberry_django",
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -143,6 +145,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
+
+# CORS
+CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change me before production
 
 # django-phonenumber-field
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
