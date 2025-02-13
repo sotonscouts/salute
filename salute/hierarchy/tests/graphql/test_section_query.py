@@ -21,7 +21,6 @@ class TestSectionQuery:
                 unitName
                 shortcode
                 displayName
-                sectionType
                 usualWeekday
                 district {
                     unitName
@@ -91,7 +90,6 @@ class TestSectionQuery:
                 "displayName": section.display_name,
                 "shortcode": section.shortcode,
                 "unitName": section.unit_name,
-                "sectionType": section.section_type.name,
                 "usualWeekday": section.usual_weekday.name,
                 "district": None,
                 "group": {
@@ -120,7 +118,6 @@ class TestSectionQuery:
                 "displayName": section.display_name,
                 "shortcode": section.shortcode,
                 "unitName": section.unit_name,
-                "sectionType": section.section_type.name,
                 "usualWeekday": section.usual_weekday.name,
                 "group": None,
                 "district": {
