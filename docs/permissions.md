@@ -40,3 +40,39 @@ A user can be assigned different roles for different groups (i.e Bob is MANAGER 
     * View all roles in Group
     * View all sections in Group
     * View all accreditations in Group
+
+## Determining user roles
+
+It is possible to query the roles that the current user possesses:
+
+```graphql
+{
+  currentUser {
+    roles {
+      __typename
+      ... on UserDistrictRole {
+        level
+      }
+    }
+  }
+}
+```
+
+`roles` will return a list of role types, each of which may have different properties, so a group role would contain an edge to the group that the user has access to.
+
+Default permissions do not yield a role, but may require the user to be linked to an active person.
+
+```json
+{
+  "data": {
+    "currentUser": {
+      "roles": [
+        {
+          "__typename": "UserDistrictRole",
+          "level": "MANAGER"
+        }
+      ]
+    }
+  }
+}
+```
