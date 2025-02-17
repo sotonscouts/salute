@@ -45,14 +45,40 @@ class TestSectionQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["section"]}
+            {
+                "message": "You don't have permission to view that section.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["section"],
+            }
         ]
         assert results.data is None
 
-    def test_query__no_section(self, admin_user: User) -> None:
+    def test_query__no_permission(self, user: User) -> None:
+        section = GroupSectionFactory()
+        section_id = to_base64("Section", section.id)
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that section.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["section"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_section(self, user_with_person: User) -> None:
         section_id = to_base64("Section", UUID(int=0))
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"sectionId": section_id},  # type: ignore[dict-item]
@@ -70,11 +96,11 @@ class TestSectionQuery:
             }
         ]
 
-    def test_query__group_section(self, admin_user: User) -> None:
+    def test_query__group_section(self, user_with_person: User) -> None:
         section = GroupSectionFactory()
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"sectionId": section_id},  # type: ignore[dict-item]
@@ -98,11 +124,11 @@ class TestSectionQuery:
             }
         }
 
-    def test_query__district_section(self, admin_user: User) -> None:
+    def test_query__district_section(self, user_with_person: User) -> None:
         section = DistrictSectionFactory()
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"sectionId": section_id},  # type: ignore[dict-item]
@@ -127,6 +153,7 @@ class TestSectionQuery:
         }
 
 
+@pytest.mark.django_db
 class TestSectionTypeInfoQuery:
     url = reverse("graphql")
 
@@ -144,11 +171,11 @@ class TestSectionTypeInfoQuery:
         }
     """
 
-    def test_query__group_section(self, admin_user: User) -> None:
+    def test_query__group_section(self, user_with_person: User) -> None:
         section = GroupSectionFactory(section_type=SectionType.BEAVERS)
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"sectionId": section_id},  # type: ignore[dict-item]
@@ -170,11 +197,11 @@ class TestSectionTypeInfoQuery:
             }
         }
 
-    def test_query__district_section(self, admin_user: User) -> None:
+    def test_query__district_section(self, user_with_person: User) -> None:
         section = DistrictSectionFactory(section_type=SectionType.EXPLORERS)
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"sectionId": section_id},  # type: ignore[dict-item]

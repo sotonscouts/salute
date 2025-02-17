@@ -1,9 +1,11 @@
+import pytest
 from django.urls import reverse
 from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import User
 
 
+@pytest.mark.django_db
 class TestGetSectionTypesQuery:
     url = reverse("graphql")
 
@@ -25,13 +27,33 @@ class TestGetSectionTypesQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["sectionTypes"]}
+            {
+                "message": "You don't have permission to list section types.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["sectionTypes"],
+            }
         ]
         assert results.data is None
 
-    def test_get_section_types_query__cannot_query_private_fields(self, admin_user: User) -> None:
+    def test_get_section_types_query__no_permission(self, user: User) -> None:
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user):
+            results = client.query(self.GET_SECTION_TYPES_QUERY, assert_no_errors=False)
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to list section types.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["sectionTypes"],
+            }
+        ]
+        assert results.data is None
+
+    def test_get_section_types_query__cannot_query_private_fields(self, user_with_person: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user_with_person):
             results = client.query(
                 """
                 query {
@@ -59,9 +81,9 @@ class TestGetSectionTypesQuery:
         ]
         assert results.data is None
 
-    def test_get_section_types_query__authenticated(self, admin_user: User) -> None:
+    def test_get_section_types_query__authenticated(self, user_with_person: User) -> None:
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.GET_SECTION_TYPES_QUERY)
 
         assert isinstance(result, Response)

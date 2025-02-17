@@ -42,15 +42,41 @@ class TestGroupQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["group"]}
+            {
+                "message": "You don't have permission to view that group.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["group"],
+            }
         ]
         assert results.data is None
 
-    def test_query__no_group(self, admin_user: User) -> None:
+    def test_query__no_permission(self, user: User) -> None:
+        group = GroupFactory()
+        group_id = to_base64("Group", group.id)
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                variables={"groupId": group_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that group.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["group"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_group(self, user_with_person: User) -> None:
         """This should not happen in production. There must always be exactly one district."""
         group_id = to_base64("Group", UUID(int=0))
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"groupId": group_id},  # type: ignore[dict-item]
@@ -68,11 +94,11 @@ class TestGroupQuery:
             }
         ]
 
-    def test_query(self, admin_user: User) -> None:
+    def test_query(self, user_with_person: User) -> None:
         group = GroupFactory()
         group_id = to_base64("Group", group.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"groupId": group_id},  # type: ignore[dict-item]
@@ -97,6 +123,7 @@ class TestGroupQuery:
         }
 
 
+@pytest.mark.django_db
 class TestGroupJoinSectionsQuery:
     url = reverse("graphql")
 
@@ -117,11 +144,11 @@ class TestGroupJoinSectionsQuery:
     }
     """
 
-    def test_query_sections__none(self, admin_user: User) -> None:
+    def test_query_sections__none(self, user_with_person: User) -> None:
         group = GroupFactory()
         group_id = to_base64("Group", group.id)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"groupId": group_id},  # type: ignore[dict-item]
@@ -140,12 +167,12 @@ class TestGroupJoinSectionsQuery:
             }
         }
 
-    def test_query_sections(self, admin_user: User) -> None:
+    def test_query_sections(self, user_with_person: User) -> None:
         group = GroupFactory()
         group_id = to_base64("Group", group.id)
         sections = GroupSectionFactory.create_batch(size=5, group=group)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
                 variables={"groupId": group_id},  # type: ignore[dict-item]

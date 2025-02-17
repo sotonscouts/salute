@@ -1,6 +1,6 @@
 import strawberry as sb
 import strawberry_django as sd
-from strawberry_django.permissions import IsAuthenticated
+from strawberry_django.permissions import HasPerm
 
 from salute.hierarchy import models as hierarchy_models
 from salute.hierarchy.constants import SECTION_TYPE_INFO
@@ -15,29 +15,46 @@ from .graph_types import (
 
 @sb.type
 class HierarchyQuery:
-    @sd.field(description="Get the district", extensions=[IsAuthenticated()])
+    @sd.field(
+        description="Get the district",
+        extensions=[HasPerm("district.view", message="You don't have permission to view the district.")],
+    )
     def district(self, info: sb.Info) -> District:
         return hierarchy_models.District.objects.get()  # type: ignore[return-value]
 
-    @sd.field(description="Get a group by ID", extensions=[IsAuthenticated()])
+    @sd.field(
+        description="Get a group by ID",
+        extensions=[HasPerm("group.view", message="You don't have permission to view that group.")],
+    )
     def group(self, group_id: sb.relay.GlobalID, info: sb.Info) -> Group:
         return hierarchy_models.Group.objects.get(id=group_id.node_id)  # type: ignore[return-value]
 
     groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection(
-        description="List groups", extensions=[IsAuthenticated(fail_silently=False)]
+        description="List groups",
+        extensions=[HasPerm("group.list", message="You don't have permission to list groups.", fail_silently=False)],
     )
 
-    @sd.field(description="Get a section by ID", extensions=[IsAuthenticated()])
+    @sd.field(
+        description="Get a section by ID",
+        extensions=[HasPerm("section.view", message="You don't have permission to view that section.")],
+    )
     def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
         return hierarchy_models.Section.objects.get(id=section_id.node_id)  # type: ignore[return-value]
 
     sections: sd.relay.ListConnectionWithTotalCount[DistrictOrGroupSection] = sd.connection(
-        description="List sections", extensions=[IsAuthenticated(fail_silently=False)]
+        description="List sections",
+        extensions=[
+            HasPerm("section.list", message="You don't have permission to list sections.", fail_silently=False)
+        ],
     )
 
     @sb.field(
         description="Get all possible section types",
-        extensions=[IsAuthenticated(fail_silently=False)],
+        extensions=[
+            HasPerm(
+                "section_type.list", message="You don't have permission to list section types.", fail_silently=False
+            )
+        ],
     )
     def section_types(self, info: sb.Info) -> list[SectionTypeInfo]:
         return [

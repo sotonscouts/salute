@@ -46,15 +46,38 @@ class TestSectionListQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["sections"]}
+            {
+                "message": "You don't have permission to list sections.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["sections"],
+            }
         ]
         assert results.data is None
 
-    def test_query__district(self, admin_user: User) -> None:
+    def test_query__no_permission(self, user: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to list sections.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["sections"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__district(self, user_with_person: User) -> None:
         district = DistrictFactory()
         sections = DistrictSectionFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
@@ -84,11 +107,11 @@ class TestSectionListQuery:
             }
         }
 
-    def test_query__group(self, admin_user: User) -> None:
+    def test_query__group(self, user_with_person: User) -> None:
         district = DistrictFactory()
         sections = GroupSectionFactory.create_batch(size=5, group__district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
@@ -118,12 +141,12 @@ class TestSectionListQuery:
             }
         }
 
-    def test_query__mixed(self, admin_user: User) -> None:
+    def test_query__mixed(self, user_with_person: User) -> None:
         district = DistrictFactory()
         district_sections = DistrictSectionFactory.create_batch(size=5, district=district)
         group_sections = GroupSectionFactory.create_batch(size=5, group__district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
@@ -174,7 +197,7 @@ class TestSectionListQuery:
             pytest.param("DESC", True, id="desc"),
         ],
     )
-    def test_query__ordering__section_type(self, *, ordering: str, reverse: bool, admin_user: User) -> None:
+    def test_query__ordering__section_type(self, *, ordering: str, reverse: bool, user_with_person: User) -> None:
         district = DistrictFactory()
         _group_sections = [
             GroupSectionFactory(group__district=district, section_type=section_type)
@@ -185,7 +208,7 @@ class TestSectionListQuery:
             for section_type in DISTRICT_SECTION_TYPES
         ]
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering) {
@@ -230,11 +253,11 @@ class TestSectionListQuery:
             pytest.param("DESC", True, id="desc"),
         ],
     )
-    def test_query__ordering__usual_weekday(self, *, ordering: str, reverse: bool, admin_user: User) -> None:
+    def test_query__ordering__usual_weekday(self, *, ordering: str, reverse: bool, user_with_person: User) -> None:
         district = DistrictFactory()
         _group_sections = [GroupSectionFactory(group__district=district, usual_weekday=weekday) for weekday in Weekday]
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering) {
@@ -275,7 +298,9 @@ class TestSectionListQuery:
             pytest.param("DESC", True, id="desc"),
         ],
     )
-    def test_query__ordering__group__local_unit_number(self, *, ordering: str, reverse: bool, admin_user: User) -> None:
+    def test_query__ordering__group__local_unit_number(
+        self, *, ordering: str, reverse: bool, user_with_person: User
+    ) -> None:
         district = DistrictFactory()
         _group_sections = [
             GroupSectionFactory(group__district=district, section_type=section_type)
@@ -286,7 +311,7 @@ class TestSectionListQuery:
             for section_type in DISTRICT_SECTION_TYPES
         ]
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering) {
@@ -330,7 +355,7 @@ class TestSectionListQuery:
             }
         }
 
-    def test_query__filter__section_type(self, admin_user: User) -> None:
+    def test_query__filter__section_type(self, user_with_person: User) -> None:
         district = DistrictFactory()
         _group_sections = [
             GroupSectionFactory(group__district=district, section_type=section_type)
@@ -341,7 +366,7 @@ class TestSectionListQuery:
             for section_type in DISTRICT_SECTION_TYPES
         ]
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query groupOrderTest($sectionType: SectionType!) {
@@ -378,11 +403,11 @@ class TestSectionListQuery:
             }
         }
 
-    def test_query__filter__weekday(self, admin_user: User) -> None:
+    def test_query__filter__weekday(self, user_with_person: User) -> None:
         district = DistrictFactory()
         _group_sections = [GroupSectionFactory(group__district=district, usual_weekday=weekday) for weekday in Weekday]
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query groupOrderTest($usualWeekday: [Weekday!]!) {
