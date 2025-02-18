@@ -5,7 +5,7 @@ from strawberry.tools import merge_types
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.permissions import IsAuthenticated
 
-from salute.accounts.graphql.schema import AccountsQuery
+from salute.accounts.graphql.schema import AccountsMutation, AccountsQuery
 from salute.hierarchy.graphql.schema import HierarchyQuery
 
 
@@ -21,6 +21,8 @@ APP_QUERIES = (
     HierarchyQuery,
     PingQuery,
 )
+
+APP_MUTATIONS = (AccountsMutation,)
 
 
 class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
@@ -38,6 +40,7 @@ class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
 
 schema = strawberry.Schema(
     query=merge_types("Query", APP_QUERIES),
+    mutation=merge_types("Mutation", APP_MUTATIONS),
     extensions=[
         DjangoOptimizerExtension,
         DisableAnonymousIntrospection,

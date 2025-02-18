@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "salute.roles",
     # Third Party
     "corsheaders",
-    "debug_toolbar",
     "phonenumber_field",
     "rules",
     "strawberry_django",
