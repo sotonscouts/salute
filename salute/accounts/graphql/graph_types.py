@@ -45,4 +45,10 @@ class AuthError:
     message: str
 
 
+@sb.type
+class RevokeSuccess:
+    success: bool = True
+
+
 LoginResult = Annotated[LoginSuccess | AuthError, sb.union("LoginResult")]
+RevokeResult = Annotated[RevokeSuccess | AuthError, sb.union("RevokeResult")]
