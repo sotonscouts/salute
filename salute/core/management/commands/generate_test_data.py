@@ -37,15 +37,15 @@ class Command(BaseCommand):
             self.stdout.write("There is still data present. Please use ./manage.py flush")
             return
 
-        # if "I am a developer and I know what I am doing" != input(
-        #     "Please type `I am a developer and I know what I am doing` to begin data generation: "
-        # ):
-        #     return
+        if "I am a developer and I know what I am doing" != input(
+            "Please type `I am a developer and I know what I am doing` to begin data generation: "
+        ):
+            return
 
         faker = Faker()
 
         # Generate a user
-        User.objects.create_superuser(email="admin@example.com", password="password")  # noqa: S106
+        superuser = User.objects.create_superuser(email="admin@example.com", password="password")  # noqa: S106
         self.stdout.write("Generated user: admin@example.com with password: `password`")
 
         SECTION_TEAM_TYPE_MAP: dict[SectionType, TeamType] = {  # noqa: N806
@@ -136,3 +136,7 @@ class Command(BaseCommand):
                     status=random.choice(role_statuses),  # noqa: S311
                     role_type=random.choice(role_types),  # noqa: S311
                 )
+
+        # Link superuser to person
+        superuser.person = people[0]
+        superuser.save()

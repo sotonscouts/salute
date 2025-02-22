@@ -3,7 +3,12 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
-from .models import User
+from .models import DistrictUserRole, User
+
+
+class InlineDistrictRoleAdmin(admin.TabularInline):
+    model = DistrictUserRole
+    max_num = 1
 
 
 @admin.register(User)
@@ -14,9 +19,11 @@ class UserAdmin(DjangoUserAdmin):
     ordering = ("email",)
     readonly_fields = ("last_login", "date_joined")
     filter_horizontal = ()
+    inlines = (InlineDistrictRoleAdmin,)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
+        (_("Person"), {"fields": ("person",)}),
         (
             _("Permissions"),
             {

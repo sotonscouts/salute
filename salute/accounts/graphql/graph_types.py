@@ -1,12 +1,33 @@
 from datetime import datetime
+from typing import Annotated
 
-import strawberry_django
-from strawberry import field, relay
+import strawberry as sb
+import strawberry_django as sd
+from strawberry_django.auth.utils import get_current_user
 
 from salute.accounts import models
 
 
-@strawberry_django.type(models.User)
-class User(relay.Node):
-    email: str = field(description="Email address")
-    last_login: datetime = field(description="Timestamp of most recent login")
+@sb.type
+class UserDistrictRole:
+    level: models.DistrictUserRoleType
+
+
+UserRole = Annotated[UserDistrictRole, sb.union("UserRole")]
+
+
+@sd.type(models.User)
+class User(sb.relay.Node):
+    email: str = sb.field(description="Email address")
+    last_login: datetime = sb.field(description="Timestamp of most recent login")
+
+    @sd.field(description="Get the roles for the user", select_related=["district_roles"])
+    def roles(self, info: sb.Info) -> list[UserRole]:
+        user = get_current_user(info)
+        if not user.is_authenticated:
+            return []
+
+        return [
+            UserDistrictRole(level=role.level)
+            for role in user.district_roles.all()  # type: ignore[attr-defined]
+        ]

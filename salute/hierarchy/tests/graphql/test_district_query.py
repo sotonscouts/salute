@@ -1,3 +1,4 @@
+import pytest
 from django.urls import reverse
 from strawberry_django.test.client import Response, TestClient
 
@@ -5,6 +6,7 @@ from salute.accounts.models import User
 from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory, GroupSectionFactory
 
 
+@pytest.mark.django_db
 class TestDistrictQuery:
     url = reverse("graphql")
 
@@ -25,14 +27,34 @@ class TestDistrictQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["district"]}
+            {
+                "message": "You don't have permission to view the district.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["district"],
+            }
         ]
         assert results.data is None
 
-    def test_query__no_district(self, admin_user: User) -> None:
+    def test_query__no_permission(self, user: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(self.QUERY, assert_no_errors=False)
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view the district.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["district"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_district(self, user_with_person: User) -> None:
         """This should not happen in production. There must always be exactly one district."""
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY, assert_no_errors=False)
 
         assert isinstance(result, Response)
@@ -46,11 +68,11 @@ class TestDistrictQuery:
             }
         ]
 
-    def test_query__two_district(self, admin_user: User) -> None:
+    def test_query__two_district(self, user_with_person: User) -> None:
         """This should not happen in production. There must always be exactly one district."""
         DistrictFactory.create_batch(size=2)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY, assert_no_errors=False)
 
         assert isinstance(result, Response)
@@ -64,10 +86,10 @@ class TestDistrictQuery:
             }
         ]
 
-    def test_query(self, admin_user: User) -> None:
+    def test_query(self, user_with_person: User) -> None:
         district = DistrictFactory()
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY)
 
         assert isinstance(result, Response)
@@ -82,6 +104,7 @@ class TestDistrictQuery:
         }
 
 
+@pytest.mark.django_db
 class TestDistrictJoinGroupsQuery:
     url = reverse("graphql")
 
@@ -102,10 +125,10 @@ class TestDistrictJoinGroupsQuery:
     }
     """
 
-    def test_query_groups__none(self, admin_user: User) -> None:
+    def test_query_groups__none(self, user_with_person: User) -> None:
         district = DistrictFactory()
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY)
 
         assert isinstance(result, Response)
@@ -121,11 +144,11 @@ class TestDistrictJoinGroupsQuery:
             }
         }
 
-    def test_query_groups(self, admin_user: User) -> None:
+    def test_query_groups(self, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = GroupFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY)
 
         assert isinstance(result, Response)
@@ -144,11 +167,11 @@ class TestDistrictJoinGroupsQuery:
             }
         }
 
-    def test_query_groups__ordering__local_unit_number_asc(self, admin_user: User) -> None:
+    def test_query_groups__ordering__local_unit_number_asc(self, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = GroupFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query DistrictWithGroups {
@@ -184,11 +207,11 @@ class TestDistrictJoinGroupsQuery:
             }
         }
 
-    def test_query_groups__ordering__local_unit_number_desc(self, admin_user: User) -> None:
+    def test_query_groups__ordering__local_unit_number_desc(self, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = GroupFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query DistrictWithGroups {
@@ -225,6 +248,7 @@ class TestDistrictJoinGroupsQuery:
         }
 
 
+@pytest.mark.django_db
 class TestDistrictJoinAllSectionsQuery:
     url = reverse("graphql")
 
@@ -244,10 +268,10 @@ class TestDistrictJoinAllSectionsQuery:
     }
     """
 
-    def test_query_sections__none(self, admin_user: User) -> None:
+    def test_query_sections__none(self, user_with_person: User) -> None:
         district = DistrictFactory()
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY)
 
         assert isinstance(result, Response)
@@ -263,13 +287,13 @@ class TestDistrictJoinAllSectionsQuery:
             }
         }
 
-    def test_query_groups(self, admin_user: User) -> None:
+    def test_query_groups(self, user_with_person: User) -> None:
         district = DistrictFactory()
         sections = GroupSectionFactory.create_batch(
             size=5, group__district=district
         ) + DistrictSectionFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(self.QUERY)
 
         assert isinstance(result, Response)

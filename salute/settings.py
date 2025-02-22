@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "debug_toolbar",
     "phonenumber_field",
+    "rules",
     "strawberry_django",
     # Django
     "django.contrib.admin",
@@ -120,6 +121,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    "rules.permissions.ObjectPermissionBackend",
+    "django.contrib.auth.backends.ModelBackend",
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

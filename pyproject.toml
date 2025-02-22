@@ -17,6 +17,7 @@ strawberry-graphql = "^0.258.0"
 strawberry-graphql-django = "^0.55.1"
 tqdm = "^4.67.1"
 django-cors-headers = "^4.7.0"
+rules = "^3.5"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.1"

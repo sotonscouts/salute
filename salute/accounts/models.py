@@ -14,6 +14,9 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_choices_field import TextChoicesField
+
+from salute.core.models import BaseModel
 
 _T = TypeVar("_T", bound=models.Model)
 
@@ -43,7 +46,6 @@ class UserManager[_T](DjangoUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    # TODO: Link to person.
     email = models.EmailField(_("email address"), unique=True)
     is_active = models.BooleanField(
         _("active"),
@@ -53,6 +55,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+
+    person = models.OneToOneField("people.Person", null=True, on_delete=models.SET_NULL, related_name="+")
 
     objects = UserManager()
 
@@ -76,17 +80,39 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Return the first_name plus the last_name, with a space in between.
         """
-        # TODO: Link to person.
+        if self.person:
+            return self.person.display_name
         return self.email
-        full_name = f"{self.first_name} {self.last_name}"
-        return full_name.strip()
 
     def get_short_name(self) -> str:
         """Return the short name for the user."""
-        # TODO: Link to person.
+        if self.person:
+            return self.person.first_name
         return self.email
-        return self.first_name
 
     def email_user(self, subject: str, message: str, from_email: str | None = None, **kwargs: Any) -> None:
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class DistrictUserRoleType(models.TextChoices):
+    ADMIN = "Admin"
+    MANAGER = "Manager"
+
+
+class DistrictUserRole(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="district_roles")
+    district = models.ForeignKey("hierarchy.District", on_delete=models.PROTECT, related_name="+")
+    level = TextChoicesField(choices_enum=DistrictUserRoleType)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "district"],
+                violation_error_message="A user can only have one district role",
+                name="one_district_role_per_user",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} is {self.level} for {self.district}"

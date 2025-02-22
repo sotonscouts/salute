@@ -1,9 +1,12 @@
+import pytest
 from django.urls import reverse
 from strawberry_django.test.client import Response, TestClient
 
-from salute.accounts.models import User
+from salute.accounts.models import DistrictUserRoleType, User
+from salute.hierarchy.factories import DistrictFactory
 
 
+@pytest.mark.django_db
 class TestGetCurrentUserQuery:
     url = reverse("graphql")
 
@@ -12,6 +15,12 @@ class TestGetCurrentUserQuery:
         currentUser {
             email
             lastLogin
+            roles {
+                __typename
+                ... on UserDistrictRole {
+                    level
+                }
+            }
         }
     }
     """
@@ -27,18 +36,33 @@ class TestGetCurrentUserQuery:
         ]
         assert results.data is None
 
-    def test_current_user_query__authenticated(self, admin_user: User) -> None:
+    def test_current_user_query__authenticated(self, user: User) -> None:
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user):
             result = client.query(self.CURRENT_USER_QUERY)
 
-        assert admin_user.last_login
+        assert user.last_login
         assert isinstance(result, Response)
 
         assert result.errors is None
         assert result.data == {
             "currentUser": {
-                "email": "admin@example.com",
-                "lastLogin": admin_user.last_login.isoformat(),
+                "email": user.email,
+                "lastLogin": user.last_login.isoformat(),
+                "roles": [],
             }
         }
+
+    @pytest.mark.parametrize("role_type", DistrictUserRoleType)
+    def test_current_user_query__authenticated_with_role(self, user: User, role_type: DistrictUserRoleType) -> None:
+        district = DistrictFactory()
+        user.district_roles.create(district=district, level=role_type)
+
+        client = TestClient(self.url)
+        with client.login(user):
+            result = client.query(self.CURRENT_USER_QUERY)
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data["currentUser"]["roles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore

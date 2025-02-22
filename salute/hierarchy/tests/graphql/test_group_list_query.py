@@ -43,15 +43,38 @@ class TestGroupListQuery:
         assert isinstance(results, Response)
 
         assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["groups"]}
+            {
+                "message": "You don't have permission to list groups.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["groups"],
+            }
         ]
         assert results.data is None
 
-    def test_query(self, admin_user: User) -> None:
+    def test_query__no_permission(self, user: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to list groups.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["groups"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query(self, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = GroupFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
@@ -88,11 +111,11 @@ class TestGroupListQuery:
             pytest.param("DESC", True, id="desc"),
         ],
     )
-    def test_query__ordering__unit_number(self, *, ordering: str, reverse: bool, admin_user: User) -> None:
+    def test_query__ordering__unit_number(self, *, ordering: str, reverse: bool, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = GroupFactory.create_batch(size=5, district=district)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query groupOrderTest($order: Ordering) {
@@ -127,11 +150,11 @@ class TestGroupListQuery:
         }
 
     @pytest.mark.parametrize("group_type", GroupType)
-    def test_query__filter__group_type(self, group_type: GroupType, admin_user: User) -> None:
+    def test_query__filter__group_type(self, group_type: GroupType, user_with_person: User) -> None:
         district = DistrictFactory()
         groups = {gt: GroupFactory.create_batch(size=5, district=district, group_type=gt) for gt in GroupType}
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 """
                 query groupOrderTest($groupType: GroupType!) {
@@ -167,6 +190,7 @@ class TestGroupListQuery:
         }
 
 
+@pytest.mark.django_db
 class TestGroupJoinSectionsQuery:
     url = reverse("graphql")
 
@@ -192,10 +216,10 @@ class TestGroupJoinSectionsQuery:
     }
     """
 
-    def test_query_sections__none(self, admin_user: User) -> None:
+    def test_query_sections__none(self, user_with_person: User) -> None:
         group = GroupFactory(group_type=GroupType.SEA)
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
@@ -220,14 +244,14 @@ class TestGroupJoinSectionsQuery:
             }
         }
 
-    def test_query_sections(self, admin_user: User) -> None:
+    def test_query_sections(self, user_with_person: User) -> None:
         group = GroupFactory(group_type=GroupType.SEA)
         sections = GroupSectionFactory.create_batch(size=5, group=group)
         _other_sections = GroupSectionFactory.create_batch(
             size=5, group__district=group.district, group__group_type=GroupType.AIR
         )
         client = TestClient(self.url)
-        with client.login(admin_user):
+        with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
             )
