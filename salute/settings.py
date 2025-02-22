@@ -8,6 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +28,7 @@ DEBUG = True
 # This setting also disables query introspection
 ALLOW_UNAUTHENTICATED_GRAPHIQL = DEBUG
 
-ALLOWED_HOSTS: list[str] = []
+ALLOWED_HOSTS: list[str] = ["*"]
 
 
 # Application definition
@@ -42,10 +43,10 @@ INSTALLED_APPS = [
     "salute.roles",
     # Third Party
     "corsheaders",
-    "debug_toolbar",
     "phonenumber_field",
     "rules",
     "strawberry_django",
+    "rest_framework_simplejwt.token_blacklist",
     # Django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -55,6 +56,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -62,6 +66,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "salute.accounts.middleware.TokenAuthMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -158,3 +163,16 @@ CORS_ALLOW_ALL_ORIGINS = True  # TODO: Change me before production
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 PHONENUMBER_DEFAULT_REGION = "GB"
 PHONENUMBER_DB_FORMAT = "E164"
+
+# django-restframework-simplejwt
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=2),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,  # TODO: Change me!
+    "AUDIENCE": "scsd.salute",  # TODO: Change me!
+    "ISSUER": "scsd.salute",
+    "USER_ID_CLAIM": "uid",
+}

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 from salute.api.schema import schema
 from salute.api.views import SaluteAsyncGraphQLView
@@ -11,7 +12,7 @@ admin.site.index_title = "System administration"
 
 urlpatterns = [
     path("salute-backend/", admin.site.urls),
-    path("graphql/", SaluteAsyncGraphQLView.as_view(schema=schema), name="graphql"),
+    path("graphql/", csrf_exempt(SaluteAsyncGraphQLView.as_view(schema=schema)), name="graphql"),
 ]
 
 if settings.DEBUG:
