@@ -26,7 +26,7 @@ pytest = "^8.3.4"
 mypy = "^1.13.0"  # 1.14.1 isn't compatible with django-stubs
 django-debug-toolbar = "^5.0.1"
 django-stubs = {version = "^5.1.1", extras = ["compatible-mypy"]}
-factory-boy = "^3.3.1"
+factory-boy = "3.3.2"  # 3.3.3 exports incompatible type hints
 pytest-cov = "^6.0.0"
 pytest-django = "^4.9.0"
 types-requests = "^2.32.0.20241016"
