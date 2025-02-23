@@ -1,8 +1,26 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.db.models.functions import Concat
 from phonenumber_field.modelfields import PhoneNumberField
 
 from salute.integrations.tsa.models import TSAObject
+
+if TYPE_CHECKING:
+    from salute.accounts.models import User
+
+
+class PersonQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> PersonQuerySet:
+        if user.district_role_list:
+            return self.all()
+
+        return self.filter(id=user.person_id)
+
+
+PersonManager = models.Manager.from_queryset(PersonQuerySet)
 
 
 class Person(TSAObject):
@@ -55,6 +73,8 @@ class Person(TSAObject):
         "phone_number",
         "alternate_phone_number",
     )
+
+    objects = PersonManager()
 
     class Meta:
         verbose_name = "Person"
