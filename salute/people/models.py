@@ -79,6 +79,7 @@ class Person(TSAObject):
     class Meta:
         verbose_name = "Person"
         verbose_name_plural = "People"
+        ordering = ("display_name", "membership_number")
 
     def __str__(self) -> str:
         return f"{self.display_name} ({self.formatted_membership_number})"

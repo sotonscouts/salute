@@ -106,6 +106,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
+                "ordering": ("display_name", "membership_number"),
                 "verbose_name": "Person",
                 "verbose_name_plural": "People",
             },
