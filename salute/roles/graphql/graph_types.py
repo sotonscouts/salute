@@ -6,11 +6,20 @@ import strawberry_django as sd
 from salute.roles import models
 
 
-@sd.type(models.TeamType)
-class TeamType(sb.relay.Node):
+@sd.type(models.AccreditationType)
+class AccreditationType(sb.relay.Node):
     name: sb.Private[str]
 
-    @sd.field(description="Formatted name for the team type", only="name")
+    @sd.field(description="Formatted name for the accreditation type", only="name")
+    def display_name(self, info: sb.Info) -> str:
+        return self.name
+
+
+@sd.type(models.RoleStatus)
+class RoleStatus(sb.relay.Node):
+    name: sb.Private[str]
+
+    @sd.field(description="Formatted name for the role status", only="name")
     def display_name(self, info: sb.Info) -> str:
         return self.name
 
@@ -24,10 +33,10 @@ class RoleType(sb.relay.Node):
         return self.name
 
 
-@sd.type(models.AccreditationType)
-class AccreditationType(sb.relay.Node):
+@sd.type(models.TeamType)
+class TeamType(sb.relay.Node):
     name: sb.Private[str]
 
-    @sd.field(description="Formatted name for the accreditation type", only="name")
+    @sd.field(description="Formatted name for the team type", only="name")
     def display_name(self, info: sb.Info) -> str:
         return self.name

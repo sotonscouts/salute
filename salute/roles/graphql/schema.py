@@ -3,7 +3,7 @@ import strawberry_django as sd
 from strawberry_django.permissions import HasPerm
 
 from salute.roles import models as roles_models
-from salute.roles.graphql.graph_types import AccreditationType, RoleType, TeamType
+from salute.roles.graphql.graph_types import AccreditationType, RoleStatus, RoleType, TeamType
 
 
 @sb.type
@@ -27,6 +27,15 @@ class RolesQuery:
             )
         ],
     )
+
+    @sd.field(
+        description="Get all possible role statuses",
+        extensions=[
+            HasPerm("role_status.list", message="You don't have permission to list role statuses.", fail_silently=False)
+        ],
+    )
+    def role_statuses(self, info: sb.Info) -> list[RoleStatus]:
+        return roles_models.RoleStatus.objects.all()  # type: ignore[return-value]
 
     @sd.field(
         description="Get a role type by ID",

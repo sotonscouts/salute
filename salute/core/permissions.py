@@ -23,6 +23,8 @@ rules.add_perm("person.view_pii", can_view_person_pii)
 rules.add_perm("accreditation_type.list", user_has_related_person)
 rules.add_perm("accreditation_type.view", user_has_related_person)
 
+rules.add_perm("role_status.list", user_has_related_person)
+
 rules.add_perm("role_type.list", user_has_related_person)
 rules.add_perm("role_type.view", user_has_related_person)
 
