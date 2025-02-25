@@ -22,7 +22,7 @@ class User(sb.relay.Node):
     last_login: datetime = sb.field(description="Timestamp of most recent login")
 
     @sd.field(description="Get the roles for the user", select_related=["district_roles"])
-    def roles(self, info: sb.Info) -> list[UserRole]:
+    def user_roles(self, info: sb.Info) -> list[UserRole]:
         user = get_current_user(info)
         if not user.is_authenticated:
             return []

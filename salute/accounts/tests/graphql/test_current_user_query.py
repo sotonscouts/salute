@@ -15,7 +15,7 @@ class TestGetCurrentUserQuery:
         currentUser {
             email
             lastLogin
-            roles {
+            userRoles {
                 __typename
                 ... on UserDistrictRole {
                     level
@@ -49,7 +49,7 @@ class TestGetCurrentUserQuery:
             "currentUser": {
                 "email": user.email,
                 "lastLogin": user.last_login.isoformat(),
-                "roles": [],
+                "userRoles": [],
             }
         }
 
@@ -65,4 +65,4 @@ class TestGetCurrentUserQuery:
         assert isinstance(result, Response)
 
         assert result.errors is None
-        assert result.data["currentUser"]["roles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore
+        assert result.data["currentUser"]["userRoles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore
