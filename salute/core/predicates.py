@@ -4,10 +4,37 @@ from typing import TYPE_CHECKING
 
 import rules
 
+from salute.accounts.models import DistrictUserRoleType
+
 if TYPE_CHECKING:
     from salute.accounts.models import User
+    from salute.people.models import Person
 
 
 @rules.predicate
 def user_has_related_person(user: User) -> bool:
     return user.person is not None
+
+
+@rules.predicate
+def user_is_person(user: User, person: Person | None) -> bool:
+    if person is None:
+        return False
+
+    if user.person is None:
+        return False
+
+    return user.person == person
+
+
+def has_district_role(role_type: DistrictUserRoleType) -> rules.predicates.Predicate:
+    @rules.predicate
+    def user_has_district_role(user: User) -> bool:
+        return role_type in user.district_role_list
+
+    return user_has_related_person & user_has_district_role
+
+
+can_list_people = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)
+can_view_person_pii = has_district_role(DistrictUserRoleType.ADMIN) | user_is_person
+can_view_person = can_list_people | user_is_person

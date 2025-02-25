@@ -48,7 +48,7 @@ It is possible to query the roles that the current user possesses:
 ```graphql
 {
   currentUser {
-    roles {
+    userRoles {
       __typename
       ... on UserDistrictRole {
         level

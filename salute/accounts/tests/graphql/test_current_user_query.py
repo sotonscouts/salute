@@ -15,11 +15,17 @@ class TestGetCurrentUserQuery:
         currentUser {
             email
             lastLogin
-            roles {
+            userRoles {
                 __typename
                 ... on UserDistrictRole {
                     level
                 }
+            }
+            person {
+                firstName
+                displayName
+                formattedMembershipNumber
+                contactEmail
             }
         }
     }
@@ -49,7 +55,32 @@ class TestGetCurrentUserQuery:
             "currentUser": {
                 "email": user.email,
                 "lastLogin": user.last_login.isoformat(),
-                "roles": [],
+                "userRoles": [],
+                "person": None,
+            }
+        }
+
+    def test_current_user_query__authenticated_with_person(self, user_with_person: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.CURRENT_USER_QUERY)
+
+        assert user_with_person.last_login
+        assert user_with_person.person is not None
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "currentUser": {
+                "email": user_with_person.email,
+                "lastLogin": user_with_person.last_login.isoformat(),
+                "userRoles": [],
+                "person": {
+                    "firstName": user_with_person.person.first_name,
+                    "displayName": user_with_person.person.display_name,
+                    "formattedMembershipNumber": user_with_person.person.formatted_membership_number,
+                    "contactEmail": user_with_person.person.contact_email,
+                },
             }
         }
 
@@ -65,4 +96,4 @@ class TestGetCurrentUserQuery:
         assert isinstance(result, Response)
 
         assert result.errors is None
-        assert result.data["currentUser"]["roles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore
+        assert result.data["currentUser"]["userRoles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore

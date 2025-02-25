@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 from typing import Any, TypeVar
 
 from django.contrib.auth.hashers import make_password
@@ -93,6 +94,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject: str, message: str, from_email: str | None = None, **kwargs: Any) -> None:
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    @cached_property
+    def district_role_list(self) -> list[DistrictUserRoleType]:
+        return [dr.level for dr in self.district_roles.only("level")]
 
 
 class DistrictUserRoleType(models.TextChoices):
