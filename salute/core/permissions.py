@@ -18,3 +18,7 @@ rules.add_perm("section_type.list", user_has_related_person)
 rules.add_perm("person.list", user_has_related_person)
 rules.add_perm("person.view", can_view_person)
 rules.add_perm("person.view_pii", can_view_person_pii)
+
+# Roles
+rules.add_perm("team_type.list", user_has_related_person)
+rules.add_perm("team_type.view", user_has_related_person)
