@@ -3,7 +3,7 @@ import strawberry_django as sd
 from strawberry_django.permissions import HasPerm
 
 from salute.roles import models as roles_models
-from salute.roles.graphql.graph_types import AccreditationType, RoleStatus, RoleType, TeamType
+from salute.roles.graphql.graph_types import AccreditationType, RoleStatus, RoleType, Team, TeamType
 
 
 @sb.type
@@ -50,6 +50,21 @@ class RolesQuery:
             HasPerm("role_type.list", message="You don't have permission to list role types.", fail_silently=False)
         ],
     )
+
+    teams: sd.relay.ListConnectionWithTotalCount[Team] = sd.connection(
+        description="List teams",
+        # This endpoint, whilst not N+1, can make a lot of db queries as each team and unit are fetched.
+        # So limit results to 20
+        max_results=20,
+        extensions=[HasPerm("team.list", message="You don't have permission to list teams.", fail_silently=False)],
+    )
+
+    @sd.field(
+        description="Get a team by ID",
+        extensions=[HasPerm("team.view", message="You don't have permission to view that team.")],
+    )
+    def team(self, team_id: sb.relay.GlobalID, info: sb.Info) -> Team:
+        return roles_models.Team.objects.get(id=team_id.node_id)  # type: ignore[return-value]
 
     @sd.field(
         description="Get a team type by ID",
