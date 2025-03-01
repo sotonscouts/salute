@@ -33,6 +33,7 @@ class Team(BaseModel):
     )
 
     class Meta:
+        ordering = ("team_type__name",)
         constraints = [
             models.CheckConstraint(
                 condition=(
