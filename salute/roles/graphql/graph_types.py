@@ -73,6 +73,21 @@ class TeamWithChildInterface(TeamInterface, sb.relay.Node):
 
 
 @sd.type(models.Team)
+class DistrictTeam(TeamWithChildInterface, sb.relay.Node):
+    district: District = sb.field(description="The district that this team belongs to")
+
+
+@sd.type(models.Team)
+class GroupTeam(TeamWithChildInterface, sb.relay.Node):
+    group: Group = sb.field(description="The section that this team belongs to")
+
+
+@sd.type(models.Team)
+class SectionTeam(TeamInterface, sb.relay.Node):
+    section: Section = sb.field(description="The section that this team belongs to")
+
+
+@sd.type(models.Team)
 class Team(TeamWithChildInterface, sb.relay.Node):
     parent_team: Team | None = sb.field(description="The parent team of this team")
     district: District | None = sb.field(description="The district that this team belongs to")

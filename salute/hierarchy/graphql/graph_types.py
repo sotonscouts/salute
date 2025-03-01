@@ -1,12 +1,19 @@
+# mypy: disable-error-code="misc"
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Annotated
 
 import strawberry as sb
 import strawberry_django as sd
 from django.db.models import Case, OrderBy, QuerySet, Value, When
 from strawberry import auto
+from strawberry_django.permissions import HasPerm
 
 from salute.hierarchy import models
 from salute.hierarchy.constants import SECTION_TYPE_INFO, SectionOperatingCategory, SectionType, Weekday
+
+if TYPE_CHECKING:
+    from salute.roles.graphql.graph_types import DistrictTeam, GroupTeam, SectionTeam
 
 
 @sb.interface
@@ -21,6 +28,9 @@ class District(Unit, sb.relay.Node):
     display_name: str = sd.field(description="Formatted name for the unit", only="unit_name")
     groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection()
     sections: sd.relay.ListConnectionWithTotalCount[DistrictSection] = sd.connection()
+    teams: list[Annotated[DistrictTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
+        extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
+    )
 
 
 @sd.order(models.Group)
@@ -50,6 +60,9 @@ class Group(Unit, sb.relay.Node):
     # local_unit_number intentionally excluded in favour of ordinal
 
     sections: sd.relay.ListConnectionWithTotalCount[GroupSection] = sd.connection()
+    teams: list[Annotated[GroupTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
+        extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
+    )
 
 
 @sd.order(models.Section)
@@ -107,6 +120,15 @@ class Section(Unit, sb.relay.Node):
     )
     section_type: sb.Private[models.SectionType]
     usual_weekday: models.Weekday | None
+
+    @sd.field(
+        description="Get the team for the section",
+        prefetch_related=["teams"],
+        extensions=[HasPerm("team.list", message="You don't have permission to view teams.")],
+    )
+    def team(self, info: sb.Info) -> Annotated[SectionTeam, sb.lazy("salute.roles.graphql.graph_types")]:
+        # A section should only have one team.
+        return self.teams.first()  # type: ignore[attr-defined]
 
     @sd.field
     def section_type_info(self) -> SectionTypeInfo:

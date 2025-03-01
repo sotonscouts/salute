@@ -5,8 +5,9 @@ from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
 
-from salute.accounts.models import User
-from salute.hierarchy.factories import GroupFactory, GroupSectionFactory
+from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
+from salute.hierarchy.factories import DistrictFactory, GroupFactory, GroupSectionFactory
+from salute.roles.factories import GroupTeamFactory
 
 
 @pytest.mark.django_db
@@ -196,5 +197,86 @@ class TestGroupJoinSectionsQuery:
                     ],
                     "totalCount": 5,
                 },
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestGroupJoinTeamsQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query GroupWithTeams($groupId: GlobalID!) {
+        group(groupId: $groupId) {
+            shortcode
+            teams {
+                displayName
+            }
+        }
+    }
+    """
+
+    def test_query_sections__none(self, user_with_person: User) -> None:
+        group = GroupFactory()
+        group_id = to_base64("Group", group.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"groupId": group_id},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "group": {
+                "shortcode": group.shortcode,
+                "teams": [],
+            }
+        }
+
+    def test_query_teams(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        group = GroupFactory(district=district)
+        group_id = to_base64("Group", group.id)
+        teams = GroupTeamFactory.create_batch(size=5, group=group)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"groupId": group_id},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "group": {
+                "shortcode": group.shortcode,
+                "teams": [{"displayName": t.display_name} for t in sorted(teams, key=lambda t: t.team_type.name)],
+            }
+        }
+
+    def test_query_teams__no_permission(self, user_with_person: User) -> None:
+        group = GroupFactory()
+        group_id = to_base64("Group", group.id)
+        GroupTeamFactory.create_batch(size=5, group=group)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"groupId": group_id},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "group": {
+                "shortcode": group.shortcode,
+                "teams": [],
             }
         }

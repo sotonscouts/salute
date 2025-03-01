@@ -5,9 +5,10 @@ from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
 
-from salute.accounts.models import User
+from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.constants import SectionType
-from salute.hierarchy.factories import DistrictSectionFactory, GroupSectionFactory
+from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupSectionFactory
+from salute.roles.factories import GroupSectionTeamFactory
 
 
 @pytest.mark.django_db
@@ -222,3 +223,101 @@ class TestSectionTypeInfoQuery:
                 },
             }
         }
+
+
+@pytest.mark.django_db
+class TestSectionTeamQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+        query getSectionTeam($sectionId: GlobalID!) {
+        section(sectionId: $sectionId) {
+                unitName
+                team {
+                    displayName
+                    teamType {
+                        displayName
+                    }
+                }
+            }
+        }
+    """
+
+    def test_query__team(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = GroupSectionTeamFactory(section__group__district=district)
+
+        section_id = to_base64("DistrictOrGroupSection", team.section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "section": {
+                "unitName": team.section.unit_name,
+                "team": {
+                    "displayName": team.display_name,
+                    "teamType": {
+                        "displayName": team.team_type.name,
+                    },
+                },
+            }
+        }
+
+    def test_query__team_missing(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        section = GroupSectionFactory(group__district=district)
+
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors == [
+            {
+                "locations": [{"column": 17, "line": 5}],
+                "message": "Cannot return null for non-nullable field DistrictOrGroupSection.team.",
+                "path": ["section", "team"],
+            }
+        ]
+        assert result.data is None
+
+    def test_query__no_permission(self, user_with_person: User) -> None:
+        section = GroupSectionFactory()
+
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors == [
+            {
+                "locations": [{"column": 17, "line": 5}],
+                "message": "You don't have permission to view teams.",
+                "path": ["section", "team"],
+            }
+        ]
+        assert result.data is None
