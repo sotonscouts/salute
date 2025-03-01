@@ -73,6 +73,10 @@ class Team(BaseModel):
         ]
 
     def __str__(self) -> str:
+        return self.display_name
+
+    @property
+    def display_name(self) -> str:
         return f"{self.team_type.name} - {self.unit}"
 
     @property
