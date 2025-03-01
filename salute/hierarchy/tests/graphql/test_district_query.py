@@ -2,8 +2,9 @@ import pytest
 from django.urls import reverse
 from strawberry_django.test.client import Response, TestClient
 
-from salute.accounts.models import User
+from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory, GroupSectionFactory
+from salute.roles.factories import DistrictTeamFactory
 
 
 @pytest.mark.django_db
@@ -310,5 +311,80 @@ class TestDistrictJoinAllSectionsQuery:
                     ],
                     "totalCount": 5,
                 },
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestDistrictJoinTeamsQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query DistrictWithTeams {
+        district {
+            shortcode
+            teams {
+                displayName
+            }
+        }
+    }
+    """
+
+    def test_query_sections__none(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "shortcode": district.shortcode,
+                "teams": [],
+            }
+        }
+
+    def test_query_teams(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        teams = DistrictTeamFactory.create_batch(size=5, district=district)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "shortcode": district.shortcode,
+                "teams": [{"displayName": t.display_name} for t in sorted(teams, key=lambda t: t.team_type.name)],
+            }
+        }
+
+    def test_query_teams__no_permission(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+
+        DistrictTeamFactory.create_batch(size=5, district=district)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "shortcode": district.shortcode,
+                "teams": [],
             }
         }

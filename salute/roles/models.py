@@ -33,6 +33,7 @@ class Team(BaseModel):
     )
 
     class Meta:
+        ordering = ("team_type__name",)
         constraints = [
             models.CheckConstraint(
                 condition=(
@@ -73,6 +74,10 @@ class Team(BaseModel):
         ]
 
     def __str__(self) -> str:
+        return self.display_name
+
+    @property
+    def display_name(self) -> str:
         return f"{self.team_type.name} - {self.unit}"
 
     @property

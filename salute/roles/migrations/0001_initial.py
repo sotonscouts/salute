@@ -173,6 +173,9 @@ class Migration(migrations.Migration):
                     models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="roles.teamtype"),
                 ),
             ],
+            options={
+                "ordering": ("team_type__name",),
+            },
         ),
         migrations.CreateModel(
             name="Role",
