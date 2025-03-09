@@ -32,6 +32,9 @@ class TestTeamType:
         team_type = TeamTypeFactory(name="Test TeamType")
         assert str(team_type) == "Test TeamType"
 
+    def test_str__with_nickname(self) -> None:
+        team_type = TeamTypeFactory(name="Test TeamType", nickname="Bees")
+        assert str(team_type) == "Bees"
 
 @pytest.mark.django_db
 class TestTeam:
