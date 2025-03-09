@@ -36,6 +36,7 @@ class TestTeamType:
         team_type = TeamTypeFactory(name="Test TeamType", nickname="Bees")
         assert str(team_type) == "Bees"
 
+
 @pytest.mark.django_db
 class TestTeam:
     @pytest.fixture

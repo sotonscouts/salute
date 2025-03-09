@@ -35,10 +35,13 @@ class TeamInlineAdmin(admin.TabularInline):
 
 @admin.register(TeamType)
 class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
-    list_display = ("display_name",)
+    list_display = ("display_name", "mailing_slug")
     search_fields = ("name", "nickname", "tsa_id")
 
-    fieldsets = ((None, {"fields": ("name", "display_name", "nickname")}),) + TSAObjectModelAdminMixin.FIELDSETS
+    fieldsets = (
+        (None, {"fields": ("name", "display_name", "nickname")}),
+        ("Mail Settings", {"fields": ("mailing_slug", "has_team_lead", "has_all_list", "included_in_all_members")}),
+    ) + TSAObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: TeamType | None = None) -> list[str]:  # type: ignore[override]
         return super().get_readonly_fields(request, obj) + ["display_name"]

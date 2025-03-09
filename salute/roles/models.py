@@ -22,6 +22,16 @@ class TeamType(TSATaxonomy):
         db_persist=True,
     )
 
+    # Mailing Lists
+    mailing_slug = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Slug for generating mailing lists. Do not change unless you understand the impact.",
+    )
+    has_team_lead = models.BooleanField(default=False)
+    has_all_list = models.BooleanField(default=False, help_text="If has sub-teams, whether to generate a -all list.")
+    included_in_all_members = models.BooleanField(default=True, help_text="Included in all members -all addresses")
+
     def __str__(self) -> str:
         return self.display_name
 
