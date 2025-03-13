@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.http import HttpRequest
 
 from salute.core.models import BaseModel
+from salute.hierarchy.constants import DISTRICT_SECTION_TYPES
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.admin import TSATimestampedObjectModelAdminMixin
 
@@ -61,13 +62,17 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district", "group")}),
-        ("Section", {"fields": ("unit_name", "section_type", "nickname", "usual_weekday")}),
+        ("Section", {"fields": ("unit_name", "section_type", "nickname", "mailing_slug", "usual_weekday")}),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
-    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
-        return super().get_readonly_fields(request, obj) + [  # type: ignore[arg-type]
-            "display_name",
-        ]
+    def get_readonly_fields(self, request: HttpRequest, obj: Section | None = None) -> list[str]:  # type: ignore[override]
+        extra_readonly_fields = ["display_name"]
+
+        # Mailing slugs are only applicable to district sections
+        if obj is not None and obj.section_type not in DISTRICT_SECTION_TYPES:
+            extra_readonly_fields.append("mailing_slug")
+
+        return super().get_readonly_fields(request, obj) + extra_readonly_fields
 
     def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
         return request.user.is_superuser
