@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "rules",
     "strawberry_django",
-    "rest_framework_simplejwt.token_blacklist",
     # Django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -67,7 +66,6 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "salute.accounts.middleware.TokenAuthMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

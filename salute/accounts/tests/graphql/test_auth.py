@@ -3,10 +3,8 @@ from __future__ import annotations
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
-import time_machine
 from django.test import Client
 from django.urls import reverse
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from salute.accounts.models import User
 
@@ -70,64 +68,3 @@ class TestAPIAuthentication:
         resp = self._query(client)
 
         self._assert_allowed(resp)
-
-    @time_machine.travel("2025-01-01T12:00:00")
-    def test_valid_access_token(self, admin_user: User, client: Client) -> None:
-        refresh_token = RefreshToken.for_user(admin_user)
-
-        resp = self._query(client, headers={"authorization": f"Bearer {refresh_token.access_token}"})
-
-        self._assert_allowed(resp)
-
-    def test_invalid_access_token__expired(self, admin_user: User, client: Client) -> None:
-        with time_machine.travel("2025-01-01T12:00:00"):
-            refresh_token = RefreshToken.for_user(admin_user)
-            access_token = str(refresh_token.access_token)
-
-        with time_machine.travel("2025-01-01T12:05:01"):
-            resp = self._query(client, headers={"authorization": f"Bearer {access_token}"})
-
-            self._assert_unauthorized(resp)
-
-    def test_invalid_access_token__before_issued(self, admin_user: User, client: Client) -> None:
-        with time_machine.travel("2025-01-01T12:00:00"):
-            refresh_token = RefreshToken.for_user(admin_user)
-            access_token = str(refresh_token.access_token)
-
-        with time_machine.travel("2025-01-01T11:00:00"):
-            resp = self._query(client, headers={"authorization": f"Bearer {access_token}"})
-
-            self._assert_unauthorized(resp)
-
-    @time_machine.travel("2025-01-01T12:00:00")
-    def test_invalid_access_token__user_inactive(self, admin_user: User, client: Client) -> None:
-        refresh_token = RefreshToken.for_user(admin_user)
-        access_token = str(refresh_token.access_token)
-
-        admin_user.is_active = False
-        admin_user.save()
-
-        resp = self._query(client, headers={"authorization": f"Bearer {access_token}"})
-
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-        data = resp.json()
-        assert data == {
-            "code": "authentication_failed",
-            "detail": "authentication_failed",
-        }
-
-    @time_machine.travel("2025-01-01T12:00:00")
-    def test_invalid_access_token__user_does_not_exist(self, admin_user: User, client: Client) -> None:
-        refresh_token = RefreshToken.for_user(admin_user)
-        access_token = str(refresh_token.access_token)
-
-        admin_user.delete()
-
-        resp = self._query(client, headers={"authorization": f"Bearer {access_token}"})
-
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-        data = resp.json()
-        assert data == {
-            "code": "authentication_failed",
-            "detail": "authentication_failed",
-        }
