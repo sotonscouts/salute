@@ -98,7 +98,7 @@ module = ["*.tests.*"]
 disable_error_code = ["arg-type"]
 
 [tool.django-stubs]
-django_settings_module = "salute.settings"
+django_settings_module = "salute.settings.dev"
 
 [tool.coverage.run]
 omit = [

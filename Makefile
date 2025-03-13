@@ -3,7 +3,7 @@
 CMD:=poetry run
 PYMODULE:=salute
 MANAGEPY:=$(CMD) ./manage.py
-SETTINGS_MODULE:=salute.settings
+SETTINGS_MODULE:=salute.settings.dev
 
 all: type test format lint
 fix: lint-fix format

@@ -34,7 +34,7 @@ class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
         user = await request.auser()
 
         # Block use of Query Introspection for unauthenticated users
-        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:
+        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:  # type: ignore[misc]
             self.execution_context.validation_rules = self.execution_context.validation_rules + (
                 NoSchemaIntrospectionCustomRule,
             )

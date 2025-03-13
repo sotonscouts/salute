@@ -8,7 +8,7 @@ class SaluteAsyncGraphQLView(AsyncGraphQLView):
         user = await request.auser()
 
         # Block use of GraphiQL for unauthenticated users
-        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:
+        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:  # type: ignore[misc]
             raise Http404()
 
         return await super().render_graphql_ide(request)

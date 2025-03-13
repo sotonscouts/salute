@@ -28,7 +28,7 @@ class PersonDetail(BaseModel):
     def normalise_phone_number(cls, val: str) -> str | None:
         if val:
             try:
-                phone_number = phonenumbers.parse(val, region=settings.PHONENUMBER_DEFAULT_REGION)
+                phone_number = phonenumbers.parse(val, region=settings.PHONENUMBER_DEFAULT_REGION)  # type: ignore[misc]
                 if phonenumbers.is_valid_number(phone_number):
                     return val
             except phonenumbers.phonenumberutil.NumberParseException:
