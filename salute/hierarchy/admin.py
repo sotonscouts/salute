@@ -1,8 +1,11 @@
+from typing import Any
+
 from django.contrib import admin
+from django.forms import ModelForm
 from django.http import HttpRequest
 
 from salute.core.models import BaseModel
-from salute.hierarchy.constants import DISTRICT_SECTION_TYPES
+from salute.hierarchy.constants import DISTRICT_SECTION_TYPES, NON_REGULAR_SECTIONS_TYPES
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.admin import TSATimestampedObjectModelAdminMixin
 
@@ -76,3 +79,25 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
     def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
         return request.user.is_superuser
+
+    def get_form(
+        self,
+        request: HttpRequest,
+        obj: Section | None = None,
+        change: bool = False,  # noqa: FBT001, FBT002
+        **kwargs: Any,  # noqa: ANN003
+    ) -> type[ModelForm]:
+        """
+        Slight hack: ensure that usual_weekday is not required for non regular sections.
+
+        e.g Network does not meet on a specific day.
+        """
+        form_class = super().get_form(request, obj, change, **kwargs)
+
+        class ModifiedForm(form_class):  # type: ignore[misc, valid-type]
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                super().__init__(*args, **kwargs)
+                if obj is not None:
+                    self.fields["usual_weekday"].required = obj.section_type not in NON_REGULAR_SECTIONS_TYPES
+
+        return ModifiedForm
