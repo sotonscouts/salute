@@ -44,7 +44,13 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     ) + TSAObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: TeamType | None = None) -> list[str]:  # type: ignore[override]
-        return super().get_readonly_fields(request, obj) + ["display_name"]
+        return super().get_readonly_fields(request, obj) + [
+            "display_name",
+            "mailing_slug",
+            "has_team_lead",
+            "has_all_list",
+            "included_in_all_members",
+        ]
 
     def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
         return request.user.is_superuser

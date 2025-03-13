@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.db import models
 from django.http import HttpRequest
 
 from salute.integrations.tsa.admin import TSAObjectModelAdminMixin
 from salute.integrations.tsa.models import TSATimestampedObject
+from salute.mailing_groups.models import SystemMailingGroupMembership
 from salute.people.models import Person
 from salute.roles.models import Accreditation, Role
 
@@ -17,6 +19,23 @@ class PersonAccreditationInlineAdmin(admin.TabularInline):
     readonly_fields = Accreditation.TSA_FIELDS
 
 
+class SystemMailingGroupMembershipInline(admin.TabularInline):
+    model = SystemMailingGroupMembership
+    extra = 0
+    verbose_name = "Mailing Group"
+    hide_title = True
+    classes = ["collapse"]
+
+    def has_change_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
+    def has_delete_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
+    def has_add_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
+
 @admin.register(Person)
 class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     list_display = (
@@ -28,7 +47,7 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     )
     list_filter = ("is_suspended", ("workspace_account", admin.EmptyFieldListFilter))
     search_fields = ("display_name", "membership_number", "tsa_id")
-    inlines = (PersonRoleInlineAdmin, PersonAccreditationInlineAdmin)
+    inlines = (PersonRoleInlineAdmin, PersonAccreditationInlineAdmin, SystemMailingGroupMembershipInline)
 
     fieldsets = (
         (None, {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended")}),
