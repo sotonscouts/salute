@@ -85,6 +85,11 @@ class Section(TSAUnit):
 
     # Salute fields
     nickname = models.CharField(max_length=32, blank=True)
+    mailing_slug = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Slug for generating mailing lists. Do not change unless you understand the impact. Only applicable to district sections.",  # noqa: E501
+    )
     usual_weekday = TextChoicesField(choices_enum=Weekday, null=True)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
@@ -107,6 +112,11 @@ class Section(TSAUnit):
                 condition=(~models.Q(section_type=SectionType.EXPLORERS) | ~models.Q(nickname="")),
                 violation_error_message="Explorer sections must have a nickname",
                 name="explorers_must_have_nickname",
+            ),
+            models.CheckConstraint(
+                condition=(models.Q(section_type__in=DISTRICT_SECTION_TYPES) | models.Q(mailing_slug="")),
+                violation_error_message="Only district sections can have a mailing slug",
+                name="only_district_sections_can_have_mailing_slug",
             ),
             models.UniqueConstraint(
                 fields=["group", "section_type", "usual_weekday"],

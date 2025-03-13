@@ -82,6 +82,26 @@ class TestTeamTypeQuery:
             }
         }
 
+    def test_query__nickname(self, user_with_person: User) -> None:
+        """Test that the nickname appears transparently as the display name"""
+        team_type = TeamTypeFactory(nickname="Bees")
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamTypeId": to_base64("TeamType", team_type.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teamType": {
+                "id": to_base64("TeamType", team_type.id),
+                "displayName": "Bees",
+            }
+        }
+
     def test_query__not_found(self, user_with_person: User) -> None:
         client = TestClient(self.url)
         with client.login(user_with_person):

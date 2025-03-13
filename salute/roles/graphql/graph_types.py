@@ -37,11 +37,7 @@ class RoleType(sb.relay.Node):
 
 @sd.type(models.TeamType)
 class TeamType(sb.relay.Node):
-    name: sb.Private[str]
-
-    @sd.field(description="Formatted name for the team type", only="name")
-    def display_name(self, info: sb.Info) -> str:
-        return self.name
+    display_name: str = sd.field(description="Formatted name for the team type", only="name")
 
 
 # TODO filters:

@@ -1,0 +1,3 @@
+tsa_id,name (not used),nickname,mailing_slug,has_team_lead,has_all_list,included_in_all_members
+04165cff-a0f8-ed11-8f6d-6045bdd0ed08,14-24 Team,,14to24,T,F,T
+39c8e1b4-2929-4aa3-8de3-5daab4d69b64,Admin,Admin Team,admin,F,F,T

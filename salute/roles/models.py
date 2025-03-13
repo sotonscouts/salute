@@ -8,7 +8,35 @@ from salute.integrations.tsa.models import TSAObject, TSATaxonomy
 
 
 class TeamType(TSATaxonomy):
-    pass
+    nickname = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text='Used to override name from TSA. Include "Team", e.g "People Team"',
+    )
+    display_name = models.GeneratedField(
+        expression=models.Case(
+            models.When(~models.Q(nickname__exact=""), models.F("nickname")),
+            default=models.F("name"),
+        ),
+        output_field=models.CharField(max_length=255),
+        db_persist=True,
+    )
+
+    # Mailing Lists
+    mailing_slug = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Slug for generating mailing lists. Do not change unless you understand the impact.",
+    )
+    has_team_lead = models.BooleanField(default=False)
+    has_all_list = models.BooleanField(default=False, help_text="If has sub-teams, whether to generate a -all list.")
+    included_in_all_members = models.BooleanField(default=True, help_text="Included in all members -all addresses")
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    class Meta:
+        ordering = ("display_name",)
 
 
 class Team(BaseModel):
@@ -33,7 +61,7 @@ class Team(BaseModel):
     )
 
     class Meta:
-        ordering = ("team_type__name",)
+        ordering = ("team_type__display_name",)
         constraints = [
             models.CheckConstraint(
                 condition=(
@@ -78,7 +106,7 @@ class Team(BaseModel):
 
     @property
     def display_name(self) -> str:
-        return f"{self.team_type.name} - {self.unit}"
+        return f"{self.team_type.display_name} - {self.unit}"
 
     @property
     def parent(self) -> District | Group | Section | Team:

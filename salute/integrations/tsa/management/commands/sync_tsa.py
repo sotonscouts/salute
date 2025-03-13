@@ -176,8 +176,8 @@ class Command(BaseCommand):
                 continue
 
             team_type, _ = TeamType.objects.update_or_create(
-                {"name": team.team_name}, tsa_id=team.team_id
-            )  # TODO: COUNT
+                defaults={"name": team.team_name}, create_defaults={"nickname": ""}, tsa_id=team.team_id
+            )
             team_obj, _ = Team.objects.update_or_create(  # type: ignore[misc]
                 {"allow_sub_team": team.allow_sub_team, "inherit_permissions": team.inherit_permissions},
                 team_type=team_type,
@@ -190,8 +190,8 @@ class Command(BaseCommand):
                 RoleType.objects.update_or_create(name=role_type.name)
 
         for subteam in sub_teams:
-            team_type, _ = TeamType.objects.update_or_create(  # TODO: COUNT, refactor
-                {"name": subteam.team_name}, tsa_id=subteam.team_id
+            team_type, _ = TeamType.objects.update_or_create(
+                defaults={"name": subteam.team_name}, create_defaults={"nickname": ""}, tsa_id=subteam.team_id
             )
             assert subteam.parent_team_id is not None
             subteam_obj, _ = Team.objects.update_or_create(
@@ -360,5 +360,18 @@ class Command(BaseCommand):
                 f"Deleting people that no longer have a role or accreditation: {people_without_roles_or_accreditations}"
             )
             people_without_roles_or_accreditations.delete()
+
+        # Finally, let's sync up Team Types if we're reading extra data
+        if read_extra_data:
+            with Path("data/team_types.csv").open("r") as fh:
+                tt_data = {row["tsa_id"]: row for row in csv.DictReader(fh)}
+                for tsa_id, data in tt_data.items():
+                    tt = TeamType.objects.get(tsa_id=tsa_id)
+                    tt.nickname = data["nickname"]
+                    tt.mailing_slug = data["mailing_slug"]
+                    tt.has_team_lead = data["has_team_lead"] == "T"
+                    tt.has_all_list = data["has_all_list"] == "T"
+                    tt.included_in_all_members = data["included_in_all_members"] == "T"
+                    tt.save()
 
         self.stdout.write(self.style.SUCCESS(str(sync_reports)))
