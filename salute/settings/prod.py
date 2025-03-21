@@ -16,4 +16,5 @@ DATABASES = {
 
 # Auth0 Settings
 AUTH0_DOMAIN = ""
+AUTH0_AUDIENCE = "example.com"
 AUTH0_JWKS_CACHE_TIMEOUT = 600
