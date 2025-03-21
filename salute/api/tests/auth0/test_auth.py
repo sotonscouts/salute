@@ -18,7 +18,7 @@ from salute.integrations.workspace.factories import WorkspaceAccountFactory
 from salute.people.factories import PersonFactory
 
 VALID_SCOPES = ["openid", "email", "salute:user"]
-VALID_AUDIENCE = settings.AUTH0_AUDIENCE  # type: ignore[misc]
+VALID_AUDIENCE = [settings.AUTH0_AUDIENCE]  # type: ignore[misc]
 
 
 @pytest.mark.django_db

@@ -43,7 +43,7 @@ def authenticate_user_with_bearer_token(token: str) -> AuthInfo:
         raise RequestAuthenticationError(errors=[{"message": "Invalid Access Token: Missing subject"}])
 
     # Check that the token has the required audience
-    if token_info.aud != settings.AUTH0_AUDIENCE:  # type: ignore[misc]
+    if settings.AUTH0_AUDIENCE not in token_info.aud:  # type: ignore[misc]
         raise RequestAuthenticationError(
             errors=[{"message": "Invalid Access Token: Audience not valid for this service"}]
         )
