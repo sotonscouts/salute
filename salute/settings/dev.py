@@ -31,3 +31,8 @@ if DEBUG:
     INTERNAL_IPS = ["127.0.0.1"]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+try:
+    from .local import *  # noqa: F403, W292
+except ModuleNotFoundError:
+    pass

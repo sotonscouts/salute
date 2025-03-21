@@ -13,3 +13,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
     }
 }
+
+# Auth0 Settings
+AUTH0_DOMAIN = ""
+AUTH0_JWKS_CACHE_TIMEOUT = 600
