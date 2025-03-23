@@ -9,6 +9,7 @@ from salute.accounts.models import DistrictUserRoleType
 if TYPE_CHECKING:
     from salute.accounts.models import User
     from salute.people.models import Person
+    from salute.roles.models import Role
 
 
 @rules.predicate
@@ -27,6 +28,17 @@ def user_is_person(user: User, person: Person | None) -> bool:
     return user.person == person
 
 
+@rules.predicate
+def role_belongs_to_person(user: User, role: Role | None) -> bool:
+    if role is None:
+        return False
+
+    if user.person is None:
+        return False
+
+    return user.person == role.person
+
+
 def has_district_role(role_type: DistrictUserRoleType) -> rules.predicates.Predicate:
     @rules.predicate
     def user_has_district_role(user: User) -> bool:
@@ -39,6 +51,8 @@ can_list_people = has_district_role(DistrictUserRoleType.MANAGER) | has_district
 can_view_person_pii = has_district_role(DistrictUserRoleType.ADMIN) | user_is_person
 can_view_person = can_list_people | user_is_person
 
+can_list_roles = can_list_people
+can_view_role = can_list_people | role_belongs_to_person
 
 can_list_teams = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)
 can_view_team = can_list_teams

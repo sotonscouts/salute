@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.db import models
 
+from salute.accounts.models import User
 from salute.core.models import BaseModel, Taxonomy
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.models import TSAObject, TSATaxonomy
@@ -135,12 +136,28 @@ class RoleStatus(Taxonomy):
         verbose_name_plural = "role statuses"
 
 
+class RoleQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> RoleQuerySet:
+        if user.person_id is None:
+            return self.none()
+
+        if user.district_role_list:
+            return self.all()
+
+        return self.filter(person_id=user.person_id)
+
+
+RoleManager = models.Manager.from_queryset(RoleQuerySet)
+
+
 class Role(TSAObject):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="roles")
     person = models.ForeignKey("people.Person", on_delete=models.CASCADE, related_name="roles")
 
     role_type = models.ForeignKey(RoleType, on_delete=models.PROTECT, related_name="roles")
     status = models.ForeignKey(RoleStatus, on_delete=models.PROTECT, related_name="roles")
+
+    objects = RoleManager()
 
     TSA_FIELDS = ("team", "person", "role_type", "status")
 
