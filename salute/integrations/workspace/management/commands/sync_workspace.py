@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         self.sync_workspace_users(service)
 
-        for workspace_account in WorkspaceAccount.objects.exclude(org_unit_path=SERVICE_ACCOUNT_ORG_UNIT_PATH):
+        for workspace_account in WorkspaceAccount.objects.exclude(org_unit_path__startswith=SERVICE_ACCOUNT_ORG_UNIT_PATH):
             self.audit_workspace_user(workspace_account)
 
         self.sync_workspace_groups(service)
