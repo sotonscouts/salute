@@ -32,6 +32,11 @@ if DEBUG:
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Override in local.py
+AUTH0_DOMAIN = "dev-example.uk.auth0.com"
+AUTH0_JWKS_CACHE_TIMEOUT = 600
+AUTH0_AUDIENCE = "http://localhost:8000"
+
 try:
     from .local import *  # noqa: F403, W292
 except ModuleNotFoundError:
