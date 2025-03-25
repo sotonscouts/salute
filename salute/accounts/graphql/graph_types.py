@@ -39,24 +39,3 @@ class User(sb.relay.Node):
             UserDistrictRole(level=role.level)
             for role in user.district_roles.all()  # type: ignore[attr-defined]
         ]
-
-
-@sb.type
-class LoginSuccess:
-    user: User
-    access_token: str
-    refresh_token: str
-
-
-@sb.type
-class AuthError:
-    message: str
-
-
-@sb.type
-class RevokeSuccess:
-    success: bool = True
-
-
-LoginResult = Annotated[LoginSuccess | AuthError, sb.union("LoginResult")]
-RevokeResult = Annotated[RevokeSuccess | AuthError, sb.union("RevokeResult")]

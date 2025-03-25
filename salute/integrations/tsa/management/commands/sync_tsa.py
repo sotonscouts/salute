@@ -260,7 +260,7 @@ class Command(BaseCommand):
         fetch_existing_people = options["fetch_existing_people"]
         read_extra_data = bool(options["read_extra_data"])
 
-        request_cache_dir = Path(settings.BASE_DIR) / ".requests-cache"
+        request_cache_dir = Path(settings.BASE_DIR) / ".requests-cache"  # type: ignore[misc]
         # token = input("Enter token: ")
         token = ""
         membership = MembershipAPIClient(

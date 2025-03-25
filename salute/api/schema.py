@@ -5,7 +5,7 @@ from strawberry.tools import merge_types
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.permissions import IsAuthenticated
 
-from salute.accounts.graphql.schema import AccountsMutation, AccountsQuery
+from salute.accounts.graphql.schema import AccountsQuery
 from salute.hierarchy.graphql.schema import HierarchyQuery
 from salute.people.graphql.schema import PeopleQuery
 from salute.roles.graphql.schema import RolesQuery
@@ -26,8 +26,6 @@ APP_QUERIES = (
     RolesQuery,
 )
 
-APP_MUTATIONS = (AccountsMutation,)
-
 
 class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
     async def on_validation_start(self) -> None:
@@ -36,7 +34,7 @@ class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
         user = await request.auser()
 
         # Block use of Query Introspection for unauthenticated users
-        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:
+        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:  # type: ignore[misc]
             self.execution_context.validation_rules = self.execution_context.validation_rules + (
                 NoSchemaIntrospectionCustomRule,
             )
@@ -44,7 +42,6 @@ class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
 
 schema = strawberry.Schema(
     query=merge_types("Query", APP_QUERIES),
-    mutation=merge_types("Mutation", APP_MUTATIONS),
     extensions=[
         DjangoOptimizerExtension,
         DisableAnonymousIntrospection,

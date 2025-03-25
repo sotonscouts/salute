@@ -57,7 +57,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
-    person = models.OneToOneField("people.Person", null=True, on_delete=models.SET_NULL, related_name="+")
+    auth0_sub = models.CharField(
+        verbose_name="Auth0 Subject",
+        help_text="Do not edit if you do not understand. Maps to sub in OIDC token",
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+    )
+    person = models.OneToOneField("people.Person", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     objects = UserManager()
 
