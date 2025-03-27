@@ -3,7 +3,7 @@ import strawberry_django as sd
 from strawberry_django.permissions import HasPerm
 
 from salute.roles import models as roles_models
-from salute.roles.graphql.graph_types import AccreditationType, RoleStatus, RoleType, Team, TeamType
+from salute.roles.graphql.graph_types import AccreditationType, Role, RoleStatus, RoleType, Team, TeamType
 
 
 @sb.type
@@ -78,4 +78,9 @@ class RolesQuery:
         extensions=[
             HasPerm("team_type.list", message="You don't have permission to list team types.", fail_silently=False)
         ],
+    )
+
+    roles: sd.relay.ListConnectionWithTotalCount[Role] = sd.connection(
+        description="List roles",
+        extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
