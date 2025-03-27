@@ -17,7 +17,7 @@ from salute.roles.factories import (
 
 
 @pytest.mark.django_db
-class TestTeamTypeQuery:
+class TestTeamQuery:
     url = reverse("graphql")
 
     QUERY = """
