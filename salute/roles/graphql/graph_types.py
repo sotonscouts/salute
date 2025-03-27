@@ -1,10 +1,16 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+from typing import Any, cast
+
 import strawberry as sb
 import strawberry_django as sd
+from django.db.models import QuerySet
+from strawberry_django.auth.utils import get_current_user
 
+from salute.accounts.models import User
 from salute.hierarchy.graphql.graph_types import District, Group, Section
+from salute.people.graphql.graph_types import Person
 from salute.roles import models
 
 
@@ -89,3 +95,26 @@ class Team(TeamWithChildInterface, sb.relay.Node):
     district: District | None = sb.field(description="The district that this team belongs to")
     group: Group | None = sb.field(description="The section that this team belongs to")
     section: Section | None = sb.field(description="The section that this team belongs to")
+
+
+@sd.type(models.Role)
+class Role(sb.relay.Node):
+    person: Person = sb.field(description="The person the role belongs to")
+    team: Team = sb.field(description="The team the role belongs to")
+    role_type: RoleType = sb.field(description="The type of role within the team")
+    status: RoleStatus = sb.field(description="The status of the role")
+
+    @classmethod
+    def get_queryset(
+        cls, queryset: models.RoleQuerySet | QuerySet, info: sb.Info, **kwargs: Any
+    ) -> models.RoleQuerySet | QuerySet:
+        user = get_current_user(info)
+        if not user.is_authenticated:
+            return queryset.none()
+
+        user = cast(User, user)
+        # When the strawberry optimiser is determining the queryset relations, it will call this method.
+        # In such calls, the queryset is not a PersonQuerySet, but a Django QuerySet.
+        if hasattr(queryset, "for_user"):
+            return queryset.for_user(user)
+        return queryset
