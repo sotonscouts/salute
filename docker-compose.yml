@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    image: salute
+    command: /start
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=salute.settings.prod
+      - SQL_DATABASE=salute
+      - SQL_USER=salute
+      - SQL_PASSWORD=salute
+      - SQL_HOST=db
+      - SQL_PORT=5432
+    depends_on:
+      - db
+  db:
+    image: postgres:16.1-alpine
+    expose:
+      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=salute
+      - POSTGRES_USER=salute
+      - POSTGRES_PASSWORD=salute
+
+volumes:
+  postgres_data:

@@ -24,6 +24,9 @@ DATABASES = {
 }
 
 if DEBUG:
+    # Ensure Whitenoise is used in development
+    INSTALLED_APPS.append("whitenoise.runserver_nostatic")  # noqa: F405
+
     INSTALLED_APPS.append("debug_toolbar")  # noqa: F405
 
     # If debug is enabled, then turn on debug toolbar and allow the local machine to use it
