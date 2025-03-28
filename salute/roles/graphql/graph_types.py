@@ -7,6 +7,7 @@ import strawberry as sb
 import strawberry_django as sd
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
+from strawberry_django.permissions import HasPerm
 
 from salute.accounts.models import User
 from salute.hierarchy.graphql.graph_types import District, Group, Section
@@ -59,6 +60,11 @@ class TeamInterface(sb.relay.Node):
     display_name: str = sd.field(
         description="The formatted name of the team",
         select_related=["team_type", "parent_team", "district", "group", "section"],
+    )
+
+    roles: sd.relay.ListConnectionWithTotalCount[Role] = sd.connection(
+        description="List roles",
+        extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
 
 

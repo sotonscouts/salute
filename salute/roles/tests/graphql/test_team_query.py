@@ -12,6 +12,7 @@ from salute.roles.factories import (
     GroupSectionTeamFactory,
     GroupSubTeamFactory,
     GroupTeamFactory,
+    RoleFactory,
     TeamFactory,
 )
 
@@ -231,5 +232,176 @@ class TestTeamQuery:
                     {"displayName": st.display_name} for st in sorted(sub_teams, key=lambda st: st.team_type.name)
                 ],
                 "teamType": {"displayName": team.team_type.name},
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestTeamJoinRolesQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getTeamWithRoles($teamId: GlobalID!) {
+        team(teamId: $teamId) {
+            id
+            displayName
+            roles {
+                edges {
+                    node {
+                        person {
+                            displayName
+                        }
+                        roleType {
+                            displayName
+                        }
+                        status {
+                            displayName
+                        }
+                    }
+                }
+                totalCount
+            }
+        }
+    }
+    """
+
+    def test_query__not_authenticated(self) -> None:
+        team = GroupSectionTeamFactory()
+        client = TestClient(self.url)
+        results = client.query(
+            self.QUERY,
+            variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            assert_no_errors=False,
+        )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that team.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["team"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_person(self, user: User) -> None:
+        team = GroupSectionTeamFactory()
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that team.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["team"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_roles(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "roles": {
+                    "edges": [],
+                    "totalCount": 0,
+                },
+            }
+        }
+
+    def test_query__roles(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+
+        roles = RoleFactory.create_batch(size=5, team=team)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "roles": {
+                    "edges": [
+                        {
+                            "node": {
+                                "person": {"displayName": role.person.display_name},
+                                "roleType": {"displayName": role.role_type.name},
+                                "status": {"displayName": role.status.name},
+                            }
+                        }
+                        for role in sorted(roles, key=lambda r: (r.role_type.name, r.person.display_name))
+                    ],
+                    "totalCount": 5,
+                },
+            }
+        }
+
+    def test_query__only_own_roles(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        team = DistrictTeamFactory(district=district)
+
+        RoleFactory.create_batch(size=5, team=team)
+        role = RoleFactory(team=team, person=user_with_person.person)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "roles": {
+                    "edges": [
+                        {
+                            "node": {
+                                "person": {"displayName": role.person.display_name},
+                                "roleType": {"displayName": role.role_type.name},
+                                "status": {"displayName": role.status.name},
+                            }
+                        }
+                    ],
+                    "totalCount": 1,
+                },
             }
         }
