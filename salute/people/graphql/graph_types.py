@@ -1,13 +1,16 @@
-from typing import Any, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
-from strawberry_django.permissions import HasSourcePerm
+from strawberry_django.permissions import HasPerm, HasSourcePerm
 
 from salute.accounts.models import User
 from salute.people import models
+
+if TYPE_CHECKING:
+    from salute.roles.graphql.graph_types import Role
 
 
 @sd.filter(models.Person, lookups=True)
@@ -35,6 +38,13 @@ class Person(sb.relay.Node):
         only="tsa_email",
         select_related="workspace_account",
         extensions=[HasSourcePerm("person.view_pii", fail_silently=True)],
+    )
+
+    roles: sd.relay.ListConnectionWithTotalCount[Annotated["Role", sb.lazy("salute.roles.graphql.graph_types")]] = (
+        sd.connection(
+            description="List roles",
+            extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
+        )
     )
 
     @classmethod
