@@ -46,7 +46,14 @@ class Person(TSAObject):
         db_persist=True,
     )
     display_name = models.GeneratedField(
-        expression=Concat(models.F("first_name"), models.Value(" "), models.F("last_name")),
+        expression=Concat(
+            models.Case(
+                models.When(~models.Q(preferred_name__exact=""), models.F("preferred_name")),
+                default=models.F("legal_name"),
+            ),
+            models.Value(" "),
+            models.F("last_name"),
+        ),
         output_field=models.CharField(max_length=511),
         db_persist=True,
     )

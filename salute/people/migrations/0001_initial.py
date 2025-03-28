@@ -75,7 +75,10 @@ class Migration(migrations.Migration):
                     models.GeneratedField(
                         db_persist=True,
                         expression=django.db.models.functions.text.Concat(
-                            models.F("first_name"),
+                            models.Case(
+                                models.When(~models.Q(preferred_name__exact=""), models.F("preferred_name")),
+                                default=models.F("legal_name"),
+                            ),
                             models.Value(" "),
                             models.F("last_name"),
                         ),
