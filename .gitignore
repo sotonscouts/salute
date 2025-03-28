@@ -2,6 +2,9 @@
 .requests-cache/
 credentials.json
 
+# Docker
+docker-compose.override.yml
+
 ### Django ###
 *.log
 *.pot
