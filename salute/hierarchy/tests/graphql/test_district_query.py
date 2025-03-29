@@ -368,23 +368,3 @@ class TestDistrictJoinTeamsQuery:
                 "teams": [{"displayName": t.display_name} for t in sorted(teams, key=lambda t: t.team_type.name)],
             }
         }
-
-    def test_query_teams__no_permission(self, user_with_person: User) -> None:
-        district = DistrictFactory()
-
-        DistrictTeamFactory.create_batch(size=5, district=district)
-        client = TestClient(self.url)
-        with client.login(user_with_person):
-            result = client.query(
-                self.QUERY,
-            )
-
-        assert isinstance(result, Response)
-
-        assert result.errors is None
-        assert result.data == {
-            "district": {
-                "shortcode": district.shortcode,
-                "teams": [],
-            }
-        }

@@ -259,24 +259,3 @@ class TestGroupJoinTeamsQuery:
                 "teams": [{"displayName": t.display_name} for t in sorted(teams, key=lambda t: t.team_type.name)],
             }
         }
-
-    def test_query_teams__no_permission(self, user_with_person: User) -> None:
-        group = GroupFactory()
-        group_id = to_base64("Group", group.id)
-        GroupTeamFactory.create_batch(size=5, group=group)
-        client = TestClient(self.url)
-        with client.login(user_with_person):
-            result = client.query(
-                self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
-            )
-
-        assert isinstance(result, Response)
-
-        assert result.errors is None
-        assert result.data == {
-            "group": {
-                "shortcode": group.shortcode,
-                "teams": [],
-            }
-        }

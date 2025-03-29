@@ -298,26 +298,3 @@ class TestSectionTeamQuery:
             }
         ]
         assert result.data is None
-
-    def test_query__no_permission(self, user_with_person: User) -> None:
-        section = GroupSectionFactory()
-
-        section_id = to_base64("DistrictOrGroupSection", section.id)
-        client = TestClient(self.url)
-        with client.login(user_with_person):
-            result = client.query(
-                self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
-                assert_no_errors=False,
-            )
-
-        assert isinstance(result, Response)
-
-        assert result.errors == [
-            {
-                "locations": [{"column": 17, "line": 5}],
-                "message": "You don't have permission to view teams.",
-                "path": ["section", "team"],
-            }
-        ]
-        assert result.data is None

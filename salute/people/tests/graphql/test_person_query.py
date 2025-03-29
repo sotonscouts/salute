@@ -6,6 +6,7 @@ from strawberry_django.test.client import Response, TestClient
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.people.factories import PersonFactory
+from salute.roles.factories import RoleFactory
 
 
 @pytest.mark.django_db
@@ -152,5 +153,88 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": None,
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestPersonJoinRolesQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getPerson($id: GlobalID!) {
+        person(personId: $id) {
+            displayName
+            roles {
+                edges {
+                    node {
+                        team {
+                            displayName
+                        }
+                        roleType {
+                            displayName
+                        }
+                        status {
+                            displayName
+                        }
+                    }
+                }
+                totalCount
+            }
+        }
+    }
+    """
+
+    def test_query__no_roles(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "roles": {
+                    "edges": [],
+                    "totalCount": 0,
+                },
+            }
+        }
+
+    def test_query(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        roles = RoleFactory.create_batch(size=5, person=user_with_person.person)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "roles": {
+                    "edges": [
+                        {
+                            "node": {
+                                "team": {"displayName": role.team.display_name},
+                                "roleType": {"displayName": role.role_type.name},
+                                "status": {"displayName": role.status.name},
+                            }
+                        }
+                        for role in sorted(roles, key=lambda r: (r.team.team_type.name))
+                    ],
+                    "totalCount": 5,
+                },
             }
         }

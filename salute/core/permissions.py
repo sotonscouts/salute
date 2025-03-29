@@ -2,10 +2,9 @@
 import rules
 
 from salute.core.predicates import (
-    can_list_teams,
     can_view_person,
     can_view_person_pii,
-    can_view_team,
+    can_view_role,
     user_has_related_person,
 )
 
@@ -29,6 +28,9 @@ rules.add_perm("person.view_pii", can_view_person_pii)
 rules.add_perm("accreditation_type.list", user_has_related_person)
 rules.add_perm("accreditation_type.view", user_has_related_person)
 
+rules.add_perm("role.list", user_has_related_person)
+rules.add_perm("role.view", can_view_role)
+
 rules.add_perm("role_status.list", user_has_related_person)
 
 rules.add_perm("role_type.list", user_has_related_person)
@@ -37,6 +39,5 @@ rules.add_perm("role_type.view", user_has_related_person)
 rules.add_perm("team_type.list", user_has_related_person)
 rules.add_perm("team_type.view", user_has_related_person)
 
-
-rules.add_perm("team.list", can_list_teams)
-rules.add_perm("team.view", can_view_team)
+rules.add_perm("team.list", user_has_related_person)
+rules.add_perm("team.view", user_has_related_person)

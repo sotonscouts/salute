@@ -63,25 +63,6 @@ class TestTeamTypeListQuery:
         ]
         assert results.data is None
 
-    def test_query__no_permission(self, user_with_person: User) -> None:
-        client = TestClient(self.url)
-        with client.login(user_with_person):
-            results = client.query(
-                self.QUERY,
-                assert_no_errors=False,
-            )
-
-        assert isinstance(results, Response)
-
-        assert results.errors == [
-            {
-                "message": "You don't have permission to list teams.",
-                "locations": [{"line": 3, "column": 9}],
-                "path": ["teams"],
-            }
-        ]
-        assert results.data is None
-
     def test_query(self, user_with_person: User) -> None:
         district = DistrictFactory()
         DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
