@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import models
 from django.http import HttpRequest
 
 from salute.core.admin import BaseModelAdminMixin
@@ -82,12 +83,21 @@ class WorkspaceGroupAliasInlineAdmin(admin.StackedInline):
     model = WorkspaceGroupAlias
     readonly_fields = ("address",)
 
+    def has_change_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
+    def has_delete_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
+    def has_add_permission(self, request: HttpRequest, obj: models.Model | None = None) -> bool:
+        return False
+
 
 @admin.register(WorkspaceGroup)
 class WorkspaceGroupAdmin(BaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ("email", "name", "salute_managed")
-    list_filter = ("salute_managed",)
-    search_fields = ("email", "name", "description", "salute_managed")
+    list_display = ("email", "name", "system_mailing_group")
+    list_filter = (("system_mailing_group", admin.EmptyFieldListFilter),)
+    search_fields = ("email", "name", "description", "system_mailing_group__name")
     inlines = (WorkspaceGroupAliasInlineAdmin,)
 
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
@@ -96,7 +106,12 @@ class WorkspaceGroupAdmin(BaseModelAdminMixin, admin.ModelAdmin):
             "email",
             "name",
             "description",
-            "salute_managed",
         ]
 
-    fieldsets = ((None, {"fields": ("email", "name", "description", "google_id")}),) + BaseModelAdminMixin.FIELDSETS
+    fieldsets = (
+        (None, {"fields": ("email", "name", "description", "google_id", "system_mailing_group")}),
+    ) + BaseModelAdminMixin.FIELDSETS
+
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        assert request.user.is_authenticated
+        return request.user.is_superuser

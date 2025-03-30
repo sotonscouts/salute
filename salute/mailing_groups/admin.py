@@ -35,18 +35,19 @@ class MailGroupAdmin(admin.ModelAdmin):
         "display_name",
         "member_count",
         "workspace_member_count",
+        "workspace_group",
         "can_members_send_as",
         "can_receive_external_email",
         "composite_key",
         "config",
     )
     search_fields = ["name", "display_name", "composite_key"]
-    list_filter = ["can_receive_external_email", "can_members_send_as"]
+    list_filter = ["can_receive_external_email", "can_members_send_as", ("workspace_group", admin.EmptyFieldListFilter)]
     inlines = [SystemMailingGroupMembershipInline]
     fieldsets = (
         (None, {"fields": ("name", "display_name")}),
         ("Stats", {"fields": ("member_count", "workspace_member_count")}),
-        ("Google Workspace", {"fields": ("can_members_send_as", "can_receive_external_email")}),
+        ("Google Workspace", {"fields": ("can_members_send_as", "can_receive_external_email", "workspace_group")}),
         ("Tech Details", {"classes": ("collapse",), "fields": ("composite_key", "config")}),
     )
 

@@ -1,6 +1,7 @@
 from django.db import models
 
 from salute.core.models import BaseModel
+from salute.mailing_groups.models import SystemMailingGroup
 
 
 class WorkspaceAccount(BaseModel):
@@ -56,7 +57,13 @@ class WorkspaceGroup(BaseModel):
     email = models.CharField(max_length=255, unique=True, editable=False)
     name = models.CharField(max_length=255, editable=False)
     description = models.TextField(editable=False)
-    salute_managed = models.BooleanField(default=False, editable=False)
+    system_mailing_group = models.OneToOneField(
+        SystemMailingGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="workspace_group",
+    )
 
     def __str__(self) -> str:
         return self.email
