@@ -13,8 +13,8 @@ class TestPersonListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query {
-        people {
+    query listPeople($filters: PersonFilter, $order: PersonOrder) {
+        people(filters: $filters, order: $order) {
             edges {
                 node {
                     displayName
@@ -159,7 +159,6 @@ class TestPersonListQuery:
             }
         }
 
-    @pytest.mark.xfail(reason="Flaky")
     @pytest.mark.parametrize(
         ("field", "ordering", "reverse"),
         [
@@ -171,7 +170,7 @@ class TestPersonListQuery:
     )
     def test_query__ordering(self, *, field: str, ordering: str, reverse: bool, user_with_person: User) -> None:
         district = DistrictFactory()
-        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
 
         PersonFactory.create_batch(10)
 
@@ -181,20 +180,8 @@ class TestPersonListQuery:
         client = TestClient(self.url)
         with client.login(user_with_person):
             result = client.query(
-                """
-                query personOrderTest($order: Ordering) {
-                    people (order: {firstName: $order}) {
-                        edges {
-                            node {
-                """
-                f"                {field_camel_case}"
-                """
-                            }
-                        }
-                    }
-                }
-                """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                self.QUERY,
+                variables={"order": {field_camel_case: ordering}},
             )
 
         assert isinstance(result, Response)
@@ -205,10 +192,14 @@ class TestPersonListQuery:
                 "edges": [
                     {
                         "node": {
-                            field_camel_case: getattr(p, field),
+                            "displayName": p.display_name,
+                            "firstName": p.first_name,
+                            "formattedMembershipNumber": p.formatted_membership_number,
+                            "contactEmail": p.contact_email,
                         }
                     }
                     for p in Person.objects.order_by(field if not reverse else f"-{field}")
                 ],
+                "totalCount": 11,
             }
         }
