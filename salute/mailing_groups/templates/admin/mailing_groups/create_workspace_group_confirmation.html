@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_urls %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .warning {
+        border-left: 5px solid #ffc107;
+        padding: 10px 15px;
+        margin: 15px 0;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url 'admin:mailing_groups_systemmailinggroup_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; <a href="{% url 'admin:mailing_groups_systemmailinggroup_change' mailing_group.pk %}">{{ mailing_group }}</a>
+&rsaquo; {% trans 'Create Workspace Group' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Confirm Creation of Workspace Group</h1>
+    <div class="module">
+        <p>
+            Are you sure you want to create a Google Workspace group for the mailing group "{{ mailing_group.name }}"?
+        </p>
+        <p>
+            <strong>Name:</strong> {{ mailing_group.display_name }}<br>
+            <strong>Email:</strong> {{ mailing_group.name }}@{{ google_domain }}
+        </p>
+        <p>
+            This will <strong>immediately create</strong> the group in Google Workspace.
+            <br>However, no members will be added to the group at this time and the sync_workspace_groups command will need to be run to add members.
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="submit-row">
+                <input type="submit" class="default" value="Yes, create the group in Google Workspace" />
+                <a href="{% url 'admin:mailing_groups_systemmailinggroup_change' mailing_group.pk %}" class="button">No, take me back</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

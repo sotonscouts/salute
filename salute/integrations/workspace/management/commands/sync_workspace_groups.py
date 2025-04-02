@@ -73,10 +73,16 @@ class Command(BaseCommand):
             action="store_true",
             help="Show what would be changed without making actual changes to Google Workspace",
         )
+        parser.add_argument(
+            "--skip-sendas",
+            action="store_true",
+            help="Skip syncing sendAs aliases for users",
+        )
 
     def handle(self, *args: str, **options: Any) -> None:
         # Explicitly convert to bool to satisfy the type checker
         dry_run: bool = bool(options.get("dry_run", False))
+        skip_sendas: bool = bool(options.get("skip_sendas", False))
 
         if dry_run:
             self.stdout.write(
@@ -98,7 +104,8 @@ class Command(BaseCommand):
             self.sync_system_mailing_group(group, directory_service, group_settings_service, dry_run=dry_run)
 
         # Sync sendAs aliases for users
-        self.sync_user_sendas_aliases(directory_service, gmail_service, dry_run=dry_run)
+        if not skip_sendas:
+            self.sync_user_sendas_aliases(directory_service, gmail_service, dry_run=dry_run)
 
     def sync_system_mailing_group(
         self, group: WorkspaceGroup, directory_service: Any, group_settings_service: Any, *, dry_run: bool = False
@@ -145,6 +152,11 @@ class Command(BaseCommand):
                         "email": expected_address,
                     },
                 ).execute()
+
+                group.name = expected_name
+                group.description = expected_description
+                group.email = expected_address
+                group.save()
             else:
                 print(f"  [DRY RUN] Would update group: {group.email} with new details")
 
