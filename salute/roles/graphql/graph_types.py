@@ -95,12 +95,21 @@ class SectionTeam(TeamInterface, sb.relay.Node):
     section: Section = sb.field(description="The section that this team belongs to")
 
 
+@sb.type
+class UnitInfo:
+    display_name: str = sb.field(description="Formatted name for the unit")
+
+
 @sd.type(models.Team)
 class Team(TeamWithChildInterface, sb.relay.Node):
     parent_team: Team | None = sb.field(description="The parent team of this team")
     district: District | None = sb.field(description="The district that this team belongs to")
     group: Group | None = sb.field(description="The section that this team belongs to")
     section: Section | None = sb.field(description="The section that this team belongs to")
+
+    @sd.field()  # TODO: optimise
+    def unit(self, info: sb.Info) -> UnitInfo:
+        return UnitInfo(display_name=self.unit.display_name)
 
 
 @sd.type(models.Role)

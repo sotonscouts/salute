@@ -24,6 +24,9 @@ class TestRoleListQuery:
                     }
                     team {
                         displayName
+                        unit {
+                            displayName
+                        }
                     }
                     roleType {
                         displayName
@@ -118,7 +121,12 @@ class TestRoleListQuery:
                             "status": {
                                 "displayName": role.status.name,
                             },
-                            "team": {"displayName": role.team.display_name},
+                            "team": {
+                                "displayName": role.team.display_name,
+                                "unit": {
+                                    "displayName": role.team.district.display_name,
+                                },
+                            },
                         }
                     }
                 ],
@@ -155,7 +163,12 @@ class TestRoleListQuery:
                             "status": {
                                 "displayName": role.status.name,
                             },
-                            "team": {"displayName": role.team.display_name},
+                            "team": {
+                                "displayName": role.team.display_name,
+                                "unit": {
+                                    "displayName": role.team.district.display_name,
+                                },
+                            },
                         }
                     }
                     for role in sorted(roles, key=lambda role: role.team.display_name)
