@@ -31,3 +31,11 @@ STORAGES = {
 AUTH0_DOMAIN = env("AUTH0_DOMAIN", str)
 AUTH0_AUDIENCE = env("AUTH0_AUDIENCE", str)
 AUTH0_JWKS_CACHE_TIMEOUT = env("AUTH0_JWKS_CACHE_TIMEOUT", int, default=600)
+
+# Replace with a link to the TSA person profile. Use $tsaid to replace with the TSA ID.
+# This is used in the TSA person profile link in the API.
+TSA_PERSON_PROFILE_LINK_TEMPLATE = env(
+    "TSA_PERSON_PROFILE_LINK_TEMPLATE",
+    str,
+    default="https://example.com/people/$tsaid/",
+)

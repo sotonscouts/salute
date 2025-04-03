@@ -40,6 +40,8 @@ AUTH0_DOMAIN = "dev-example.uk.auth0.com"
 AUTH0_JWKS_CACHE_TIMEOUT = 600
 AUTH0_AUDIENCE = "http://localhost:8000"
 
+TSA_PERSON_PROFILE_LINK_TEMPLATE = "https://example.com/people/$tsaid/"
+
 try:
     from .local import *  # noqa: F403, W292
 except ModuleNotFoundError:
