@@ -1,10 +1,12 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+from string import Template
 from typing import Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
+from django.conf import settings
 from django.db.models import Q, QuerySet
 from strawberry_django.auth.utils import get_current_user
 from strawberry_django.permissions import HasPerm
@@ -66,6 +68,13 @@ class TeamInterface(sb.relay.Node):
         description="List roles",
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
+
+    @sd.field(
+        description="Link to the TSA unit details.",
+    )
+    def tsa_details_link(self) -> str:
+        template = Template(settings.TSA_TEAM_LINK_TEMPLATE)  # type: ignore[misc]
+        return template.safe_substitute(unitid=self.unit.tsa_id, teamtypeid=self.team_type.tsa_id)  # type: ignore[attr-defined]
 
 
 @sd.type(models.Team)

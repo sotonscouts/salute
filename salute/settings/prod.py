@@ -45,3 +45,9 @@ TSA_UNIT_LINK_TEMPLATE = env(
     str,
     default="https://example.com/units/$tsaid/details/",
 )
+
+TSA_TEAM_LINK_TEMPLATE = env(
+    "TSA_TEAM_LINK_TEMPLATE",
+    str,
+    default="https://example.com/teams/$unitid/$teamtypeid/details/",
+)

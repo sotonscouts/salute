@@ -1,6 +1,8 @@
+from collections.abc import Generator
 from uuid import UUID
 
 import pytest
+import pytest_django
 from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
@@ -232,6 +234,43 @@ class TestTeamQuery:
                     {"displayName": st.display_name} for st in sorted(sub_teams, key=lambda st: st.team_type.name)
                 ],
                 "teamType": {"displayName": team.team_type.name},
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestTeamTSAProfileLinkQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getTeam($teamId: GlobalID!) {
+        team(teamId: $teamId) {
+            tsaDetailsLink
+        }
+    }
+    """
+
+    @pytest.fixture(autouse=True)
+    def use_dummy_tsa_team_link_template(
+        self, settings: Generator[pytest_django.fixtures.SettingsWrapper, None, None]
+    ) -> None:
+        settings.TSA_TEAM_LINK_TEMPLATE = "https://example.com/units/$unitid/teams/$teamtypeid/"  # type: ignore[attr-defined]
+
+    def test_query_tsa_details_link(self, user_with_person: User) -> None:
+        team = GroupTeamFactory()
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "team": {
+                "tsaDetailsLink": f"https://example.com/units/{team.group.tsa_id}/teams/{team.team_type.tsa_id}/",
             }
         }
 

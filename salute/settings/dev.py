@@ -42,6 +42,7 @@ AUTH0_AUDIENCE = "http://localhost:8000"
 
 TSA_PERSON_PROFILE_LINK_TEMPLATE = "https://example.com/people/$tsaid/"
 TSA_UNIT_LINK_TEMPLATE = "https://example.com/units/$tsaid/details/"
+TSA_TEAM_LINK_TEMPLATE = "https://example.com/teams/$unitid/$teamtypeid/details/"
 
 try:
     from .local import *  # noqa: F403, W292
