@@ -39,3 +39,9 @@ TSA_PERSON_PROFILE_LINK_TEMPLATE = env(
     str,
     default="https://example.com/people/$tsaid/",
 )
+
+TSA_UNIT_LINK_TEMPLATE = env(
+    "TSA_UNIT_LINK_TEMPLATE",
+    str,
+    default="https://example.com/units/$tsaid/details/",
+)

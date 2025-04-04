@@ -106,6 +106,38 @@ class TestDistrictQuery:
 
 
 @pytest.mark.django_db
+class TestDistrictTSADetailsLinkQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    {
+        district {
+            tsaDetailsLink
+        }
+    }
+    """
+
+    @pytest.mark.usefixtures("use_dummy_tsa_unit_link_template")
+    def test_query_tsa_profile_link(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "district": {
+                "tsaDetailsLink": f"https://example.com/units/{district.tsa_id}/",
+            }
+        }
+
+
+@pytest.mark.django_db
 class TestDistrictJoinGroupsQuery:
     url = reverse("graphql")
 
