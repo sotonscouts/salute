@@ -8,6 +8,9 @@ env = Env()
 SECRET_KEY = env("SECRET_KEY", str)
 ALLOWED_HOSTS: list[str] = [env("ALLOWED_HOST", str)]
 
+CSRF_TRUSTED_ORIGINS = [env("CSRF_TRUSTED_ORIGIN", str)]
+CORS_ALLOWED_ORIGINS = [env("CORS_ALLOWED_ORIGIN", str)]
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

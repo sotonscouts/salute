@@ -11,4 +11,4 @@ cd /app
 python /app/manage.py collectstatic --noinput
 python /app/manage.py migrate
 
-/app/.venv/bin/granian --interface asginl salute.asgi:application --workers 4 --no-ws --host 0.0.0.0 --port 8000
+/app/.venv/bin/granian --interface asginl salute.asgi:application --workers 2 --no-ws --host 0.0.0.0 --port 8000
