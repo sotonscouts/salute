@@ -80,6 +80,13 @@ class RolesQuery:
         ],
     )
 
+    @sd.field(
+        description="Get a role by ID",
+        extensions=[HasPerm("role.view", message="You don't have permission to view that role.")],
+    )
+    def role(self, role_id: sb.relay.GlobalID, info: sb.Info) -> Role:
+        return roles_models.Role.objects.get(id=role_id.node_id)  # type: ignore[return-value]
+
     roles: sd.relay.ListConnectionWithTotalCount[Role] = sd.connection(
         description="List roles",
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],

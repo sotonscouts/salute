@@ -1,7 +1,9 @@
+from string import Template
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
+from django.conf import settings
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
 from strawberry_django.permissions import HasPerm, HasSourcePerm
@@ -46,6 +48,14 @@ class Person(sb.relay.Node):
             extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
         )
     )
+
+    @sd.field(
+        description="Link to the TSA person profile.",
+        only="tsa_id",
+    )
+    def tsa_profile_link(self) -> str:
+        template = Template(settings.TSA_PERSON_PROFILE_LINK_TEMPLATE)  # type: ignore[misc]
+        return template.safe_substitute(tsaid=self.tsa_id)  # type: ignore[attr-defined]
 
     @classmethod
     def get_queryset(

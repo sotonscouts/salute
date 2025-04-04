@@ -226,6 +226,42 @@ class TestSectionTypeInfoQuery:
 
 
 @pytest.mark.django_db
+class TestSectionTSADetailsLinkQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getSectionTsaDetailsLink($sectionId: GlobalID!) {
+        section(sectionId: $sectionId) {
+            tsaDetailsLink
+        }
+    }
+    """
+
+    @pytest.mark.usefixtures("use_dummy_tsa_unit_link_template")
+    def test_query_tsa_profile_link(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        section = GroupSectionFactory(group__district=district)
+
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "section": {
+                "tsaDetailsLink": f"https://example.com/units/{section.tsa_id}/",
+            }
+        }
+
+
+@pytest.mark.django_db
 class TestSectionTeamQuery:
     url = reverse("graphql")
 

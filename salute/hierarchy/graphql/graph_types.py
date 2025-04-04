@@ -1,10 +1,12 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+from string import Template
 from typing import TYPE_CHECKING, Annotated
 
 import strawberry as sb
 import strawberry_django as sd
+from django.conf import settings
 from django.db.models import Case, OrderBy, QuerySet, Value, When
 from strawberry import auto
 from strawberry_django.permissions import HasPerm
@@ -21,6 +23,14 @@ class Unit:
     unit_name: str = sd.field(description="Official name of the unit")
     shortcode: str = sd.field(description="Shortcode reference for the unit")
     display_name: str
+
+    @sd.field(
+        description="Link to the TSA unit details.",
+        only="tsa_id",
+    )
+    def tsa_details_link(self) -> str:
+        template = Template(settings.TSA_UNIT_LINK_TEMPLATE)  # type: ignore[misc]
+        return template.safe_substitute(tsaid=self.tsa_id)  # type: ignore[attr-defined]
 
 
 @sd.type(models.District)
