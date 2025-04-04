@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 @sd.filter(models.Person, lookups=True)
 class PersonFilter:
-    display_name: sb.auto
-    membership_number: sb.auto
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    display_name: sb.auto = sb.UNSET
 
 
 @sd.order(models.Person)

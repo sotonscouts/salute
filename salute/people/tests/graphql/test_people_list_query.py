@@ -1,5 +1,6 @@
 import pytest
 from django.urls import reverse
+from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
@@ -13,8 +14,8 @@ class TestPersonListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query {
-        people {
+    query listPeople($filters: PersonFilter, $order: PersonOrder) {
+        people(filters: $filters, order: $order) {
             edges {
                 node {
                     displayName
@@ -159,7 +160,6 @@ class TestPersonListQuery:
             }
         }
 
-    @pytest.mark.xfail(reason="Flaky")
     @pytest.mark.parametrize(
         ("field", "ordering", "reverse"),
         [
@@ -171,7 +171,7 @@ class TestPersonListQuery:
     )
     def test_query__ordering(self, *, field: str, ordering: str, reverse: bool, user_with_person: User) -> None:
         district = DistrictFactory()
-        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
 
         PersonFactory.create_batch(10)
 
@@ -181,20 +181,8 @@ class TestPersonListQuery:
         client = TestClient(self.url)
         with client.login(user_with_person):
             result = client.query(
-                """
-                query personOrderTest($order: Ordering) {
-                    people (order: {firstName: $order}) {
-                        edges {
-                            node {
-                """
-                f"                {field_camel_case}"
-                """
-                            }
-                        }
-                    }
-                }
-                """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                self.QUERY,
+                variables={"order": {field_camel_case: ordering}},
             )
 
         assert isinstance(result, Response)
@@ -205,10 +193,96 @@ class TestPersonListQuery:
                 "edges": [
                     {
                         "node": {
-                            field_camel_case: getattr(p, field),
+                            "displayName": p.display_name,
+                            "firstName": p.first_name,
+                            "formattedMembershipNumber": p.formatted_membership_number,
+                            "contactEmail": p.contact_email,
                         }
                     }
                     for p in Person.objects.order_by(field if not reverse else f"-{field}")
                 ],
+                "totalCount": 11,
+            }
+        }
+
+    def test_query__filter__id(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+
+        people = [
+            PersonFactory(legal_name="A", preferred_name="", last_name="A"),
+            PersonFactory(legal_name="B", preferred_name="", last_name="B"),
+            PersonFactory(legal_name="D", preferred_name="C", last_name="C"),
+        ]
+        expected_people = people[0:2]
+        assert len(expected_people) == 2
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "filters": {
+                        "id": {
+                            "inList": [to_base64("Person", person.id) for person in expected_people],
+                        }
+                    }
+                },
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": p.display_name,
+                            "firstName": p.first_name,
+                            "formattedMembershipNumber": p.formatted_membership_number,
+                            "contactEmail": p.contact_email,
+                        }
+                    }
+                    for p in sorted(expected_people, key=lambda p: p.display_name)
+                ],
+                "totalCount": 2,
+            }
+        }
+
+    def test_query__filter__display_name(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+
+        people = [
+            PersonFactory(legal_name="Aaaa", preferred_name="", last_name="Aaaaaason"),
+            PersonFactory(legal_name="B", preferred_name="", last_name="B"),
+            PersonFactory(legal_name="D", preferred_name="C", last_name="C"),
+        ]
+        expected_person = people[0]
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"displayName": {"exact": "Aaaa Aaaaaason"}}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": expected_person.display_name,
+                            "firstName": expected_person.first_name,
+                            "formattedMembershipNumber": expected_person.formatted_membership_number,
+                            "contactEmail": expected_person.contact_email,
+                        }
+                    }
+                ],
+                "totalCount": 1,
             }
         }

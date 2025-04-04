@@ -5,13 +5,13 @@ from typing import Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from strawberry_django.auth.utils import get_current_user
 from strawberry_django.permissions import HasPerm
 
 from salute.accounts.models import User
 from salute.hierarchy.graphql.graph_types import District, Group, Section
-from salute.people.graphql.graph_types import Person
+from salute.people.graphql.graph_types import Person, PersonFilter
 from salute.roles import models
 
 
@@ -95,6 +95,11 @@ class SectionTeam(TeamInterface, sb.relay.Node):
     section: Section = sb.field(description="The section that this team belongs to")
 
 
+@sb.type
+class UnitInfo:
+    display_name: str = sb.field(description="Formatted name for the unit")
+
+
 @sd.type(models.Team)
 class Team(TeamWithChildInterface, sb.relay.Node):
     parent_team: Team | None = sb.field(description="The parent team of this team")
@@ -102,8 +107,24 @@ class Team(TeamWithChildInterface, sb.relay.Node):
     group: Group | None = sb.field(description="The section that this team belongs to")
     section: Section | None = sb.field(description="The section that this team belongs to")
 
+    @sd.field()  # TODO: optimise
+    def unit(self, info: sb.Info) -> UnitInfo:
+        return UnitInfo(display_name=self.unit.display_name)
 
-@sd.type(models.Role)
+
+@sd.filter(models.Role)
+class RoleFilter:
+    person: PersonFilter | None
+
+    @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
+    def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
+        expr = Q(**{f"{prefix}status__name": "-"})
+        if value:
+            return expr
+        return ~expr
+
+
+@sd.type(models.Role, filters=RoleFilter)
 class Role(sb.relay.Node):
     person: Person = sb.field(description="The person the role belongs to")
     team: Team = sb.field(description="The team the role belongs to")
