@@ -42,6 +42,7 @@ mkdocs-material = "^9.6.1"
 [tool.poetry.group.prod.dependencies]
 granian = "^2.2.0"
 psycopg = "^3.2.6"
+sentry-sdk = {extras = ["django"], version = "^2.25.1"}
 
 [build-system]
 requires = ["poetry-core"]

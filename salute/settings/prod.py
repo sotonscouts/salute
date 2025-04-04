@@ -1,5 +1,8 @@
 # type: ignore
+import sentry_sdk
 from environ import Env
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.strawberry import StrawberryIntegration
 
 from .base import *  # noqa: F403
 
@@ -10,6 +13,24 @@ ALLOWED_HOSTS: list[str] = [env("ALLOWED_HOST", str)]
 
 CSRF_TRUSTED_ORIGINS = [env("CSRF_TRUSTED_ORIGIN", str)]
 CORS_ALLOWED_ORIGINS = [env("CORS_ALLOWED_ORIGIN", str)]
+
+# Sentry Configuration
+sentry_sdk.init(
+    dsn=env("SENTRY_DSN", str, default=""),
+    integrations=[
+        DjangoIntegration(),
+        StrawberryIntegration(async_execution=True),
+    ],
+    send_default_pii=env("SENTRY_SEND_DEFAULT_PII", bool, default=False),
+    environment=env("SENTRY_ENVIRONMENT", str, default="production"),
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=env("SENTRY_TRACES_SAMPLE_RATE", float, default=0.1),
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=env("SENTRY_PROFILES_SAMPLE_RATE", float, default=0.1),
+)
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
