@@ -9,6 +9,7 @@ from salute.api.views import SaluteAsyncGraphQLView
 admin.site.site_title = "Salute"
 admin.site.site_header = "Salute Backend"
 admin.site.index_title = "System administration"
+admin.site.site_url = None
 
 urlpatterns = [
     path("salute-backend/", admin.site.urls),
