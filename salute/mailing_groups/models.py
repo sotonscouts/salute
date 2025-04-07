@@ -25,6 +25,16 @@ class SystemMailingGroup(BaseModel):
         default=False, help_text="Whether members can send emails as the group address."
     )
 
+    fallback_group_composite_key = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="The composite key of the fallback group to use if there are no members in this group.",
+    )
+    always_include_fallback_group = models.BooleanField(
+        default=False,
+        help_text="Whether to always include the fallback group in this group.",
+    )
+
     members: ManyToManyField[Person, Never] = models.ManyToManyField(
         "people.Person", related_name="system_mailing_groups", through="SystemMailingGroupMembership"
     )
@@ -39,6 +49,12 @@ class SystemMailingGroup(BaseModel):
 
     class Meta:
         ordering = ["name"]
+
+    @property
+    def fallback_group(self) -> SystemMailingGroup | None:
+        if self.fallback_group_composite_key:
+            return SystemMailingGroup.objects.filter(composite_key=self.fallback_group_composite_key).first()
+        return None
 
 
 class SystemMailingGroupMembership(BaseModel):
