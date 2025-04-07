@@ -342,6 +342,23 @@ class MailingGroupUpdater:
                         "can_receive_external_email": True,
                         "can_members_send_as": True,
                         "config": {
+                            "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
+                            "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
+                        },
+                        # Sections fall back to the group lead.
+                        "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
+                        "always_include_fallback_group": False,
+                    },
+                )
+
+                SystemMailingGroup.objects.update_or_create(
+                    composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
+                    defaults={
+                        "name": f"{group.ordinal}-{section_type.lower()}-team",
+                        "display_name": f"{group.ordinal} ({group.location_name}) {section_type} Team",
+                        "can_receive_external_email": False,
+                        "can_members_send_as": False,
+                        "config": {
                             "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
                         },
                         # Sections fall back to the group lead.
@@ -361,10 +378,11 @@ class MailingGroupUpdater:
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
+                    "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
                     "units": [{"type": "section", "unit_id": str(section.id)}],
                 },
-                # Sections fall back to the group lead.
-                "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
+                # Sections fall back to the section team leaders at the group
+                "fallback_group_composite_key": f"group_{group.tsa_id}_{section.section_type.lower()}",
                 "always_include_fallback_group": False,
             },
         )
