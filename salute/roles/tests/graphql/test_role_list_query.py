@@ -7,7 +7,7 @@ from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
-from salute.roles.factories import RoleFactory
+from salute.roles.factories import DistrictTeamFactory, RoleFactory
 from salute.roles.models import Role
 
 
@@ -209,6 +209,38 @@ class TestRoleListQuery:
                 variables={
                     "filters": {
                         "person": {"id": {"exact": to_base64("Person", user_with_person.person.id)}},
+                    },
+                },
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "roles": {
+                "edges": [{"node": self._get_expected_data_for_role(expected_role)}],
+                "totalCount": 1,
+            }
+        }
+
+    def test_query__filter__by_team(self, user_with_person: User) -> None:
+        assert user_with_person.person
+
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+        expected_role = RoleFactory(person=user_with_person.person, team=team)
+
+        RoleFactory.create_batch(size=10, team__district=district)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "filters": {
+                        "team": {"id": {"exact": to_base64("Team", team.id)}},
                     },
                 },
             )

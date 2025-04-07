@@ -129,6 +129,7 @@ class Team(TeamWithChildInterface, sb.relay.Node):
 @sd.filter(models.Role)
 class RoleFilter:
     person: PersonFilter | None
+    team: TeamFilter | None
 
     @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
     def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
