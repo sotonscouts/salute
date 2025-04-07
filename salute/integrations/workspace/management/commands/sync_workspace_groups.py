@@ -34,7 +34,7 @@ def get_group_settings(*, can_receive_external_email: bool, can_members_send_as:
         "archiveOnly": "false",
         "messageModerationLevel": "MODERATE_NONE",
         "spamModerationLevel": "REJECT",
-        # "replyTo": "REPLY_TO_IGNORE",
+        "replyTo": "REPLY_TO_SENDER",
         "includeCustomFooter": "false",
         "sendMessageDenyNotification": "true",
         "defaultMessageDenyNotificationText": "Sorry, your message was rejected. If you think this is a mistake, please contact digital@southamptoncityscouts.org.uk",  # noqa: E501
