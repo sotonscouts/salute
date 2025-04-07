@@ -184,6 +184,42 @@ class Command(BaseCommand):
                 body=settings,
             ).execute()
 
+    def _get_expected_group_members(self, group: WorkspaceGroup) -> dict[str, str]:
+        """
+        Get the expected members for a group based on Salute's configuration.
+
+        Returns a dictionary of expected members with their Google IDs as keys and emails as values.
+        """
+        assert group.system_mailing_group is not None
+        expected_members = group.system_mailing_group.members.filter(workspace_account__isnull=False).select_related(
+            "workspace_account"
+        )
+        expected_user_accounts = {
+            person.workspace_account.google_id: person.workspace_account.primary_email for person in expected_members
+        }
+
+        # Handle fallbacks.
+        fallback_should_be_included = (
+            len(expected_members) == 0
+        ) or group.system_mailing_group.always_include_fallback_group  # noqa: E501
+        if not fallback_should_be_included:
+            return expected_user_accounts
+
+        # Check if the fallback group is set
+        if group.system_mailing_group.fallback_group is None:
+            self.stderr.write(f"  [ERROR] Fallback group is not set for {group.name}. Cannot add fallback group.")
+            return expected_user_accounts
+
+        # Get the workspace group for the fallback group
+        try:
+            workspace_group = group.system_mailing_group.fallback_group.workspace_group
+        except WorkspaceGroup.DoesNotExist:
+            self.stderr.write(f"  [ERROR] Fallback group does not exist for {group.name}. Cannot add fallback group.")
+            return expected_user_accounts
+
+        # Add the fallback group to the expected members
+        return expected_user_accounts | {workspace_group.google_id: workspace_group.email}
+
     def sync_group_members(self, group: WorkspaceGroup, directory_service: Any, *, dry_run: bool = False) -> None:
         """
         Sync the members of a Google Workspace group to match Salute's configuration.
@@ -197,11 +233,6 @@ class Command(BaseCommand):
         current_members_response = directory_service.members().list(groupKey=group.google_id).execute()
         current_members = current_members_response.get("members", [])
 
-        # Get the expected members from Salute's SystemMailingGroup
-        expected_members = group.system_mailing_group.members.filter(workspace_account__isnull=False).select_related(
-            "workspace_account"
-        )
-
         # Create dictionaries for member data
         current_member_data = {
             member.get("id"): {"email": member.get("email"), "role": member.get("role")}
@@ -209,9 +240,8 @@ class Command(BaseCommand):
             if member.get("id")
         }
 
-        expected_member_data = {
-            person.workspace_account.google_id: person.workspace_account.primary_email for person in expected_members
-        }
+        # Get the expected members from Salute's SystemMailingGroup
+        expected_member_data = self._get_expected_group_members(group)
 
         # Calculate set differences using dictionary views
         members_to_remove = current_member_data.keys() - expected_member_data.keys()
