@@ -56,6 +56,11 @@ class TeamType(sb.relay.Node):
 # - level (district, group, section) - note: includes sub teams
 
 
+@sd.filter(models.Team, lookups=True)
+class TeamFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+
+
 @sd.interface(models.Team)
 class TeamInterface(sb.relay.Node):
     team_type: TeamType = sb.field(description="The type of the team")
@@ -77,7 +82,7 @@ class TeamInterface(sb.relay.Node):
         return template.safe_substitute(unitid=self.unit.tsa_id, teamtypeid=self.team_type.tsa_id)  # type: ignore[attr-defined]
 
 
-@sd.type(models.Team)
+@sd.type(models.Team, filters=TeamFilter)
 class SubTeam(TeamInterface, sb.relay.Node):
     parent_team: Team = sb.field(description="The parent team of this team")
 
@@ -89,17 +94,17 @@ class TeamWithChildInterface(TeamInterface, sb.relay.Node):
         return self.sub_teams.all()
 
 
-@sd.type(models.Team)
+@sd.type(models.Team, filters=TeamFilter)
 class DistrictTeam(TeamWithChildInterface, sb.relay.Node):
     district: District = sb.field(description="The district that this team belongs to")
 
 
-@sd.type(models.Team)
+@sd.type(models.Team, filters=TeamFilter)
 class GroupTeam(TeamWithChildInterface, sb.relay.Node):
     group: Group = sb.field(description="The section that this team belongs to")
 
 
-@sd.type(models.Team)
+@sd.type(models.Team, filters=TeamFilter)
 class SectionTeam(TeamInterface, sb.relay.Node):
     section: Section = sb.field(description="The section that this team belongs to")
 
@@ -109,7 +114,7 @@ class UnitInfo:
     display_name: str = sb.field(description="Formatted name for the unit")
 
 
-@sd.type(models.Team)
+@sd.type(models.Team, filters=TeamFilter)
 class Team(TeamWithChildInterface, sb.relay.Node):
     parent_team: Team | None = sb.field(description="The parent team of this team")
     district: District | None = sb.field(description="The district that this team belongs to")
@@ -124,6 +129,7 @@ class Team(TeamWithChildInterface, sb.relay.Node):
 @sd.filter(models.Role)
 class RoleFilter:
     person: PersonFilter | None
+    team: TeamFilter | None
 
     @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
     def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001

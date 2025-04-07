@@ -9,12 +9,12 @@ from salute.roles.factories import DistrictTeamFactory
 
 
 @pytest.mark.django_db
-class TestTeamTypeListQuery:
+class TestTeamListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query {
-        teams {
+    query listTeams($filters: TeamFilter) {
+        teams(filters: $filters) {
             edges {
                 node {
                     id
@@ -89,5 +89,35 @@ class TestTeamTypeListQuery:
                     for team in sorted(teams, key=lambda team: team.team_type.name)
                 ],
                 "totalCount": 5,
+            }
+        }
+
+    def test_query__filter_by_id(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        teams = DistrictTeamFactory.create_batch(size=5)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"id": {"inList": [to_base64("Team", team.id) for team in teams[:2]]}}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teams": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("Team", team.id),
+                            "displayName": team.display_name,
+                        }
+                    }
+                    for team in sorted(teams[:2], key=lambda team: team.team_type.name)
+                ],
+                "totalCount": 2,
             }
         }
