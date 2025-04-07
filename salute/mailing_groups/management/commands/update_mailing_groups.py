@@ -277,7 +277,7 @@ class MailingGroupUpdater:
             composite_key=f"group_{group.tsa_id}_all_sections",
             defaults={
                 "name": f"{group.ordinal}-sections",
-                "display_name": f"{group.ordinal} ({group.location_name}) Section Leaders",
+                "display_name": f"{group.ordinal} ({group.location_name}) Section Teams",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
