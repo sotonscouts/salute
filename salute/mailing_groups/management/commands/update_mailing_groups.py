@@ -12,6 +12,7 @@ ROLES = {
     "group_lead": "Group Lead Volunteer",
     "treasurer": "Treasurer",
     "team_leader": "Team Leader",
+    "youth_lead": "Youth Lead",
 }
 
 
@@ -22,6 +23,7 @@ class MailingGroupUpdater:
         self.trustees_team_type = TeamType.objects.get(tsa_id="a4b6414e-a2f8-ed11-8f6d-6045bdd0ed08")
         self.leadership_team_type = TeamType.objects.get(tsa_id="c30f4d78-a1f8-ed11-8f6d-6045bdd0ed08")
         self.helpers_team_type = TeamType.objects.get(tsa_id="b5abf18b-a1f8-ed11-8f6d-6045bdd0ed08")
+        self.fourteento24_team_type = TeamType.objects.get(tsa_id="04165cff-a0f8-ed11-8f6d-6045bdd0ed08")
 
     def update_district_top_level_roles(self) -> None:
         SystemMailingGroup.objects.update_or_create(
@@ -36,6 +38,9 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.leadership_team_type.id),
                     "units": [{"type": "district", "unit_id": str(self.district.id)}],
                 },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
             },
         )
 
@@ -51,6 +56,9 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.trustees_team_type.id),
                     "units": [{"type": "district", "unit_id": str(self.district.id)}],
                 },
+                # Fallback to Trustees
+                "fallback_group_composite_key": f"district_team_{self.trustees_team_type.id}",
+                "always_include_fallback_group": False,
             },
         )
 
@@ -66,6 +74,27 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.trustees_team_type.id),
                     "units": [{"type": "district", "unit_id": str(self.district.id)}],
                 },
+                # Fallback to Trustees
+                "fallback_group_composite_key": f"district_team_{self.trustees_team_type.id}",
+                "always_include_fallback_group": False,
+            },
+        )
+
+        SystemMailingGroup.objects.update_or_create(
+            composite_key="district_youth_lead",
+            defaults={
+                "name": "youth-lead",
+                "display_name": "District Youth Lead",
+                "can_receive_external_email": True,
+                "can_members_send_as": True,
+                "config": {
+                    "role_type_id": str(RoleType.objects.get(name=ROLES["youth_lead"]).id),
+                    "team_type_id": str(self.leadership_team_type.id),
+                    "units": [{"type": "district", "unit_id": str(self.district.id)}],
+                },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
             },
         )
 
@@ -87,6 +116,9 @@ class MailingGroupUpdater:
                             "team_type_id": str(team.team_type.id),
                             "units": [{"type": "district", "unit_id": str(self.district.id)}],
                         },
+                        # Fallback - not used for now
+                        "fallback_group_composite_key": "",
+                        "always_include_fallback_group": False,
                     },
                 )
 
@@ -104,6 +136,9 @@ class MailingGroupUpdater:
                                 "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
                                 "units": [{"type": "district", "unit_id": str(self.district.id)}],
                             },
+                            # Fallback - not used for now
+                            "fallback_group_composite_key": "",
+                            "always_include_fallback_group": False,
                         },
                     )
 
@@ -128,6 +163,9 @@ class MailingGroupUpdater:
                                 "include_sub_teams": True,
                                 "units": [{"type": "district", "unit_id": str(self.district.id)}],
                             },
+                            # Fallback - not used for now
+                            "fallback_group_composite_key": "",
+                            "always_include_fallback_group": False,
                         },
                     )
 
@@ -147,6 +185,9 @@ class MailingGroupUpdater:
                     "config": {
                         "units": [{"type": "section", "unit_id": str(district_section.id)}],
                     },
+                    # Explorer units fall back to the 14-24 team lead, and should always include them.
+                    "fallback_group_composite_key": f"district_team_{self.fourteento24_team_type.id}__lead",
+                    "always_include_fallback_group": True,
                 },
             )
 
@@ -167,6 +208,9 @@ class MailingGroupUpdater:
                         "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
                         "units": [{"type": "section", "unit_id": str(network_section.id)}],
                     },
+                    # Network units fall back to the 14-24 team lead, but should not always include them.
+                    "fallback_group_composite_key": f"district_team_{self.fourteento24_team_type.id}__lead",
+                    "always_include_fallback_group": False,
                 },
             )
 
@@ -180,6 +224,9 @@ class MailingGroupUpdater:
                     "config": {
                         "units": [{"type": "section", "unit_id": str(network_section.id)}],
                     },
+                    # Network units fall back to the 14-24 team lead, but should not always include them.
+                    "fallback_group_composite_key": f"district_team_{self.fourteento24_team_type.id}__lead",
+                    "always_include_fallback_group": False,
                 },
             )
 
@@ -197,6 +244,9 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.leadership_team_type.id),
                     "units": [{"type": "group", "unit_id": str(group.id)}],
                 },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
             },
         )
         # Group Chair
@@ -212,6 +262,8 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.trustees_team_type.id),
                     "units": [{"type": "group", "unit_id": str(group.id)}],
                 },
+                # Group chair should fall back to the group trustees team.
+                "fallback_group_composite_key": f"group_{group.tsa_id}_team_{self.trustees_team_type.id}",
             },
         )
         # Group Treasurer
@@ -227,6 +279,8 @@ class MailingGroupUpdater:
                     "team_type_id": str(self.trustees_team_type.id),
                     "units": [{"type": "group", "unit_id": str(group.id)}],
                 },
+                # Group treasurer should fall back to the group trustees team.
+                "fallback_group_composite_key": f"group_{group.tsa_id}_team_{self.trustees_team_type.id}",
             },
         )
 
@@ -252,6 +306,9 @@ class MailingGroupUpdater:
                             "team_type_id": str(team.team_type.id),
                             "units": [{"type": "group", "unit_id": str(group.id)}],
                         },
+                        # Fallback - not used for now
+                        "fallback_group_composite_key": "",
+                        "always_include_fallback_group": False,
                     },
                 )
 
@@ -269,6 +326,9 @@ class MailingGroupUpdater:
                     "units": [{"type": "group", "unit_id": str(group.id)}]
                     + [{"type": "section", "unit_id": str(section.id)} for section in group.sections.all()],
                 },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
             },
         )
 
@@ -277,12 +337,15 @@ class MailingGroupUpdater:
             composite_key=f"group_{group.tsa_id}_all_sections",
             defaults={
                 "name": f"{group.ordinal}-sections",
-                "display_name": f"{group.ordinal} ({group.location_name}) Section Leaders",
+                "display_name": f"{group.ordinal} ({group.location_name}) Section Teams",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
                     "units": [{"type": "section", "unit_id": str(section.id)} for section in group.sections.all()],
                 },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
             },
         )
 
@@ -298,8 +361,28 @@ class MailingGroupUpdater:
                         "can_receive_external_email": True,
                         "can_members_send_as": True,
                         "config": {
+                            "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
                             "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
                         },
+                        # Sections fall back to the group lead.
+                        "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
+                        "always_include_fallback_group": False,
+                    },
+                )
+
+                SystemMailingGroup.objects.update_or_create(
+                    composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
+                    defaults={
+                        "name": f"{group.ordinal}-{section_type.lower()}-team",
+                        "display_name": f"{group.ordinal} ({group.location_name}) {section_type} Team",
+                        "can_receive_external_email": False,
+                        "can_members_send_as": False,
+                        "config": {
+                            "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
+                        },
+                        # Sections fall back to the group lead.
+                        "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
+                        "always_include_fallback_group": False,
                     },
                 )
 
@@ -314,8 +397,12 @@ class MailingGroupUpdater:
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
+                    "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
                     "units": [{"type": "section", "unit_id": str(section.id)}],
                 },
+                # Sections fall back to the section team leaders at the group
+                "fallback_group_composite_key": f"group_{group.tsa_id}_{section.section_type.lower()}",
+                "always_include_fallback_group": False,
             },
         )
 

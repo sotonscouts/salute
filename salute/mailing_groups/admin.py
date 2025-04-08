@@ -44,6 +44,9 @@ class MailGroupAdmin(admin.ModelAdmin):
         "can_receive_external_email",
         "composite_key",
         "config",
+        "fallback_group_composite_key",
+        "fallback_group",
+        "always_include_fallback_group",
     )
     search_fields = ["name", "display_name", "composite_key"]
     list_filter = ["can_receive_external_email", "can_members_send_as", ("workspace_group", admin.EmptyFieldListFilter)]
@@ -53,6 +56,13 @@ class MailGroupAdmin(admin.ModelAdmin):
         ("Stats", {"fields": ("member_count", "workspace_member_count")}),
         ("Google Workspace", {"fields": ("can_members_send_as", "can_receive_external_email", "workspace_group")}),
         ("Tech Details", {"classes": ("collapse",), "fields": ("composite_key", "config")}),
+        (
+            "Fallback Config",
+            {
+                "classes": ("collapse",),
+                "fields": ("fallback_group_composite_key", "fallback_group", "always_include_fallback_group"),
+            },
+        ),
     )
 
     def get_urls(self) -> list[URLPattern]:
@@ -166,6 +176,10 @@ class MailGroupAdmin(admin.ModelAdmin):
     @admin.display(description="Account count", ordering="workspace_member_count")
     def workspace_member_count(self, obj: models.Model) -> int:
         return obj.workspace_member_count  # type: ignore[attr-defined]
+
+    @admin.display(description="Fallback Group")
+    def fallback_group(self, obj: SystemMailingGroup) -> str:
+        return obj.fallback_group.display_name if obj.fallback_group else "-"
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet[SystemMailingGroup]:
         return (
