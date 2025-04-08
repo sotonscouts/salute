@@ -12,6 +12,7 @@ ROLES = {
     "group_lead": "Group Lead Volunteer",
     "treasurer": "Treasurer",
     "team_leader": "Team Leader",
+    "youth_lead": "Youth Lead",
 }
 
 
@@ -75,6 +76,24 @@ class MailingGroupUpdater:
                 },
                 # Fallback to Trustees
                 "fallback_group_composite_key": f"district_team_{self.trustees_team_type.id}",
+                "always_include_fallback_group": False,
+            },
+        )
+
+        SystemMailingGroup.objects.update_or_create(
+            composite_key="district_youth_lead",
+            defaults={
+                "name": "youth-lead",
+                "display_name": "District Youth Lead",
+                "can_receive_external_email": True,
+                "can_members_send_as": True,
+                "config": {
+                    "role_type_id": str(RoleType.objects.get(name=ROLES["youth_lead"]).id),
+                    "team_type_id": str(self.leadership_team_type.id),
+                    "units": [{"type": "district", "unit_id": str(self.district.id)}],
+                },
+                # Fallback - not used for now
+                "fallback_group_composite_key": "",
                 "always_include_fallback_group": False,
             },
         )
