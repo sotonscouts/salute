@@ -4,7 +4,7 @@ from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory, GroupSectionFactory
-from salute.roles.factories import DistrictTeamFactory
+from salute.roles.factories import DistrictTeamFactory, RoleFactory
 
 
 @pytest.mark.django_db
@@ -101,6 +101,40 @@ class TestDistrictQuery:
                 "displayName": district.unit_name,  # This is the same as the unit name currently.
                 "shortcode": district.shortcode,
                 "unitName": district.unit_name,
+            }
+        }
+
+    def test_query__summary_stats(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+
+        GroupSectionFactory.create_batch(size=5, group__district=district)
+        DistrictSectionFactory.create_batch(size=5, district=district)
+        RoleFactory.create_batch(size=15, team__district=district)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                """
+                {
+                    district {
+                        totalGroupsCount
+                        totalPeopleCount
+                        totalRolesCount
+                        totalSectionsCount
+                    }
+                }
+                """
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "district": {
+                "totalGroupsCount": 5,
+                "totalPeopleCount": 16,
+                "totalRolesCount": 15,
+                "totalSectionsCount": 10,
             }
         }
 

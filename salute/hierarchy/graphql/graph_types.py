@@ -7,12 +7,14 @@ from typing import TYPE_CHECKING, Annotated
 import strawberry as sb
 import strawberry_django as sd
 from django.conf import settings
-from django.db.models import Case, OrderBy, QuerySet, Value, When
+from django.db.models import Case, Count, OrderBy, QuerySet, Value, When
 from strawberry import auto
 from strawberry_django.permissions import HasPerm
 
 from salute.hierarchy import models
 from salute.hierarchy.constants import SECTION_TYPE_INFO, SectionOperatingCategory, SectionType, Weekday
+from salute.people.models import Person
+from salute.roles.models import Role
 
 if TYPE_CHECKING:
     from salute.roles.graphql.graph_types import DistrictTeam, GroupTeam, SectionTeam
@@ -41,6 +43,42 @@ class District(Unit, sb.relay.Node):
     teams: list[Annotated[DistrictTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
         extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
     )
+
+    @sd.field(description="Count of groups in this district.", annotate={"group_count": Count("groups", distinct=True)})
+    def total_groups_count(self) -> int:
+        return self.group_count  # type: ignore[attr-defined]
+
+    @sd.field(
+        description="Count of all people in this district, including in groups",
+    )
+    def total_people_count(self) -> int:
+        """
+        Count of all people in this district, including in groups.
+
+        Assumes only one district in the database.
+        """
+        return Person.objects.count()
+
+    @sd.field(
+        description="Count of all people in this district, including in groups",
+    )
+    def total_roles_count(self) -> int:
+        """
+        Count of all roles in this district, including in groups.
+
+        Assumes only one district in the database.
+        """
+        return Role.objects.count()
+
+    @sd.field(
+        description="Count of all sections in this district, including both direct district sections and sections in groups within the district",  # noqa: E501
+        annotate={
+            "direct_section_count": Count("sections", distinct=True),
+            "group_section_count": Count("groups__sections", distinct=True),
+        },
+    )
+    def total_sections_count(self) -> int:
+        return self.direct_section_count + self.group_section_count  # type: ignore[attr-defined]
 
 
 @sd.order(models.Group)

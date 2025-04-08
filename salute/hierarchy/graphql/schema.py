@@ -20,7 +20,7 @@ class HierarchyQuery:
         extensions=[HasPerm("district.view", message="You don't have permission to view the district.")],
     )
     def district(self, info: sb.Info) -> District:
-        return hierarchy_models.District.objects.filter()
+        return hierarchy_models.District.objects.filter()  # type: ignore[return-value]
 
     @sd.field(
         description="Get a group by ID",
