@@ -3,7 +3,7 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from tqdm import tqdm  # type: ignore[import-untyped]
+from tqdm import tqdm
 
 from salute.integrations.workspace.models import (
     WorkspaceAccount,
