@@ -33,6 +33,7 @@ class Command(BaseCommand):
     help = "Closes the specified poll for voting"
 
     def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument("token_file", type=str, help="Path to the file containing the token")
         parser.add_argument("--clear-cache", action="store_true")
         parser.add_argument("--fetch-existing-people", action="store_true")
         parser.add_argument("--read-extra-data", action="store_true")
@@ -261,8 +262,20 @@ class Command(BaseCommand):
         read_extra_data = bool(options["read_extra_data"])
 
         request_cache_dir = Path(settings.BASE_DIR) / ".requests-cache"  # type: ignore[misc]
-        # token = input("Enter token: ")
-        token = ""
+        request_cache_dir.mkdir(exist_ok=True)
+
+        token_file_path = Path(options["token_file"])
+        if not token_file_path.exists():
+            print(f"Token file {token_file_path} does not exist.")
+            return
+
+        with Path(options["token_file"]).open("r") as fh:
+            token = fh.read().strip()
+
+        if not token:
+            print("No token provided.")
+            return
+
         membership = MembershipAPIClient(
             auth_token=token,
             request_cache_dir=request_cache_dir,

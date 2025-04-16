@@ -1,6 +1,7 @@
 # Salute
 .requests-cache/
 credentials.json
+token.txt
 
 # Docker
 docker-compose.override.yml
