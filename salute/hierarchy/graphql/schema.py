@@ -20,14 +20,14 @@ class HierarchyQuery:
         extensions=[HasPerm("district.view", message="You don't have permission to view the district.")],
     )
     def district(self, info: sb.Info) -> District:
-        return hierarchy_models.District.objects.get()  # type: ignore[return-value]
+        return hierarchy_models.District.objects.filter()  # type: ignore[return-value]
 
     @sd.field(
         description="Get a group by ID",
         extensions=[HasPerm("group.view", message="You don't have permission to view that group.")],
     )
     def group(self, group_id: sb.relay.GlobalID, info: sb.Info) -> Group:
-        return hierarchy_models.Group.objects.get(id=group_id.node_id)  # type: ignore[return-value]
+        return hierarchy_models.Group.objects.filter(id=group_id.node_id)  # type: ignore[return-value]
 
     groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection(
         description="List groups",
@@ -39,7 +39,7 @@ class HierarchyQuery:
         extensions=[HasPerm("section.view", message="You don't have permission to view that section.")],
     )
     def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
-        return hierarchy_models.Section.objects.get(id=section_id.node_id)  # type: ignore[return-value]
+        return hierarchy_models.Section.objects.filter(id=section_id.node_id)  # type: ignore[return-value]
 
     sections: sd.relay.ListConnectionWithTotalCount[DistrictOrGroupSection] = sd.connection(
         description="List sections",
