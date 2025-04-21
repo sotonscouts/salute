@@ -1,6 +1,7 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+from datetime import datetime
 from string import Template
 from typing import Any, cast
 
@@ -157,6 +158,37 @@ class Role(sb.relay.Node):
         user = cast(User, user)
         # When the strawberry optimiser is determining the queryset relations, it will call this method.
         # In such calls, the queryset is not a PersonQuerySet, but a Django QuerySet.
+        if hasattr(queryset, "for_user"):
+            return queryset.for_user(user)
+        return queryset
+
+
+@sd.filter(models.Accreditation)
+class AccreditationFilter:
+    person: PersonFilter | None
+    team: TeamFilter | None
+
+
+@sd.type(models.Accreditation, filters=AccreditationFilter)
+class Accreditation(sb.relay.Node):
+    person: Person = sb.field(description="The person the accreditation is assigned to")
+    team: Team = sb.field(description="The team the accreditation is assigned to")
+    accreditation_type: AccreditationType = sb.field(description="The type of accreditation")
+    status: str = sb.field(description="The status of the accreditation")
+    expires_at: datetime = sb.field(description="The date when the accreditation expires")
+    granted_at: datetime = sb.field(description="The date when the accreditation was granted")
+
+    @classmethod
+    def get_queryset(
+        cls, queryset: models.AccreditationQuerySet | QuerySet, info: sb.Info, **kwargs: Any
+    ) -> models.AccreditationQuerySet | QuerySet:
+        user = get_current_user(info)
+        if not user.is_authenticated:
+            return queryset.none()
+
+        user = cast(User, user)
+        # When the strawberry optimiser is determining the queryset relations, it will call this method.
+        # In such calls, the queryset is not a AccreditationQuerySet, but a Django QuerySet.
         if hasattr(queryset, "for_user"):
             return queryset.for_user(user)
         return queryset

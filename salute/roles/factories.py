@@ -95,6 +95,6 @@ class AccreditationFactory(factory.django.DjangoModelFactory):
     team = factory.SubFactory(TeamFactory)
     tsa_id = factory.Faker("uuid4")
 
-    status = factory.SubFactory(RoleStatusFactory)
+    status = "Active"
     expires_at = factory.Faker("future_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))
     granted_at = factory.Faker("past_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))
