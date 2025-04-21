@@ -172,6 +172,20 @@ class AccreditationType(TSATaxonomy):
     pass
 
 
+class AccreditationQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> AccreditationQuerySet:
+        if user.person_id is None:
+            return self.none()
+
+        if user.district_role_list:
+            return self.all()
+
+        return self.filter(person_id=user.person_id)
+
+
+AccreditationManager = models.Manager.from_queryset(AccreditationQuerySet)
+
+
 class Accreditation(TSAObject):
     accreditation_type = models.ForeignKey(AccreditationType, on_delete=models.PROTECT, related_name="accreditations")
     person = models.ForeignKey("people.Person", on_delete=models.CASCADE, related_name="accreditations")
@@ -180,7 +194,12 @@ class Accreditation(TSAObject):
     expires_at = models.DateTimeField()
     granted_at = models.DateTimeField()
 
+    objects = AccreditationManager()
+
     TSA_FIELDS = ("team", "person", "accreditation_type", "status", "expires_at", "granted_at")
+
+    class Meta:
+        ordering = ("team", "accreditation_type", "person")
 
     def __str__(self) -> str:
         return f"{self.accreditation_type} for {self.person} in {self.team}"
