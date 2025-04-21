@@ -100,6 +100,15 @@ class RolesQuery:
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
 
+    @sd.field(
+        description="Get an accreditation by ID",
+        extensions=[
+            HasRetvalPerm("accreditation.view", message="You don't have permission to view that accreditation.")
+        ],
+    )
+    def accreditation(self, accreditation_id: sb.relay.GlobalID, info: sb.Info) -> Accreditation:
+        return roles_models.Accreditation.objects.get(id=accreditation_id.node_id)  # type: ignore[return-value]
+
     accreditations: sd.relay.ListConnectionWithTotalCount[Accreditation] = sd.connection(
         description="List accreditations",
         extensions=[
