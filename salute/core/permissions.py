@@ -2,6 +2,7 @@
 import rules
 
 from salute.core.predicates import (
+    can_view_accreditation,
     can_view_person,
     can_view_person_pii,
     can_view_role,
@@ -27,6 +28,9 @@ rules.add_perm("person.view_pii", can_view_person_pii)
 # Roles
 rules.add_perm("accreditation_type.list", user_has_related_person)
 rules.add_perm("accreditation_type.view", user_has_related_person)
+
+rules.add_perm("accreditation.list", user_has_related_person)
+rules.add_perm("accreditation.view", can_view_accreditation)
 
 rules.add_perm("role.list", user_has_related_person)
 rules.add_perm("role.view", can_view_role)
