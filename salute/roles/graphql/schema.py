@@ -1,6 +1,6 @@
 import strawberry as sb
 import strawberry_django as sd
-from strawberry_django.permissions import HasPerm
+from strawberry_django.permissions import HasPerm, HasRetvalPerm
 
 from salute.roles import models as roles_models
 from salute.roles.graphql.graph_types import AccreditationType, Role, RoleStatus, RoleType, Team, TeamType
@@ -82,7 +82,7 @@ class RolesQuery:
 
     @sd.field(
         description="Get a role by ID",
-        extensions=[HasPerm("role.view", message="You don't have permission to view that role.")],
+        extensions=[HasRetvalPerm("role.view", message="You don't have permission to view that role.")],
     )
     def role(self, role_id: sb.relay.GlobalID, info: sb.Info) -> Role:
         return roles_models.Role.objects.get(id=role_id.node_id)  # type: ignore[return-value]
