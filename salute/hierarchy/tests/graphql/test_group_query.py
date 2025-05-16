@@ -15,7 +15,7 @@ class TestGroupQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getGroup($groupId: GlobalID!) {
+    query getGroup($groupId: ID!) {
         group(groupId: $groupId) {
             id
             unitName
@@ -129,7 +129,7 @@ class TestGroupTSADetailsLinkQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getGroupTsaDetailsLink($groupId: GlobalID!) {
+    query getGroupTsaDetailsLink($groupId: ID!) {
         group(groupId: $groupId) {
             tsaDetailsLink
         }
@@ -163,7 +163,7 @@ class TestGroupJoinSectionsQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query GroupWithSections($groupId: GlobalID!) {
+    query GroupWithSections($groupId: ID!) {
         group(groupId: $groupId) {
             shortcode
             sections {
@@ -240,7 +240,7 @@ class TestGroupJoinTeamsQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query GroupWithTeams($groupId: GlobalID!) {
+    query GroupWithTeams($groupId: ID!) {
         group(groupId: $groupId) {
             shortcode
             teams {

@@ -17,7 +17,7 @@ class TestRoleQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getRole($id: GlobalID!) {
+    query getRole($id: ID!) {
         role(roleId: $id) {
             id
             person {

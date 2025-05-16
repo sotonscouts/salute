@@ -17,7 +17,7 @@ class TestPersonQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getPerson($id: GlobalID!) {
+    query getPerson($id: ID!) {
         person(personId: $id) {
             displayName
             firstName
@@ -165,7 +165,7 @@ class TestPersonTSAProfileLinkQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getPerson($id: GlobalID!) {
+    query getPerson($id: ID!) {
         person(personId: $id) {
             tsaProfileLink
         }
@@ -202,7 +202,7 @@ class TestPersonJoinRolesQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getPerson($id: GlobalID!) {
+    query getPerson($id: ID!) {
         person(personId: $id) {
             displayName
             roles {

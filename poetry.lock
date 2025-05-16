@@ -1811,13 +1811,13 @@ doc = ["sphinx"]
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.263.2"
+version = "0.268.1"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "strawberry_graphql-0.263.2-py3-none-any.whl", hash = "sha256:c65373d155f973a08a437c5782670a96c5b9f466a883a953f02b25fe9ee7dcc2"},
-    {file = "strawberry_graphql-0.263.2.tar.gz", hash = "sha256:1709044d79736959ff2ed0fb5119b6bb968db58f958804ea8bfbd172e98b449b"},
+    {file = "strawberry_graphql-0.268.1-py3-none-any.whl", hash = "sha256:cfbb31f7fc4e01e99f7c58cd64c9767020c303be3035aac89563e8e134ba866a"},
+    {file = "strawberry_graphql-0.268.1.tar.gz", hash = "sha256:1156ccd0777f6e3924c03b9c680b40cde014256add74918e001bb2d88caf0b69"},
 ]
 
 [package.dependencies]
@@ -2047,4 +2047,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "47863091ca2b541881e37f9bfd9bbfeac36e7607fd2682ecce81845ed0f01e93"
+content-hash = "89f6a629fd114389e42de74310109572127550598c63442d10f96bf1f4e7d8f5"

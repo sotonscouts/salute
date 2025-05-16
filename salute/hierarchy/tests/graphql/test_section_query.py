@@ -16,7 +16,7 @@ class TestSectionQuery:
     url = reverse("graphql")
 
     QUERY = """
-        query getSection($sectionId: GlobalID!) {
+        query getSection($sectionId: ID!) {
         section(sectionId: $sectionId) {
                 id
                 unitName
@@ -159,7 +159,7 @@ class TestSectionTypeInfoQuery:
     url = reverse("graphql")
 
     QUERY = """
-        query getSection($sectionId: GlobalID!) {
+        query getSection($sectionId: ID!) {
         section(sectionId: $sectionId) {
                 unitName
                 sectionTypeInfo {
@@ -230,7 +230,7 @@ class TestSectionTSADetailsLinkQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getSectionTsaDetailsLink($sectionId: GlobalID!) {
+    query getSectionTsaDetailsLink($sectionId: ID!) {
         section(sectionId: $sectionId) {
             tsaDetailsLink
         }
@@ -266,7 +266,7 @@ class TestSectionTeamQuery:
     url = reverse("graphql")
 
     QUERY = """
-        query getSectionTeam($sectionId: GlobalID!) {
+        query getSectionTeam($sectionId: ID!) {
         section(sectionId: $sectionId) {
                 unitName
                 team {

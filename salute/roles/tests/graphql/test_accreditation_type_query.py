@@ -14,7 +14,7 @@ class TestAccreditationTypeQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getAccreditationType($accreditationTypeId: GlobalID!) {
+    query getAccreditationType($accreditationTypeId: ID!) {
         accreditationType(accreditationTypeId: $accreditationTypeId) {
             id
             displayName
