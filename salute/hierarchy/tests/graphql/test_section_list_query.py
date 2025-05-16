@@ -211,7 +211,7 @@ class TestSectionListQuery:
         with client.login(user_with_person):
             result = client.query(
                 """
-                query sectionOrderTest($order: Ordering) {
+                query sectionOrderTest($order: Ordering!) {
                     sections (order: {sectionType: $order}) {
                         edges {
                             node {
@@ -260,7 +260,7 @@ class TestSectionListQuery:
         with client.login(user_with_person):
             result = client.query(
                 """
-                query sectionOrderTest($order: Ordering) {
+                query sectionOrderTest($order: Ordering!) {
                     sections (order: {usualWeekday: $order}) {
                         edges {
                             node {
@@ -314,7 +314,7 @@ class TestSectionListQuery:
         with client.login(user_with_person):
             result = client.query(
                 """
-                query sectionOrderTest($order: Ordering) {
+                query sectionOrderTest($order: Ordering!) {
                     sections (order: {group: {localUnitNumber: $order}}) {
                         edges {
                             node {

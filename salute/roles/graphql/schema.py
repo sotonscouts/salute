@@ -25,7 +25,7 @@ class RolesQuery:
     def accreditation_type(self, accreditation_type_id: sb.relay.GlobalID, info: sb.Info) -> AccreditationType:
         return roles_models.AccreditationType.objects.get(id=accreditation_type_id.node_id)  # type: ignore[return-value]
 
-    accreditation_types: sd.relay.ListConnectionWithTotalCount[AccreditationType] = sd.connection(
+    accreditation_types: sd.relay.DjangoListConnection[AccreditationType] = sd.connection(
         description="List accreditation types",
         extensions=[
             HasPerm(
@@ -52,14 +52,14 @@ class RolesQuery:
     def role_type(self, role_type_id: sb.relay.GlobalID, info: sb.Info) -> RoleType:
         return roles_models.RoleType.objects.get(id=role_type_id.node_id)  # type: ignore[return-value]
 
-    role_types: sd.relay.ListConnectionWithTotalCount[RoleType] = sd.connection(
+    role_types: sd.relay.DjangoListConnection[RoleType] = sd.connection(
         description="List role types",
         extensions=[
             HasPerm("role_type.list", message="You don't have permission to list role types.", fail_silently=False)
         ],
     )
 
-    teams: sd.relay.ListConnectionWithTotalCount[Team] = sd.connection(
+    teams: sd.relay.DjangoListConnection[Team] = sd.connection(
         description="List teams",
         # This endpoint, whilst not N+1, can make a lot of db queries as each team and unit are fetched.
         # So limit results to 20
@@ -81,7 +81,7 @@ class RolesQuery:
     def team_type(self, team_type_id: sb.relay.GlobalID, info: sb.Info) -> TeamType:
         return roles_models.TeamType.objects.get(id=team_type_id.node_id)  # type: ignore[return-value]
 
-    team_types: sd.relay.ListConnectionWithTotalCount[TeamType] = sd.connection(
+    team_types: sd.relay.DjangoListConnection[TeamType] = sd.connection(
         description="List team types",
         extensions=[
             HasPerm("team_type.list", message="You don't have permission to list team types.", fail_silently=False)
@@ -95,7 +95,7 @@ class RolesQuery:
     def role(self, role_id: sb.relay.GlobalID, info: sb.Info) -> Role:
         return roles_models.Role.objects.get(id=role_id.node_id)  # type: ignore[return-value]
 
-    roles: sd.relay.ListConnectionWithTotalCount[Role] = sd.connection(
+    roles: sd.relay.DjangoListConnection[Role] = sd.connection(
         description="List roles",
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
@@ -109,7 +109,7 @@ class RolesQuery:
     def accreditation(self, accreditation_id: sb.relay.GlobalID, info: sb.Info) -> Accreditation:
         return roles_models.Accreditation.objects.get(id=accreditation_id.node_id)  # type: ignore[return-value]
 
-    accreditations: sd.relay.ListConnectionWithTotalCount[Accreditation] = sd.connection(
+    accreditations: sd.relay.DjangoListConnection[Accreditation] = sd.connection(
         description="List accreditations",
         extensions=[
             HasPerm(

@@ -18,7 +18,7 @@ class PeopleQuery:
     def person(self, person_id: sb.relay.GlobalID, info: sb.Info) -> Person:
         return people_models.Person.objects.get(id=person_id.node_id)  # type: ignore[return-value]
 
-    people: sd.relay.ListConnectionWithTotalCount[Person] = sd.connection(
+    people: sd.relay.DjangoListConnection[Person] = sd.connection(
         description="List people",
         extensions=[HasPerm("person.list", message="You don't have permission to list people.", fail_silently=False)],
     )

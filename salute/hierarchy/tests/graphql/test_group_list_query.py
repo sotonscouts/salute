@@ -118,7 +118,7 @@ class TestGroupListQuery:
         with client.login(user_with_person):
             result = client.query(
                 """
-                query groupOrderTest($order: Ordering) {
+                query groupOrderTest($order: Ordering!) {
                     groups (order: {localUnitNumber: $order}) {
                         edges {
                             node {

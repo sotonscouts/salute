@@ -14,7 +14,7 @@ class TestTeamTypeQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getTeamType($teamTypeId: GlobalID!) {
+    query getTeamType($teamTypeId: ID!) {
         teamType(teamTypeId: $teamTypeId) {
             id
             displayName

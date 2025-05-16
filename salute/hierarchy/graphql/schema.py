@@ -29,7 +29,7 @@ class HierarchyQuery:
     def group(self, group_id: sb.relay.GlobalID, info: sb.Info) -> Group:
         return hierarchy_models.Group.objects.filter(id=group_id.node_id)  # type: ignore[return-value]
 
-    groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection(
+    groups: sd.relay.DjangoListConnection[Group] = sd.connection(
         description="List groups",
         extensions=[HasPerm("group.list", message="You don't have permission to list groups.", fail_silently=False)],
     )
@@ -41,7 +41,7 @@ class HierarchyQuery:
     def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
         return hierarchy_models.Section.objects.filter(id=section_id.node_id)  # type: ignore[return-value]
 
-    sections: sd.relay.ListConnectionWithTotalCount[DistrictOrGroupSection] = sd.connection(
+    sections: sd.relay.DjangoListConnection[DistrictOrGroupSection] = sd.connection(
         description="List sections",
         extensions=[
             HasPerm("section.list", message="You don't have permission to list sections.", fail_silently=False)

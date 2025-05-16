@@ -24,7 +24,7 @@ class TestTeamQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getTeam($teamId: GlobalID!) {
+    query getTeam($teamId: ID!) {
         team(teamId: $teamId) {
             id
             displayName
@@ -243,7 +243,7 @@ class TestTeamTSAProfileLinkQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getTeam($teamId: GlobalID!) {
+    query getTeam($teamId: ID!) {
         team(teamId: $teamId) {
             tsaDetailsLink
         }
@@ -280,7 +280,7 @@ class TestTeamJoinRolesQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getTeamWithRoles($teamId: GlobalID!) {
+    query getTeamWithRoles($teamId: ID!) {
         team(teamId: $teamId) {
             id
             displayName
