@@ -21,7 +21,7 @@ class PersonFilter:
     display_name: sb.auto = sb.UNSET
 
 
-@sd.order(models.Person)
+@sd.order_type(models.Person)
 class PersonOrder:
     first_name: sb.auto
     display_name: sb.auto

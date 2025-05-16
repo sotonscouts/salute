@@ -81,7 +81,7 @@ class District(Unit, sb.relay.Node):
         return self.direct_section_count + self.group_section_count  # type: ignore[attr-defined]
 
 
-@sd.order(models.Group)
+@sd.order_type(models.Group)
 class GroupOrder:
     local_unit_number: auto
 
@@ -113,7 +113,7 @@ class Group(Unit, sb.relay.Node):
     )
 
 
-@sd.order(models.Section)
+@sd.order_type(models.Section)
 class SectionOrder:
     group: GroupOrder
 
