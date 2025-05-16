@@ -38,8 +38,8 @@ class Unit:
 @sd.type(models.District)
 class District(Unit, sb.relay.Node):
     display_name: str = sd.field(description="Formatted name for the unit", only="unit_name")
-    groups: sd.relay.ListConnectionWithTotalCount[Group] = sd.connection()
-    sections: sd.relay.ListConnectionWithTotalCount[DistrictSection] = sd.connection()
+    groups: sd.relay.DjangoListConnection[Group] = sd.connection()
+    sections: sd.relay.DjangoListConnection[DistrictSection] = sd.connection()
     teams: list[Annotated[DistrictTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
         extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
     )
@@ -86,7 +86,7 @@ class GroupOrder:
     local_unit_number: auto
 
 
-@sd.filter(models.Group)
+@sd.filter_type(models.Group)
 class GroupFilter:
     group_type: models.GroupType
 
@@ -107,7 +107,7 @@ class Group(Unit, sb.relay.Node):
     # location_name intentionally excluded whilst we work out data modelling for it
     # local_unit_number intentionally excluded in favour of ordinal
 
-    sections: sd.relay.ListConnectionWithTotalCount[GroupSection] = sd.connection()
+    sections: sd.relay.DjangoListConnection[GroupSection] = sd.connection()
     teams: list[Annotated[GroupTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
         extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
     )
@@ -150,7 +150,7 @@ class SectionOrder:
         return queryset, [ordering]
 
 
-@sd.filter(models.Section, lookups=True)
+@sd.filter_type(models.Section, lookups=True)
 class SectionFilter:
     section_type: sb.auto
     usual_weekday: sb.auto

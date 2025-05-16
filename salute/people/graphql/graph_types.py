@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from salute.roles.graphql.graph_types import Role
 
 
-@sd.filter(models.Person, lookups=True)
+@sd.filter_type(models.Person, lookups=True)
 class PersonFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
     display_name: sb.auto = sb.UNSET
@@ -42,7 +42,7 @@ class Person(sb.relay.Node):
         extensions=[HasSourcePerm("person.view_pii", fail_silently=True)],
     )
 
-    roles: sd.relay.ListConnectionWithTotalCount[Annotated["Role", sb.lazy("salute.roles.graphql.graph_types")]] = (
+    roles: sd.relay.DjangoListConnection[Annotated["Role", sb.lazy("salute.roles.graphql.graph_types")]] = (
         sd.connection(
             description="List roles",
             extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],

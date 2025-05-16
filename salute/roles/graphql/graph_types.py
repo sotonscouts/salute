@@ -57,7 +57,7 @@ class TeamType(sb.relay.Node):
 # - level (district, group, section) - note: includes sub teams
 
 
-@sd.filter(models.Team, lookups=True)
+@sd.filter_type(models.Team, lookups=True)
 class TeamFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
 
@@ -70,7 +70,7 @@ class TeamInterface(sb.relay.Node):
         select_related=["team_type", "parent_team", "district", "group", "section"],
     )
 
-    roles: sd.relay.ListConnectionWithTotalCount[Role] = sd.connection(
+    roles: sd.relay.DjangoListConnection[Role] = sd.connection(
         description="List roles",
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
@@ -127,7 +127,7 @@ class Team(TeamWithChildInterface, sb.relay.Node):
         return UnitInfo(display_name=self.unit.display_name)
 
 
-@sd.filter(models.Role)
+@sd.filter_type(models.Role)
 class RoleFilter:
     person: PersonFilter | None
     team: TeamFilter | None
@@ -163,7 +163,7 @@ class Role(sb.relay.Node):
         return queryset
 
 
-@sd.filter(models.Accreditation)
+@sd.filter_type(models.Accreditation)
 class AccreditationFilter:
     person: PersonFilter | None
     team: TeamFilter | None
