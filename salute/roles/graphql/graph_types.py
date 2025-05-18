@@ -75,6 +75,15 @@ class TeamInterface(sb.relay.Node):
         extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
     )
 
+    accreditations: sd.relay.DjangoListConnection[Accreditation] = sd.connection(
+        description="List accreditations",
+        extensions=[
+            HasPerm(
+                "accreditation.list", message="You don't have permission to list accreditations.", fail_silently=False
+            )
+        ],
+    )
+
     @sd.field(
         description="Link to the TSA unit details.",
     )
