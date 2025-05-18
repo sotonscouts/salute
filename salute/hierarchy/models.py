@@ -78,6 +78,10 @@ class Group(TSAUnit):
     def display_name(self) -> str:
         return f"{self.ordinal} ({self.location_name})"
 
+    @property
+    def public_name(self) -> str:
+        return f"{self.ordinal} {self.locality.name} ({self.location_name})"
+
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group_type", "charity_number")
 
     def __str__(self) -> str:

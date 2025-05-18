@@ -21,6 +21,7 @@ class TestGroupQuery:
             unitName
             shortcode
             displayName
+            publicName
             charityNumber
             ordinal
             district {
@@ -113,6 +114,7 @@ class TestGroupQuery:
             "group": {
                 "id": group_id,
                 "displayName": group.display_name,
+                "publicName": group.public_name,
                 "shortcode": group.shortcode,
                 "unitName": group.unit_name,
                 "charityNumber": group.charity_number,

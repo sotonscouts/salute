@@ -24,6 +24,7 @@ class DistrictFactory(TSAUnitFactory):
 
 class LocalityFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("city")
+
     class Meta:
         model = Locality
 

@@ -25,11 +25,14 @@ class TestDistrictModel:
 class TestGroupModel:
     def test_create_group(self) -> None:
         district = DistrictFactory()
-        group = GroupFactory(district=district, locality__name="Exampleton")
+        group = GroupFactory(district=district, local_unit_number=45, locality__name="Exampleton")
         assert Group.objects.count() == 1
         assert group.district == district
         assert group.local_unit_number > 0
         assert group.charity_number >= 100000
+
+        assert group.display_name == f"45th ({group.location_name})"
+        assert group.public_name == f"45th Exampleton ({group.location_name})"
 
     def test_unique_local_unit_number(self) -> None:
         district = DistrictFactory()
