@@ -12,7 +12,7 @@ from salute.accounts.models import User
 from salute.people import models
 
 if TYPE_CHECKING:
-    from salute.roles.graphql.graph_types import Role
+    from salute.roles.graphql.graph_types import Accreditation, Role
 
 
 @sd.filter_type(models.Person, lookups=True)
@@ -47,6 +47,17 @@ class Person(sb.relay.Node):
             description="List roles",
             extensions=[HasPerm("role.list", message="You don't have permission to list roles.", fail_silently=False)],
         )
+    )
+
+    accreditations: sd.relay.DjangoListConnection[
+        Annotated["Accreditation", sb.lazy("salute.roles.graphql.graph_types")]
+    ] = sd.connection(
+        description="List accreditations",
+        extensions=[
+            HasPerm(
+                "accreditation.list", message="You don't have permission to list accreditations.", fail_silently=False
+            )
+        ],
     )
 
     @sd.field(

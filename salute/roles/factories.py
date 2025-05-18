@@ -92,7 +92,7 @@ class AccreditationFactory(factory.django.DjangoModelFactory):
 
     accreditation_type = factory.SubFactory(AccreditationTypeFactory)
     person = factory.SubFactory("salute.people.factories.PersonFactory")
-    team = factory.SubFactory(TeamFactory)
+    team = factory.SubFactory(DistrictTeamFactory)
     tsa_id = factory.Faker("uuid4")
 
     status = "Active"

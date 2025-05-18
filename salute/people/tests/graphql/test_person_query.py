@@ -9,7 +9,7 @@ from strawberry_django.test.client import Response, TestClient
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.people.factories import PersonFactory
-from salute.roles.factories import RoleFactory
+from salute.roles.factories import AccreditationFactory, RoleFactory
 
 
 @pytest.mark.django_db
@@ -273,6 +273,87 @@ class TestPersonJoinRolesQuery:
                             }
                         }
                         for role in sorted(roles, key=lambda r: (r.team.team_type.name))
+                    ],
+                    "totalCount": 5,
+                },
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestPersonJoinAccreditationsQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getPerson($id: ID!) {
+        person(personId: $id) {
+            displayName
+            accreditations {
+                edges {
+                    node {
+                        team {
+                            displayName
+                        }
+                        accreditationType {
+                            displayName
+                        }
+                        status
+                    }
+                }
+                totalCount
+            }
+        }
+    }
+    """
+
+    def test_query__no_accreditations(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "accreditations": {
+                    "edges": [],
+                    "totalCount": 0,
+                },
+            }
+        }
+
+    def test_query(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        accreditations = AccreditationFactory.create_batch(size=5, person=user_with_person.person)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "accreditations": {
+                    "edges": [
+                        {
+                            "node": {
+                                "team": {"displayName": accreditation.team.display_name},
+                                "accreditationType": {"displayName": accreditation.accreditation_type.name},
+                                "status": accreditation.status,
+                            }
+                        }
+                        for accreditation in sorted(accreditations, key=lambda r: (r.team.team_type.name))
                     ],
                     "totalCount": 5,
                 },
