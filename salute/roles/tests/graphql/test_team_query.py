@@ -10,6 +10,7 @@ from strawberry_django.test.client import Response, TestClient
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.roles.factories import (
+    AccreditationFactory,
     DistrictTeamFactory,
     GroupSectionTeamFactory,
     GroupSubTeamFactory,
@@ -437,6 +438,177 @@ class TestTeamJoinRolesQuery:
                                 "person": {"displayName": role.person.display_name},
                                 "roleType": {"displayName": role.role_type.name},
                                 "status": {"displayName": role.status.name},
+                            }
+                        }
+                    ],
+                    "totalCount": 1,
+                },
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestTeamJoinAccreditationsQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getTeamWithAccreditations($teamId: ID!) {
+        team(teamId: $teamId) {
+            id
+            displayName
+            accreditations {
+                edges {
+                    node {
+                        person {
+                            displayName
+                        }
+                        accreditationType {
+                            displayName
+                        }
+                        status
+                    }
+                }
+                totalCount
+            }
+        }
+    }
+    """
+
+    def test_query__not_authenticated(self) -> None:
+        team = DistrictTeamFactory()
+        client = TestClient(self.url)
+        results = client.query(
+            self.QUERY,
+            variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            assert_no_errors=False,
+        )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that team.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["team"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_person(self, user: User) -> None:
+        team = DistrictTeamFactory()
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that team.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["team"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_accreditations(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "accreditations": {
+                    "edges": [],
+                    "totalCount": 0,
+                },
+            }
+        }
+
+    def test_query__roles(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+
+        accreditations = AccreditationFactory.create_batch(size=5, team=team)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "accreditations": {
+                    "edges": [
+                        {
+                            "node": {
+                                "person": {"displayName": accreditation.person.display_name},
+                                "accreditationType": {"displayName": accreditation.accreditation_type.name},
+                                "status": accreditation.status,
+                            }
+                        }
+                        for accreditation in sorted(
+                            accreditations, key=lambda r: (r.accreditation_type.name, r.person.display_name)
+                        )
+                    ],
+                    "totalCount": 5,
+                },
+            }
+        }
+
+    def test_query__only_own_accreditations(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        team = DistrictTeamFactory(district=district)
+
+        AccreditationFactory.create_batch(size=5, team=team)
+        accreditation = AccreditationFactory(team=team, person=user_with_person.person)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {
+                "id": to_base64("Team", team.id),
+                "displayName": team.display_name,
+                "accreditations": {
+                    "edges": [
+                        {
+                            "node": {
+                                "person": {"displayName": accreditation.person.display_name},
+                                "accreditationType": {"displayName": accreditation.accreditation_type.name},
+                                "status": accreditation.status,
                             }
                         }
                     ],
