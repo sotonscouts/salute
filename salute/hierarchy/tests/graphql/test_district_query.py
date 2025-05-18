@@ -244,7 +244,7 @@ class TestDistrictJoinGroupsQuery:
                 query DistrictWithGroups {
                     district {
                         shortcode
-                        groups(order: {localUnitNumber: ASC}){
+                        groups(ordering: [{localUnitNumber: ASC}]){
                             edges {
                                 node {
                                     unitName
@@ -284,7 +284,7 @@ class TestDistrictJoinGroupsQuery:
                 query DistrictWithGroups {
                     district {
                         shortcode
-                        groups(order: {localUnitNumber: DESC}){
+                        groups(ordering: [{localUnitNumber: DESC}]){
                             edges {
                                 node {
                                     unitName

@@ -30,7 +30,7 @@ class PersonOrder:
 @sd.type(
     models.Person,
     filters=PersonFilter,
-    order=PersonOrder,  # type: ignore[literal-required]
+    ordering=PersonOrder,
 )
 class Person(sb.relay.Node):
     first_name: str

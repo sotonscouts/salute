@@ -93,7 +93,7 @@ class GroupFilter:
 
 @sd.type(
     models.Group,
-    order=GroupOrder,  # type: ignore[literal-required]
+    ordering=GroupOrder,
     filters=GroupFilter,
 )
 class Group(Unit, sb.relay.Node):
@@ -124,7 +124,6 @@ class SectionOrder:
         queryset: QuerySet[models.Section],
         value: sd.Ordering,
         prefix: str,
-        sequence: dict[str, sd.Ordering] | None,
     ) -> tuple[QuerySet[models.Section], list[OrderBy]]:
         queryset = queryset.alias(
             _ordered__section_num=Case(
@@ -141,7 +140,6 @@ class SectionOrder:
         queryset: QuerySet[models.Section],
         value: sd.Ordering,
         prefix: str,
-        sequence: dict[str, sd.Ordering] | None,
     ) -> tuple[QuerySet[models.Section], list[OrderBy]]:
         queryset = queryset.alias(
             _ordered__weekday_num=Case(*[When(usual_weekday=val, then=Value(idx)) for idx, val in enumerate(Weekday)])
@@ -189,7 +187,7 @@ class Section(Unit, sb.relay.Node):
 
 @sd.type(
     models.Section,
-    order=SectionOrder,  # type: ignore[literal-required]
+    ordering=SectionOrder,
     filters=SectionFilter,
 )
 class DistrictSection(Section):
@@ -198,7 +196,7 @@ class DistrictSection(Section):
 
 @sd.type(
     models.Section,
-    order=SectionOrder,  # type: ignore[literal-required]
+    ordering=SectionOrder,
     filters=SectionFilter,
 )
 class GroupSection(Section):
@@ -207,7 +205,7 @@ class GroupSection(Section):
 
 @sd.type(
     models.Section,
-    order=SectionOrder,  # type: ignore[literal-required]
+    ordering=SectionOrder,
     filters=SectionFilter,
 )
 class DistrictOrGroupSection(Section):

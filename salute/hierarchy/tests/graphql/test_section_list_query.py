@@ -212,7 +212,7 @@ class TestSectionListQuery:
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering!) {
-                    sections (order: {sectionType: $order}) {
+                    sections (ordering: [{sectionType: $order}]) {
                         edges {
                             node {
                                 sectionTypeInfo {
@@ -261,7 +261,7 @@ class TestSectionListQuery:
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering!) {
-                    sections (order: {usualWeekday: $order}) {
+                    sections (ordering: [{usualWeekday: $order}]) {
                         edges {
                             node {
                                 usualWeekday
@@ -315,7 +315,7 @@ class TestSectionListQuery:
             result = client.query(
                 """
                 query sectionOrderTest($order: Ordering!) {
-                    sections (order: {group: {localUnitNumber: $order}}) {
+                    sections (ordering: [{group: {localUnitNumber: $order}}]) {
                         edges {
                             node {
                                 unitName
@@ -411,7 +411,7 @@ class TestSectionListQuery:
             result = client.query(
                 """
                 query groupOrderTest($usualWeekday: [Weekday!]!) {
-                    sections (filters: {usualWeekday: {inList: $usualWeekday}}, order: {usualWeekday: ASC}) {
+                    sections (filters: {usualWeekday: {inList: $usualWeekday}}, ordering: [{usualWeekday: ASC}]) {
                         edges {
                             node {
                                 unitName

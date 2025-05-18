@@ -14,8 +14,8 @@ class TestPersonListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query listPeople($filters: PersonFilter, $order: PersonOrder) {
-        people(filters: $filters, order: $order) {
+    query listPeople($filters: PersonFilter, $order: PersonOrder!) {
+        people(filters: $filters, ordering: [$order]) {
             edges {
                 node {
                     displayName
@@ -34,6 +34,7 @@ class TestPersonListQuery:
         results = client.query(
             self.QUERY,
             assert_no_errors=False,
+            variables={"order": {"displayName": "ASC"}},
         )
 
         assert isinstance(results, Response)
@@ -53,6 +54,7 @@ class TestPersonListQuery:
             results = client.query(
                 self.QUERY,
                 assert_no_errors=False,
+                variables={"order": {"displayName": "ASC"}},
             )
 
         assert isinstance(results, Response)
@@ -73,6 +75,7 @@ class TestPersonListQuery:
             results = client.query(
                 self.QUERY,
                 assert_no_errors=False,
+                variables={"order": {"displayName": "ASC"}},
             )
 
         assert isinstance(results, Response)
@@ -105,6 +108,7 @@ class TestPersonListQuery:
             results = client.query(
                 self.QUERY,
                 assert_no_errors=False,
+                variables={"order": {"displayName": "ASC"}},
             )
 
         assert isinstance(results, Response)
@@ -137,6 +141,7 @@ class TestPersonListQuery:
             results = client.query(
                 self.QUERY,
                 assert_no_errors=False,
+                variables={"order": {"displayName": "ASC"}},
             )
 
         assert isinstance(results, Response)
@@ -222,11 +227,12 @@ class TestPersonListQuery:
             result = client.query(
                 self.QUERY,
                 variables={
+                    "order": {"displayName": "ASC"},
                     "filters": {
                         "id": {
                             "inList": [to_base64("Person", person.id) for person in expected_people],
                         }
-                    }
+                    },
                 },
             )
 
@@ -265,7 +271,7 @@ class TestPersonListQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"filters": {"displayName": {"exact": "Aaaa Aaaaaason"}}},
+                variables={"filters": {"displayName": {"exact": "Aaaa Aaaaaason"}}, "order": {"displayName": "ASC"}},
             )
 
         assert isinstance(result, Response)
