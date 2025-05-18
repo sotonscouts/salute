@@ -119,7 +119,7 @@ class TestGroupListQuery:
             result = client.query(
                 """
                 query groupOrderTest($order: Ordering!) {
-                    groups (order: {localUnitNumber: $order}) {
+                    groups (ordering: [{localUnitNumber: $order}]) {
                         edges {
                             node {
                                 unitName
