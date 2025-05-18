@@ -4,7 +4,7 @@ import zoneinfo
 import factory
 
 from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, Weekday
-from .models import District, Group, Section, TSAUnit
+from .models import District, Group, Locality, Section, TSAUnit
 
 
 class TSAUnitFactory(factory.django.DjangoModelFactory):
@@ -22,8 +22,15 @@ class DistrictFactory(TSAUnitFactory):
         model = District
 
 
+class LocalityFactory(factory.django.DjangoModelFactory):
+    name = factory.Faker("city")
+    class Meta:
+        model = Locality
+
+
 class GroupFactory(TSAUnitFactory):
     district = factory.SubFactory(DistrictFactory)
+    locality = factory.SubFactory(LocalityFactory)
     group_type = factory.Iterator([choice[0] for choice in GroupType.choices])
     charity_number = factory.Sequence(lambda n: 100000 + n)
     local_unit_number = factory.Sequence(lambda n: n + 1)

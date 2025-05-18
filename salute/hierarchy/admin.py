@@ -4,9 +4,10 @@ from django.contrib import admin
 from django.forms import ModelForm
 from django.http import HttpRequest
 
+from salute.core.admin import BaseModelAdminMixin
 from salute.core.models import BaseModel
 from salute.hierarchy.constants import DISTRICT_SECTION_TYPES, NON_REGULAR_SECTIONS_TYPES
-from salute.hierarchy.models import District, Group, Section
+from salute.hierarchy.models import District, Group, Locality, Section
 from salute.integrations.tsa.admin import TSATimestampedObjectModelAdminMixin
 
 
@@ -18,6 +19,20 @@ class DistrictAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     fieldsets = ((None, {"fields": ("unit_name", "shortcode")}),) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
 
+@admin.register(Locality)
+class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+
+    def has_add_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        return request.user.is_superuser
+
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        return request.user.is_superuser
+
+
 @admin.register(Group)
 class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     list_display = (
@@ -27,8 +42,8 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         "district",
         "group_type",
     )
-    list_filter = ("group_type",)
-    search_fields = ("unit_name", "tsa_id", "location_name")
+    list_filter = ("group_type", "locality")
+    search_fields = ("unit_name", "tsa_id", "locality", "location_name")
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district")}),
@@ -39,6 +54,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
                     "unit_name",
                     "location_name",
                     "ordinal",
+                    "locality",
                     "local_unit_number",
                     "group_type",
                     "charity_number",

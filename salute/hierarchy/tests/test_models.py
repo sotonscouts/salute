@@ -7,6 +7,7 @@ from salute.hierarchy.factories import (
     DistrictSectionFactory,
     GroupFactory,
     GroupSectionFactory,
+    LocalityFactory,
 )
 from salute.hierarchy.models import District, Group, Section
 
@@ -24,7 +25,7 @@ class TestDistrictModel:
 class TestGroupModel:
     def test_create_group(self) -> None:
         district = DistrictFactory()
-        group = GroupFactory(district=district)
+        group = GroupFactory(district=district, locality__name="Exampleton")
         assert Group.objects.count() == 1
         assert group.district == district
         assert group.local_unit_number > 0
@@ -32,9 +33,15 @@ class TestGroupModel:
 
     def test_unique_local_unit_number(self) -> None:
         district = DistrictFactory()
-        GroupFactory(district=district, local_unit_number=1)
+        locality = LocalityFactory()
+        GroupFactory(district=district, local_unit_number=1, locality=locality)
         with pytest.raises(IntegrityError):
-            GroupFactory(district=district, local_unit_number=1)  # Duplicate local unit number
+            GroupFactory(district=district, local_unit_number=1, locality=locality)  # Duplicate local unit number
+
+    def test_unique_local_unit_number__separate_localities(self) -> None:
+        district = DistrictFactory()
+        GroupFactory(district=district, local_unit_number=1, locality__name="Exampleton")
+        GroupFactory(district=district, local_unit_number=1, locality__name="Exampleville")  # Different localities
 
     def test_ordinal(self) -> None:
         district = DistrictFactory()

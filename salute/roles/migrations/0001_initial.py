@@ -284,6 +284,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 "abstract": False,
+                "ordering": ("team", "accreditation_type", "person"),
             },
         ),
         migrations.AddConstraint(

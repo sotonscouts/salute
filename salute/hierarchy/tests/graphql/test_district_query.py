@@ -227,7 +227,7 @@ class TestDistrictJoinGroupsQuery:
                 "groups": {
                     "edges": [
                         {"node": {"ordinal": g.ordinal, "unitName": g.unit_name}}
-                        for g in sorted(groups, key=lambda g: g.local_unit_number)  # Default sort
+                        for g in sorted(groups, key=lambda g: (g.locality.name, g.local_unit_number))  # Default sort
                     ],
                     "totalCount": 5,
                 },

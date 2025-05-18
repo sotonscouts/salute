@@ -23,7 +23,6 @@ class BaseModelAdminMixin:
     )
 
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
-        assert obj is not None
         return [
             "id",
             "created_at",
