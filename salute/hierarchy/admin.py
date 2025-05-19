@@ -58,6 +58,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
                     "local_unit_number",
                     "group_type",
                     "charity_number",
+                    "primary_site",
                 )
             },
         ),
@@ -81,7 +82,10 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district", "group")}),
-        ("Section", {"fields": ("unit_name", "section_type", "nickname", "mailing_slug", "usual_weekday")}),
+        (
+            "Section",
+            {"fields": ("unit_name", "section_type", "nickname", "mailing_slug", "usual_weekday", "site")},
+        ),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: Section | None = None) -> list[str]:  # type: ignore[override]
