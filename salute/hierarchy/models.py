@@ -68,6 +68,7 @@ class Group(TSAUnit):
     locality = models.ForeignKey(Locality, on_delete=models.PROTECT, related_name="groups")
     local_unit_number = models.PositiveSmallIntegerField()
     location_name = models.CharField(max_length=255)
+    primary_site = models.ForeignKey("locations.Site", on_delete=models.PROTECT, related_name="groups", null=True)
 
     @property
     def ordinal(self) -> str:
@@ -125,6 +126,7 @@ class Section(TSAUnit):
         help_text="Slug for generating mailing lists. Do not change unless you understand the impact. Only applicable to district sections.",  # noqa: E501
     )
     usual_weekday = TextChoicesField(choices_enum=Weekday, null=True)
+    site = models.ForeignKey("locations.Site", on_delete=models.PROTECT, related_name="sections", null=True, blank=True)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
@@ -152,6 +154,14 @@ class Section(TSAUnit):
                 violation_error_message="Only district sections can have a mailing slug",
                 name="only_district_sections_can_have_mailing_slug",
             ),
+            # models.CheckConstraint(
+            #     condition=(
+            #         models.Q(section_type__in=GROUP_SECTION_TYPES, site__isnull=True)
+            #         | models.Q(section_type__in=DISTRICT_SECTION_TYPES, site__isnull=False)
+            #     ),
+            #     violation_error_message="Only district sections must have a site",
+            #     name="only_district_sections_must_have_site",
+            # ),
             models.UniqueConstraint(
                 fields=["group", "section_type", "usual_weekday"],
                 condition=models.Q(section_type__in=GROUP_SECTION_TYPES),
