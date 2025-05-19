@@ -236,7 +236,7 @@ class MailingGroupUpdater:
             composite_key=f"group_lead_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-lead",
-                "display_name": f"{group.ordinal} ({group.location_name}) Lead Volunteer",
+                "display_name": f"{group.public_name} Lead Volunteer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -254,7 +254,7 @@ class MailingGroupUpdater:
             composite_key=f"group_chair_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-chair",
-                "display_name": f"{group.ordinal} ({group.location_name}) Chair",
+                "display_name": f"{group.public_name} Chair",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -271,7 +271,7 @@ class MailingGroupUpdater:
             composite_key=f"group_treasurer_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-treasurer",
-                "display_name": f"{group.ordinal} ({group.location_name}) Treasurer",
+                "display_name": f"{group.public_name} Treasurer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -299,7 +299,7 @@ class MailingGroupUpdater:
                     composite_key=f"group_{group.tsa_id}_team_{team.team_type.id}",
                     defaults={
                         "name": f"{group.ordinal}-{team.team_type.mailing_slug}",
-                        "display_name": f"{group.ordinal} ({group.location_name}) {team.team_type.display_name}",
+                        "display_name": f"{group.public_name} {team.team_type.display_name}",
                         "can_receive_external_email": True,
                         "can_members_send_as": True,
                         "config": {
@@ -318,7 +318,7 @@ class MailingGroupUpdater:
             composite_key=f"group_all_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-all",
-                "display_name": f"{group.ordinal} ({group.location_name}) All Members",
+                "display_name": f"{group.public_name} All Members",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -337,7 +337,7 @@ class MailingGroupUpdater:
             composite_key=f"group_{group.tsa_id}_all_sections",
             defaults={
                 "name": f"{group.ordinal}-sections",
-                "display_name": f"{group.ordinal} ({group.location_name}) Section Teams",
+                "display_name": f"{group.public_name} Section Teams",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -357,7 +357,7 @@ class MailingGroupUpdater:
                     composite_key=f"group_{group.tsa_id}_{section_type.lower()}",
                     defaults={
                         "name": f"{group.ordinal}-{section_type.lower()}",
-                        "display_name": f"{group.ordinal} ({group.location_name}) {section_type}",
+                        "display_name": f"{group.public_name} {section_type}",
                         "can_receive_external_email": True,
                         "can_members_send_as": True,
                         "config": {
@@ -374,7 +374,7 @@ class MailingGroupUpdater:
                     composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
                     defaults={
                         "name": f"{group.ordinal}-{section_type.lower()}-team",
-                        "display_name": f"{group.ordinal} ({group.location_name}) {section_type} Team",
+                        "display_name": f"{group.public_name} {section_type} Team",
                         "can_receive_external_email": False,
                         "can_members_send_as": False,
                         "config": {
@@ -393,7 +393,7 @@ class MailingGroupUpdater:
             composite_key=f"section_team_{section.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-{section.section_type}-{section.usual_weekday}".lower(),
-                "display_name": f"{group.ordinal} ({group.location_name}) {section.usual_weekday.title()} {section.section_type}",  # noqa: E501
+                "display_name": f"{group.public_name} {section.usual_weekday.title()} {section.section_type}",  # noqa: E501
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {

@@ -1,6 +1,7 @@
 from django.db import models
 from django_choices_field import TextChoicesField
 
+from salute.core.models import Taxonomy
 from salute.hierarchy.utils import get_ordinal_suffix
 from salute.integrations.tsa.models import TSATimestampedObject
 
@@ -37,6 +38,26 @@ class District(TSAUnit):
         return self.unit_name
 
 
+class Locality(Taxonomy):
+    """
+    A locality is a geographical area within a district.
+
+    Sometimes a locality may encompass an entire district, but this is not always the case.
+    A locality may also cross district boundaries.
+    """
+
+    class Meta:
+        ordering = ("name",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"],
+                name="unique_locality_name",
+                violation_error_message="A locality must have a unique name.",
+            )
+        ]
+        verbose_name_plural = "localities"
+
+
 class Group(TSAUnit):
     # TSA Fields
     district = models.ForeignKey(District, on_delete=models.PROTECT, related_name="groups")
@@ -44,7 +65,8 @@ class Group(TSAUnit):
     charity_number = models.PositiveIntegerField(null=True, editable=False)
 
     # Salute Fields
-    local_unit_number = models.PositiveSmallIntegerField(unique=True)
+    locality = models.ForeignKey(Locality, on_delete=models.PROTECT, related_name="groups")
+    local_unit_number = models.PositiveSmallIntegerField()
     location_name = models.CharField(max_length=255)
 
     @property
@@ -56,13 +78,25 @@ class Group(TSAUnit):
     def display_name(self) -> str:
         return f"{self.ordinal} ({self.location_name})"
 
+    @property
+    def public_name(self) -> str:
+        return f"{self.ordinal} {self.locality.name} ({self.location_name})"
+
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group_type", "charity_number")
 
     def __str__(self) -> str:
         return self.display_name
 
     class Meta:
-        ordering = ("local_unit_number",)
+        ordering = ("locality", "local_unit_number")
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["local_unit_number", "locality"],
+                name="unique_local_unit_number_within_locality",
+                violation_error_message="A group must have a unique local unit number within its locality.",
+            )
+        ]
 
 
 class Section(TSAUnit):

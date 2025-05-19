@@ -14,7 +14,7 @@ class TestGroupListQuery:
 
     QUERY = """
     query {
-        groups {
+        groups(ordering: [{localUnitNumber: ASC}]) {
             edges {
                 node {
                     id
@@ -183,7 +183,7 @@ class TestGroupListQuery:
                             "ordinal": group.ordinal,
                         }
                     }
-                    for group in sorted(groups[group_type], key=lambda g: g.local_unit_number)
+                    for group in sorted(groups[group_type], key=lambda g: (g.locality.name, g.local_unit_number))
                     if group.group_type == str(group_type)
                 ],
             }

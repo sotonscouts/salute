@@ -98,6 +98,9 @@ class GroupFilter:
 )
 class Group(Unit, sb.relay.Node):
     display_name: str = sd.field(description="Formatted name for the unit", only=["local_unit_number", "location_name"])
+    public_name: str = sd.field(
+        description="Public name for the unit", only=["local_unit_number", "location_name"], select_related=["locality"]
+    )
 
     district: District
     group_type: models.GroupType
