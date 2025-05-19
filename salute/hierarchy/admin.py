@@ -20,7 +20,7 @@ class DistrictAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Locality)
-class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+class LocalityAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
 
@@ -42,8 +42,8 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         "district",
         "group_type",
     )
-    list_filter = ("group_type", "locality")
-    search_fields = ("unit_name", "tsa_id", "locality", "location_name")
+    list_filter = ("group_type",)
+    search_fields = ("unit_name", "tsa_id", "location_name")
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district")}),
