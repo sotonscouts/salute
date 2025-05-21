@@ -59,3 +59,7 @@ can_list_accreditations = has_district_role(DistrictUserRoleType.MANAGER) | has_
     DistrictUserRoleType.ADMIN
 )
 can_view_accreditation = can_list_accreditations | role_belongs_to_person
+
+can_view_site_tenure_type = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
+    DistrictUserRoleType.ADMIN
+)

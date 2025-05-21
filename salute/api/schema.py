@@ -7,6 +7,7 @@ from strawberry_django.permissions import IsAuthenticated
 
 from salute.accounts.graphql.schema import AccountsQuery
 from salute.hierarchy.graphql.schema import HierarchyQuery
+from salute.locations.graphql.schema import LocationsQuery
 from salute.people.graphql.schema import PeopleQuery
 from salute.roles.graphql.schema import RolesQuery
 
@@ -21,6 +22,7 @@ class PingQuery:
 APP_QUERIES = (
     AccountsQuery,
     HierarchyQuery,
+    LocationsQuery,
     PeopleQuery,
     PingQuery,
     RolesQuery,

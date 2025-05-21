@@ -6,6 +6,7 @@ from salute.core.predicates import (
     can_view_person,
     can_view_person_pii,
     can_view_role,
+    can_view_site_tenure_type,
     user_has_related_person,
 )
 
@@ -45,3 +46,8 @@ rules.add_perm("team_type.view", user_has_related_person)
 
 rules.add_perm("team.list", user_has_related_person)
 rules.add_perm("team.view", user_has_related_person)
+
+# Locations
+rules.add_perm("site.list", user_has_related_person)
+rules.add_perm("site.view", user_has_related_person)
+rules.add_perm("site.view_site_tenure_type", can_view_site_tenure_type)
