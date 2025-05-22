@@ -51,6 +51,8 @@ STORAGES = {
     },
 }
 
+BIRDBATH_REQUIRED = False
+
 # Auth0 Settings
 AUTH0_DOMAIN = env("AUTH0_DOMAIN", str)
 AUTH0_AUDIENCE = env("AUTH0_AUDIENCE", str)
