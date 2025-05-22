@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from strawberry_django.auth.utils import get_current_user
 from strawberry_django.permissions import HasPerm
 
 from salute.accounts.models import User
-from salute.hierarchy.graphql.graph_types import District, Group, Section
+from salute.hierarchy import models as hierarchy_models
+from salute.hierarchy.graphql.graph_types import District, Group, Section, SectionOrder
 from salute.locations import models
 from salute.locations.constants import TenureType
 
@@ -90,10 +92,18 @@ class Site(sb.relay.Node):
         extensions=[sd.permissions.HasPerm("group.list", message="You don't have permission to list groups.")],
     )
 
-    sections: sd.relay.DjangoListConnection[Section] = sd.connection(
-        description="List sections that explicitly use this site.",
-        extensions=[sd.permissions.HasPerm("section.list", message="You don't have permission to list groups.")],
+    @sd.connection(
+        sd.relay.DjangoListConnection[Section],
+        description="List sections that use this site.",
+        extensions=[sd.permissions.HasPerm("section.list", message="You don't have permission to list sections.")],
+        ordering=SectionOrder,
     )
+    def sections(self, *, explicit_only: bool = False) -> Iterable[Section]:
+        if explicit_only:
+            qs = hierarchy_models.Section.objects.filter(site=self)  # type: ignore[misc]
+        else:
+            qs = hierarchy_models.Section.objects.filter(Q(site=self) | Q(site__isnull=True, group__primary_site=self))
+        return cast(Iterable[Section], qs)
 
     @sd.field(only=["name"])
     def display_name(self) -> str:

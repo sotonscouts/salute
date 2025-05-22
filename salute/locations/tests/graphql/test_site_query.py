@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -6,7 +7,7 @@ from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
-from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory
+from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory, GroupSectionFactory
 from salute.locations.constants import TenureType
 from salute.locations.factories import (
     DistrictSiteOperatorFactory,
@@ -358,11 +359,11 @@ class TestSiteJoinSectionsQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query getSiteWithSections($siteId: ID!) {
+    query getSiteWithSections($siteId: ID!, $explicitOnly: Boolean) {
         site(siteId: $siteId) {
             id
             displayName
-            sections {
+            sections(explicitOnly: $explicitOnly) {
                 edges {
                     node {
                         displayName
@@ -395,31 +396,29 @@ class TestSiteJoinSectionsQuery:
             }
         }
 
-    def test_query__with_sections(self, user_with_person: User) -> None:
+    @pytest.mark.parametrize("explicit_only", [True, None, False])
+    def test_query__explicit_only(self, user_with_person: User, *, explicit_only: bool | None) -> None:
         site = SiteFactory()
-        section = DistrictSectionFactory(site=site)
+        district_section = DistrictSectionFactory(site=site)
+        explicit_group_section = GroupSectionFactory(site=site)
+        implicit_group_section = GroupSectionFactory(group__primary_site=site)
         site_id = to_base64("Site", site.id)
+
+        expected_sections = [district_section, explicit_group_section]
+        if explicit_only is not True:
+            expected_sections.append(implicit_group_section)
+
         client = TestClient(self.url)
+
+        variables: dict[str, Any] = {"siteId": site_id}
+        if explicit_only is not None:
+            variables["explicitOnly"] = explicit_only
+
         with client.login(user_with_person):
-            result = client.query(
-                self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
-            )
+            result = client.query(self.QUERY, variables=variables)
 
         assert isinstance(result, Response)
 
-        assert result.data == {
-            "site": {
-                "id": site_id,
-                "displayName": site.name,
-                "sections": {
-                    "edges": [
-                        {
-                            "node": {
-                                "displayName": section.display_name,
-                            },
-                        },
-                    ],
-                },
-            }
-        }
+        returned_sections = {section["node"]["displayName"] for section in result.data["site"]["sections"]["edges"]}  # type: ignore
+
+        assert returned_sections == {section.display_name for section in expected_sections}
