@@ -1,10 +1,21 @@
+from __future__ import annotations
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django_choices_field import TextChoicesField
 
+from salute.accounts.models import User
 from salute.core.models import BaseModel
 from salute.hierarchy.models import District, Group
 from salute.locations.constants import TenureType
+
+
+class SiteOperatorQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> SiteOperatorQuerySet:
+        return self.all()
+
+
+SiteOperatorManager = models.Manager.from_queryset(SiteOperatorQuerySet)
 
 
 class SiteOperator(BaseModel):
@@ -15,6 +26,8 @@ class SiteOperator(BaseModel):
         District, on_delete=models.PROTECT, null=True, blank=True, related_name="site_operator"
     )
     group = models.OneToOneField(Group, on_delete=models.PROTECT, null=True, blank=True, related_name="site_operator")
+
+    objects = SiteOperatorManager()
 
     class Meta:
         constraints = [
@@ -54,6 +67,29 @@ class SiteOperator(BaseModel):
         return self.display_name
 
 
+class SiteQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> SiteQuerySet:
+        return self.all()
+
+    def centroid(self) -> tuple[float, float] | None:
+        """
+        Calculate the centroid of the sites.
+
+        Note: this centroid calculation does not work for global sites, it assumes
+        that all sites are in the same hemisphere.
+        """
+        aggregate = self.aggregate(
+            avg_latitude=models.Avg("latitude"),
+            avg_longitude=models.Avg("longitude"),
+        )
+        if aggregate["avg_latitude"] is None or aggregate["avg_longitude"] is None:
+            return None
+        return aggregate["avg_latitude"], aggregate["avg_longitude"]
+
+
+SiteManager = models.Manager.from_queryset(SiteQuerySet)
+
+
 class Site(BaseModel):
     """A physical location that can be used for Scouting."""
 
@@ -79,6 +115,14 @@ class Site(BaseModel):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
 
+    include_in_centroid_calculation = models.BooleanField(
+        default=True,
+        verbose_name="Included in centroid calculation",
+        help_text="Whether to include this site in centroid calculations for map display.",
+    )
+
+    objects = SiteManager()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -97,6 +141,7 @@ class Site(BaseModel):
                 violation_error_message="UPRN must be exactly 12 digits.",
             ),
         ]
+        ordering = ["name"]
 
     def __str__(self) -> str:
         return self.name

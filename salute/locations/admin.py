@@ -52,6 +52,7 @@ class SiteAdmin(admin.ModelAdmin):
                 "fields": (
                     "latitude",
                     "longitude",
+                    "include_in_centroid_calculation",
                 ),
             },
         ),

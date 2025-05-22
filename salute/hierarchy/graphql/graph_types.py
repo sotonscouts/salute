@@ -17,6 +17,7 @@ from salute.people.models import Person
 from salute.roles.models import Role
 
 if TYPE_CHECKING:
+    from salute.locations.graphql.graph_types import Site
     from salute.roles.graphql.graph_types import DistrictTeam, GroupTeam, SectionTeam
 
 
@@ -107,7 +108,7 @@ class Group(Unit, sb.relay.Node):
     charity_number: int | None
 
     ordinal: str = sd.field(description="Ordinal for the group", only=["local_unit_number"])
-    # location_name intentionally excluded whilst we work out data modelling for it
+    primary_site: Annotated[Site, sb.lazy("salute.locations.graphql.graph_types")]
     # local_unit_number intentionally excluded in favour of ordinal
 
     sections: sd.relay.DjangoListConnection[GroupSection] = sd.connection()
@@ -169,6 +170,21 @@ class Section(Unit, sb.relay.Node):
     )
     section_type: sb.Private[models.SectionType]
     usual_weekday: models.Weekday | None
+
+    @sd.field(
+        description="Get the site for the section",
+        select_related=["site"],
+    )
+    def site(self, info: sb.Info) -> Annotated[Site, sb.lazy("salute.locations.graphql.graph_types")] | None:
+        if self.site is not None:
+            return self.site
+
+        # TODO: Optimise this query
+        if self.group is not None:  # type: ignore[attr-defined]
+            return self.group.primary_site  # type: ignore[attr-defined]
+
+        # Network sections don't have a site
+        return None
 
     @sd.field(
         description="Get the team for the section",

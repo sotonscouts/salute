@@ -59,3 +59,4 @@ class SiteFactory(DjangoModelFactory):
     # Location coordinates
     latitude = factory.Faker("latitude", locale="en_GB")
     longitude = factory.Faker("longitude", locale="en_GB")
+    include_in_centroid_calculation = True
