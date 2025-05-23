@@ -439,6 +439,24 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-birdbath"
+version = "2.0.1"
+description = "A simple tool for giving Django database data a good wash. Anonymise user data, delete stuff you"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "django_birdbath-2.0.1-py3-none-any.whl", hash = "sha256:55332586fe60fcef9679f5e4f2f63a2c56e8ad5894ca37e50623bf50420b921e"},
+    {file = "django_birdbath-2.0.1.tar.gz", hash = "sha256:e2ada9d9afe1f92603ba4b193f42a3b2d0bf94c1f121767c922f0409b3d8abfd"},
+]
+
+[package.dependencies]
+Django = ">=4.2"
+Faker = ">=8"
+
+[package.extras]
+dev = ["django (>=4.2,<5.0)", "pre-commit (>=3.8.0)", "pytest (>=8.3,<9.0)", "pytest-django (>=4.9,<5.0)", "ruff (==0.6.9)", "wagtail (>=5.2,<6.0)"]
+
+[[package]]
 name = "django-choices-field"
 version = "2.3.0"
 description = "Django field that set/get django's new TextChoices/IntegerChoices enum."
@@ -2047,4 +2065,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1b8a3cae4d4b3864368b80d2c7cfdf925c81ce933c9aff772af22275c631ea10"
+content-hash = "fddd6e48ce692d01d8015bfdb31efe2a9231152ce4fa524d79c8642c94b442e9"

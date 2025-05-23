@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "salute.people",
     "salute.roles",
     # Third Party
+    "birdbath",
     "corsheaders",
     "phonenumber_field",
     "rules",
@@ -122,3 +123,19 @@ AUTH_USER_MODEL = "accounts.User"
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 PHONENUMBER_DEFAULT_REGION = "GB"
 PHONENUMBER_DB_FORMAT = "E164"
+
+# Birdbath
+BIRDBATH_REQUIRED = True
+BIRDBATH_PROCESSORS = [
+    "salute.accounts.birdbath.DeleteAllMyUsersProcessor",
+    "salute.hierarchy.birdbath.DistrictAnonymiser",
+    "salute.hierarchy.birdbath.GroupAnonymiser",
+    "salute.hierarchy.birdbath.LocalityAnonymiser",
+    "salute.hierarchy.birdbath.GroupSectionAnonymiser",
+    "salute.hierarchy.birdbath.DistrictSectionAnonymiser",
+    "salute.integrations.workspace.birdbath.WorkspaceAccountAnonymiser",
+    "salute.integrations.workspace.birdbath.WorkspaceAccountAliasAnonymiser",
+    "salute.locations.birdbath.ThirdPartySiteOperatorAnonymiser",
+    "salute.locations.birdbath.SiteAnonymiser",
+    "salute.people.birdbath.PersonAnonymiser",
+]

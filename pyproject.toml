@@ -20,6 +20,7 @@ strawberry-graphql = "~0.268.1"
 strawberry-graphql-django = "~0.59.1"
 tqdm = "^4.67.1"
 whitenoise = "^6.9.0"
+django-birdbath = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 django-debug-toolbar = "^5.2.0"
@@ -84,6 +85,9 @@ ignore = [
 # Group all Django imports into a separate section.
 "django" = ["django"]
 
+[tool.ruff.lint.per-file-ignores]
+"*/birdbath.py" = ["ANN001", "ANN201"]
+
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
 
@@ -105,6 +109,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["*.tests.*"]
 disable_error_code = ["arg-type"]
+
+[[tool.mypy.overrides]]
+module = ["*.birdbath"]
+ignore_errors = true
 
 [tool.django-stubs]
 django_settings_module = "salute.settings.dev"
