@@ -1,9 +1,15 @@
+from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.db import models
 
-from salute.hierarchy.constants import SectionType
+from salute.hierarchy.constants import GROUP_SECTION_TYPES, SectionType
 from salute.hierarchy.models import District, Group, Section
-from salute.mailing_groups.models import SystemMailingGroup
+from salute.mailing_groups.models import (
+    GroupSectionMailingPreferenceOption,
+    GroupSectionSystemMailingPreference,
+    SystemMailingGroup,
+)
 from salute.roles.models import RoleType, Team, TeamType
 
 ROLES = {
@@ -14,6 +20,19 @@ ROLES = {
     "team_leader": "Team Leader",
     "youth_lead": "Youth Lead",
 }
+
+
+def _get_mailing_preference(group: Group, section_type: SectionType) -> GroupSectionMailingPreferenceOption:
+    """
+    Get the mailing preference for a group and section type.
+
+    If the mailing preference is not set, it defaults to teams-first.
+    """
+    try:
+        mailing_pref_row = GroupSectionSystemMailingPreference.objects.get(group=group, section_type=section_type)
+        return GroupSectionMailingPreferenceOption(mailing_pref_row.mailing_preference)
+    except GroupSectionSystemMailingPreference.DoesNotExist:
+        return GroupSectionMailingPreferenceOption.TEAMS
 
 
 class MailingGroupUpdater:
@@ -349,28 +368,41 @@ class MailingGroupUpdater:
             },
         )
 
-        # All leaders for each section type.
-        for section_type in SectionType:
-            sections = group.sections.filter(section_type=section_type)
-            if sections:
-                SystemMailingGroup.objects.update_or_create(
-                    composite_key=f"group_{group.tsa_id}_{section_type.lower()}",
-                    defaults={
-                        "name": f"{group.ordinal}-{section_type.lower()}",
-                        "display_name": f"{group.public_name} {section_type}",
-                        "can_receive_external_email": True,
-                        "can_members_send_as": True,
-                        "config": {
-                            "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
-                            "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
-                        },
-                        # Sections fall back to the group lead.
-                        "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
-                        "always_include_fallback_group": False,
-                    },
-                )
+    def update_group_section_type(self, group: Group, section_type: SectionType) -> None:
+        """
+        Update mailing groups for a section type within a group.
+        """
+        sections = group.sections.filter(section_type=section_type)
+        if sections:
+            mailing_preference = _get_mailing_preference(group, section_type)
 
-                SystemMailingGroup.objects.update_or_create(
+            config: dict[str, Any] = {
+                "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
+            }
+
+            # Filter to just team leaders if mailing preference is leaders-first.
+            if mailing_preference == GroupSectionMailingPreferenceOption.LEADERS:
+                config["role_type_id"] = str(RoleType.objects.get(name=ROLES["team_leader"]).id)
+
+            # Primary group section type mailing group, e.g 20th-cubs
+            SystemMailingGroup.objects.update_or_create(
+                composite_key=f"group_{group.tsa_id}_{section_type.lower()}",
+                defaults={
+                    "name": f"{group.ordinal}-{section_type.lower()}",
+                    "display_name": f"{group.public_name} {section_type}",
+                    "can_receive_external_email": True,
+                    "can_members_send_as": True,
+                    "config": config,
+                    # Sections fall back to the group lead.
+                    "fallback_group_composite_key": f"group_lead_{group.tsa_id}",
+                    "always_include_fallback_group": False,
+                },
+            )
+
+            # Team members mailing group, e.g 20th-cubs-team
+            # Only created if mailing preference is leaders-first.
+            if mailing_preference == GroupSectionMailingPreferenceOption.LEADERS:
+                _, created = SystemMailingGroup.objects.update_or_create(
                     composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
                     defaults={
                         "name": f"{group.ordinal}-{section_type.lower()}-team",
@@ -385,10 +417,29 @@ class MailingGroupUpdater:
                         "always_include_fallback_group": False,
                     },
                 )
+                if created:
+                    print(f"Created {group.public_name} {section_type} team members email.")
+            else:
+                # If the mailing preference is teams, then the -teams email is redundant and should not be created.
+                count, _ = SystemMailingGroup.objects.filter(
+                    composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
+                ).delete()
+                if count > 0:
+                    print(f"Deleted {group.public_name} {section_type} team members email.")
 
     def update_group_section(self, group: Group, section: Section) -> None:
         # All group sections should have a usual weekday set.
         assert section.usual_weekday is not None
+
+        config: dict[str, Any] = {
+            "units": [{"type": "section", "unit_id": str(section.id)}],
+        }
+
+        # Filter to just team leaders if mailing preference is leaders-first.
+        mailing_preference = _get_mailing_preference(group, section.section_type)
+        if mailing_preference == GroupSectionMailingPreferenceOption.LEADERS:
+            config["role_type_id"] = str(RoleType.objects.get(name=ROLES["team_leader"]).id)
+
         SystemMailingGroup.objects.update_or_create(
             composite_key=f"section_team_{section.tsa_id}",
             defaults={
@@ -396,10 +447,7 @@ class MailingGroupUpdater:
                 "display_name": f"{group.public_name} {section.usual_weekday.title()} {section.section_type}",  # noqa: E501
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
-                "config": {
-                    "role_type_id": str(RoleType.objects.get(name=ROLES["team_leader"]).id),
-                    "units": [{"type": "section", "unit_id": str(section.id)}],
-                },
+                "config": config,
                 # Sections fall back to the section team leaders at the group
                 "fallback_group_composite_key": f"group_{group.tsa_id}_{section.section_type.lower()}",
                 "always_include_fallback_group": False,
@@ -430,6 +478,9 @@ class Command(BaseCommand):
             updater.update_group_top_level_roles(group)
             updater.update_group_teams(group)
             updater.update_group_all(group)
+
+            for section_type in GROUP_SECTION_TYPES:
+                updater.update_group_section_type(group, section_type)
 
             # Group Sections
             for section in group.sections.all():
