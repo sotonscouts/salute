@@ -233,22 +233,6 @@ class MailingGroupUpdater:
                 },
             )
 
-            SystemMailingGroup.objects.update_or_create(
-                composite_key=f"district_network_members_{network_section.tsa_id}",
-                defaults={
-                    "name": f"{network_section.mailing_slug.lower()}-members",
-                    "display_name": f"{network_section.display_name} Members",
-                    "can_receive_external_email": False,
-                    "can_members_send_as": False,
-                    "config": {
-                        "units": [{"type": "section", "unit_id": str(network_section.id)}],
-                    },
-                    # Network units fall back to the 14-24 team lead, but should not always include them.
-                    "fallback_group_composite_key": f"district_team_{self.fourteento24_team_type.id}__lead",
-                    "always_include_fallback_group": False,
-                },
-            )
-
     def update_group_top_level_roles(self, group: Group) -> None:
         # Group Lead Volunteer
         SystemMailingGroup.objects.update_or_create(
