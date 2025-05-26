@@ -13,11 +13,13 @@ from strawberry_django.permissions import HasPerm
 
 from salute.hierarchy import models
 from salute.hierarchy.constants import SECTION_TYPE_INFO, SectionOperatingCategory, SectionType, Weekday
+from salute.mailing_groups import models as mailing_groups_models
 from salute.people.models import Person
 from salute.roles.models import Role
 
 if TYPE_CHECKING:
     from salute.locations.graphql.graph_types import Site
+    from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
     from salute.roles.graphql.graph_types import DistrictTeam, GroupTeam, SectionTeam
 
 
@@ -115,6 +117,20 @@ class Group(Unit, sb.relay.Node):
     teams: list[Annotated[GroupTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
         extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
     )
+
+    @sd.field(
+        description="The system mailing groups that are important for this group. Only returns fully configured mailing groups.",  # noqa: E501
+    )
+    def system_mailing_groups(
+        self,
+    ) -> list[Annotated[SystemMailingGroup, sb.lazy("salute.mailing_groups.graphql.graph_types")]]:
+        leadership_team = self.teams.filter(team_type__tsa_id="c30f4d78-a1f8-ed11-8f6d-6045bdd0ed08").first()  # type: ignore[attr-defined]
+        if leadership_team is None:
+            return []
+
+        return mailing_groups_models.SystemMailingGroup.objects.filter(
+            teams=leadership_team, workspace_group__isnull=False
+        ).order_by("name")  # type: ignore[return-value]
 
 
 @sd.order_type(models.Section)

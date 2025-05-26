@@ -45,11 +45,18 @@ class MailingGroupUpdater:
         self.fourteento24_team_type = TeamType.objects.get(tsa_id="04165cff-a0f8-ed11-8f6d-6045bdd0ed08")
 
     def update_district_top_level_roles(self) -> None:
-        SystemMailingGroup.objects.update_or_create(
+        district_leadership_team = self.district.teams.filter(team_type=self.leadership_team_type).first()
+        district_trustees_team = self.district.teams.filter(team_type=self.trustees_team_type).first()
+
+        assert district_leadership_team is not None
+        assert district_trustees_team is not None
+
+        district_lead, _ = SystemMailingGroup.objects.update_or_create(
             composite_key="district_lead",
             defaults={
                 "name": "lead",
                 "display_name": "District Lead",
+                "short_name": "District Lead",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -62,12 +69,14 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        district_lead.teams.set([district_leadership_team])
 
-        SystemMailingGroup.objects.update_or_create(
+        district_chair, _ = SystemMailingGroup.objects.update_or_create(
             composite_key="district_chair",
             defaults={
                 "name": "chair",
                 "display_name": "District Chair",
+                "short_name": "District Chair",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -80,12 +89,14 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        district_chair.teams.set([district_trustees_team])
 
-        SystemMailingGroup.objects.update_or_create(
+        treasurer, _ = SystemMailingGroup.objects.update_or_create(
             composite_key="district_treasurer",
             defaults={
                 "name": "treasurer",
                 "display_name": "District Treasurer",
+                "short_name": "District Treasurer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -98,12 +109,14 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        treasurer.teams.set([district_trustees_team])
 
-        SystemMailingGroup.objects.update_or_create(
+        youth_lead, _ = SystemMailingGroup.objects.update_or_create(
             composite_key="district_youth_lead",
             defaults={
                 "name": "youth-lead",
                 "display_name": "District Youth Lead",
+                "short_name": "District Youth Lead",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -116,6 +129,7 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        youth_lead.teams.set([district_leadership_team])
 
     def update_district_teams(self) -> None:
         # First, get all teams within the district, including sub-teams.
@@ -124,11 +138,12 @@ class MailingGroupUpdater:
             # If the team has a mailing slug, we want to create addresses for it.
             # TODO: District Wilverley Team -> Wilverley Team
             if team.team_type.mailing_slug:
-                SystemMailingGroup.objects.update_or_create(
+                team_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                     composite_key=f"district_team_{team.team_type.id}",
                     defaults={
                         "name": f"{team.team_type.mailing_slug}",
                         "display_name": f"District {team.team_type.display_name}",
+                        "short_name": team.team_type.display_name,
                         "can_receive_external_email": True,
                         "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
@@ -140,14 +155,16 @@ class MailingGroupUpdater:
                         "always_include_fallback_group": False,
                     },
                 )
+                team_mailing_group.teams.set([team])
 
                 # If the team type has a contactable team lead, create an address for them.
                 if team.team_type.has_team_lead:
-                    SystemMailingGroup.objects.update_or_create(
+                    team_lead_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                         composite_key=f"district_team_{team.team_type.id}__lead",
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-lead",
                             "display_name": f"District {team.team_type.display_name} Lead",
+                            "short_name": f"{team.team_type.display_name} Lead",
                             "can_receive_external_email": True,
                             "can_members_send_as": True,
                             "config": {
@@ -160,6 +177,7 @@ class MailingGroupUpdater:
                             "always_include_fallback_group": False,
                         },
                     )
+                    team_lead_mailing_group.teams.set([team])
 
                 # If the team type has an -all list, and it's not a sub-team, and it has sub-teams,
                 # then create a -all list.
@@ -169,11 +187,12 @@ class MailingGroupUpdater:
                     and team.allow_sub_team
                     and team.sub_teams.count()
                 ):
-                    SystemMailingGroup.objects.update_or_create(
+                    team_all_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                         composite_key=f"district_team_{team.team_type.id}__all",
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-all",
                             "display_name": f"District {team.team_type.display_name} All Members",
+                            "short_name": f"{team.team_type.display_name} All Members",
                             "can_receive_external_email": False,
                             "can_members_send_as": False,
                             "config": {
@@ -187,6 +206,7 @@ class MailingGroupUpdater:
                             "always_include_fallback_group": False,
                         },
                     )
+                    team_all_mailing_group.teams.set([])  # Intentionally not linked yet.
 
     def update_explorer_teams(self) -> None:
         """Update teams for explorers and young leaders."""
@@ -194,11 +214,12 @@ class MailingGroupUpdater:
             if not district_section.mailing_slug:
                 raise ValueError(f"Mailing slug is required for {district_section}")
 
-            SystemMailingGroup.objects.update_or_create(
+            explorer_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                 composite_key=f"district_section_team_{district_section.tsa_id}",
                 defaults={
                     "name": district_section.mailing_slug.lower(),
                     "display_name": district_section.display_name,
+                    "short_name": district_section.display_name,
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": {
@@ -209,6 +230,7 @@ class MailingGroupUpdater:
                     "always_include_fallback_group": True,
                 },
             )
+            explorer_mailing_group.teams.set([district_section.teams.get()])
 
     def update_network(self) -> None:
         # Iterate as we assume that there may be more than one network.
@@ -216,11 +238,12 @@ class MailingGroupUpdater:
             if not network_section.mailing_slug:
                 raise ValueError(f"Mailing slug is required for {network_section}")
 
-            SystemMailingGroup.objects.update_or_create(
+            network_lead_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                 composite_key=f"district_network_lead_{network_section.tsa_id}",
                 defaults={
                     "name": network_section.mailing_slug.lower(),
                     "display_name": network_section.display_name,
+                    "short_name": network_section.display_name,
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": {
@@ -232,14 +255,22 @@ class MailingGroupUpdater:
                     "always_include_fallback_group": False,
                 },
             )
+            network_lead_mailing_group.teams.set([network_section.teams.get()])
 
     def update_group_top_level_roles(self, group: Group) -> None:
+        leadership_team = Team.objects.filter(group=group, team_type=self.leadership_team_type).first()
+        trustees_team = Team.objects.filter(group=group, team_type=self.trustees_team_type).first()
+
+        assert leadership_team is not None
+        assert trustees_team is not None
+
         # Group Lead Volunteer
-        SystemMailingGroup.objects.update_or_create(
+        group_lead, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"group_lead_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-lead",
                 "display_name": f"{group.public_name} Lead Volunteer",
+                "short_name": "Group Lead Volunteer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -252,12 +283,15 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        group_lead.teams.set([leadership_team])
+
         # Group Chair
-        SystemMailingGroup.objects.update_or_create(
+        group_chair, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"group_chair_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-chair",
                 "display_name": f"{group.public_name} Chair",
+                "short_name": "Chair",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -269,12 +303,15 @@ class MailingGroupUpdater:
                 "fallback_group_composite_key": f"group_{group.tsa_id}_team_{self.trustees_team_type.id}",
             },
         )
+        group_chair.teams.set([trustees_team])
+
         # Group Treasurer
-        SystemMailingGroup.objects.update_or_create(
+        group_treasurer, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"group_treasurer_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-treasurer",
                 "display_name": f"{group.public_name} Treasurer",
+                "short_name": "Treasurer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -286,6 +323,7 @@ class MailingGroupUpdater:
                 "fallback_group_composite_key": f"group_{group.tsa_id}_team_{self.trustees_team_type.id}",
             },
         )
+        group_treasurer.teams.set([trustees_team])
 
     def update_group_teams(self, group: Group) -> None:
         """
@@ -298,11 +336,12 @@ class MailingGroupUpdater:
         team_qs = Team.objects.filter(models.Q(group=group) | models.Q(parent_team__group=group))
         for team in team_qs:
             if team.team_type.mailing_slug:
-                SystemMailingGroup.objects.update_or_create(
+                mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                     composite_key=f"group_{group.tsa_id}_team_{team.team_type.id}",
                     defaults={
                         "name": f"{group.ordinal}-{team.team_type.mailing_slug}",
                         "display_name": f"{group.public_name} {team.team_type.display_name}",
+                        "short_name": team.team_type.display_name,
                         "can_receive_external_email": True,
                         "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
@@ -314,14 +353,16 @@ class MailingGroupUpdater:
                         "always_include_fallback_group": False,
                     },
                 )
+                mailing_group.teams.set([team])
 
     def update_group_all(self, group: Group) -> None:
         # group-all - Everyone in the group or sections who is not a helper.
-        SystemMailingGroup.objects.update_or_create(
+        group_all, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"group_all_{group.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-all",
                 "display_name": f"{group.public_name} All Members",
+                "short_name": "All Members",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -334,13 +375,15 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        group_all.teams.set([])  # Intentionally not linked to a team.
 
         # All section leaders
-        SystemMailingGroup.objects.update_or_create(
+        section_all, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"group_{group.tsa_id}_all_sections",
             defaults={
                 "name": f"{group.ordinal}-sections",
                 "display_name": f"{group.public_name} Section Teams",
+                "short_name": "Section Teams",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -351,6 +394,7 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        section_all.teams.set([])  # Intentionally not linked to a team.
 
     def update_group_section_type(self, group: Group, section_type: SectionType) -> None:
         """
@@ -359,6 +403,7 @@ class MailingGroupUpdater:
         sections = group.sections.filter(section_type=section_type)
         if sections:
             mailing_preference = _get_mailing_preference(group, section_type)
+            section_teams = [section.teams.get() for section in sections]
 
             config: dict[str, Any] = {
                 "units": [{"type": "section", "unit_id": str(section.id)} for section in sections],
@@ -369,11 +414,12 @@ class MailingGroupUpdater:
                 config["role_type_id"] = str(RoleType.objects.get(name=ROLES["team_leader"]).id)
 
             # Primary group section type mailing group, e.g 20th-cubs
-            SystemMailingGroup.objects.update_or_create(
+            primary_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                 composite_key=f"group_{group.tsa_id}_{section_type.lower()}",
                 defaults={
                     "name": f"{group.ordinal}-{section_type.lower()}",
                     "display_name": f"{group.public_name} {section_type}",
+                    "short_name": str(section_type),
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": config,
@@ -382,15 +428,17 @@ class MailingGroupUpdater:
                     "always_include_fallback_group": False,
                 },
             )
+            primary_mailing_group.teams.set(section_teams)
 
             # Team members mailing group, e.g 20th-cubs-team
             # Only created if mailing preference is leaders-first.
             if mailing_preference == GroupSectionMailingPreferenceOption.LEADERS:
-                _, created = SystemMailingGroup.objects.update_or_create(
+                team_members_mailing_group, created = SystemMailingGroup.objects.update_or_create(
                     composite_key=f"group_{group.tsa_id}_{section_type.lower()}_team_members",
                     defaults={
                         "name": f"{group.ordinal}-{section_type.lower()}-team",
                         "display_name": f"{group.public_name} {section_type} Team",
+                        "short_name": f"{section_type} Team",
                         "can_receive_external_email": False,
                         "can_members_send_as": False,
                         "config": {
@@ -401,6 +449,7 @@ class MailingGroupUpdater:
                         "always_include_fallback_group": False,
                     },
                 )
+                team_members_mailing_group.teams.set(section_teams)
                 if created:
                     print(f"Created {group.public_name} {section_type} team members email.")
             else:
@@ -424,11 +473,12 @@ class MailingGroupUpdater:
         if mailing_preference == GroupSectionMailingPreferenceOption.LEADERS:
             config["role_type_id"] = str(RoleType.objects.get(name=ROLES["team_leader"]).id)
 
-        SystemMailingGroup.objects.update_or_create(
+        section_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
             composite_key=f"section_team_{section.tsa_id}",
             defaults={
                 "name": f"{group.ordinal}-{section.section_type}-{section.usual_weekday}".lower(),
                 "display_name": f"{group.public_name} {section.usual_weekday.title()} {section.section_type}",  # noqa: E501
+                "short_name": f"{section.usual_weekday.title()} {section.section_type}",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": config,
@@ -437,6 +487,7 @@ class MailingGroupUpdater:
                 "always_include_fallback_group": False,
             },
         )
+        section_mailing_group.teams.set([section.teams.get()])
 
 
 class Command(BaseCommand):
