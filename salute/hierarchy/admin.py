@@ -9,6 +9,7 @@ from salute.core.models import BaseModel
 from salute.hierarchy.constants import DISTRICT_SECTION_TYPES, NON_REGULAR_SECTIONS_TYPES
 from salute.hierarchy.models import District, Group, Locality, Section
 from salute.integrations.tsa.admin import TSATimestampedObjectModelAdminMixin
+from salute.mailing_groups.admin import GroupSectionMailingPreferenceInline
 
 
 @admin.register(District)
@@ -44,6 +45,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     )
     list_filter = ("group_type",)
     search_fields = ("unit_name", "tsa_id", "location_name")
+    inlines = [GroupSectionMailingPreferenceInline]
 
     fieldsets = (
         (None, {"fields": ("display_name", "shortcode", "district")}),

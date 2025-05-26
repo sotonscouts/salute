@@ -94,5 +94,7 @@ GROUP_SECTION_TYPES = [
     st for st, info in SECTION_TYPE_INFO.items() if info["operating_category"] == SectionOperatingCategory.GROUP
 ]
 
+GROUP_SECTION_TYPE_OPTIONS = [(st, SECTION_TYPE_INFO[st]["display_name"]) for st in GROUP_SECTION_TYPES]
+
 # Section types that do not necessarily meet on a regular weekday
 NON_REGULAR_SECTIONS_TYPES = [SectionType.YOUNG_LEADERS, SectionType.NETWORK]
