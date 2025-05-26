@@ -44,7 +44,7 @@ class SystemMailingGroupMembershipInline(admin.TabularInline):
 
 
 class MailGroupAdmin(admin.ModelAdmin):
-    list_display = ["name", "display_name", "member_count", "workspace_member_count"]
+    list_display = ["name", "display_name", "short_name", "member_count", "workspace_member_count"]
     readonly_fields = (
         "name",
         "display_name",
@@ -54,6 +54,7 @@ class MailGroupAdmin(admin.ModelAdmin):
         "can_members_send_as",
         "can_receive_external_email",
         "teams",
+        "short_name",
         "composite_key",
         "config",
         "fallback_group_composite_key",
@@ -64,7 +65,7 @@ class MailGroupAdmin(admin.ModelAdmin):
     list_filter = ["can_receive_external_email", "can_members_send_as", ("workspace_group", admin.EmptyFieldListFilter)]
     inlines = [SystemMailingGroupMembershipInline]
     fieldsets = (
-        (None, {"fields": ("name", "display_name", "teams")}),
+        (None, {"fields": ("name", "display_name", "short_name", "teams")}),
         ("Stats", {"fields": ("member_count", "workspace_member_count")}),
         ("Google Workspace", {"fields": ("can_members_send_as", "can_receive_external_email", "workspace_group")}),
         ("Tech Details", {"classes": ("collapse",), "fields": ("composite_key", "config")}),

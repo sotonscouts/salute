@@ -56,6 +56,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": "lead",
                 "display_name": "District Lead",
+                "short_name": "District Lead",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -75,6 +76,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": "chair",
                 "display_name": "District Chair",
+                "short_name": "District Chair",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -94,6 +96,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": "treasurer",
                 "display_name": "District Treasurer",
+                "short_name": "District Treasurer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -113,6 +116,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": "youth-lead",
                 "display_name": "District Youth Lead",
+                "short_name": "District Youth Lead",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -139,6 +143,7 @@ class MailingGroupUpdater:
                     defaults={
                         "name": f"{team.team_type.mailing_slug}",
                         "display_name": f"District {team.team_type.display_name}",
+                        "short_name": team.team_type.display_name,
                         "can_receive_external_email": True,
                         "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
@@ -159,6 +164,7 @@ class MailingGroupUpdater:
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-lead",
                             "display_name": f"District {team.team_type.display_name} Lead",
+                            "short_name": f"{team.team_type.display_name} Lead",
                             "can_receive_external_email": True,
                             "can_members_send_as": True,
                             "config": {
@@ -186,6 +192,7 @@ class MailingGroupUpdater:
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-all",
                             "display_name": f"District {team.team_type.display_name} All Members",
+                            "short_name": f"{team.team_type.display_name} All Members",
                             "can_receive_external_email": False,
                             "can_members_send_as": False,
                             "config": {
@@ -212,6 +219,7 @@ class MailingGroupUpdater:
                 defaults={
                     "name": district_section.mailing_slug.lower(),
                     "display_name": district_section.display_name,
+                    "short_name": district_section.display_name,
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": {
@@ -235,6 +243,7 @@ class MailingGroupUpdater:
                 defaults={
                     "name": network_section.mailing_slug.lower(),
                     "display_name": network_section.display_name,
+                    "short_name": network_section.display_name,
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": {
@@ -261,6 +270,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-lead",
                 "display_name": f"{group.public_name} Lead Volunteer",
+                "short_name": "Group Lead Volunteer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -281,6 +291,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-chair",
                 "display_name": f"{group.public_name} Chair",
+                "short_name": "Chair",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -300,6 +311,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-treasurer",
                 "display_name": f"{group.public_name} Treasurer",
+                "short_name": "Treasurer",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": {
@@ -329,6 +341,7 @@ class MailingGroupUpdater:
                     defaults={
                         "name": f"{group.ordinal}-{team.team_type.mailing_slug}",
                         "display_name": f"{group.public_name} {team.team_type.display_name}",
+                        "short_name": team.team_type.display_name,
                         "can_receive_external_email": True,
                         "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
@@ -349,6 +362,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-all",
                 "display_name": f"{group.public_name} All Members",
+                "short_name": "All Members",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -369,6 +383,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-sections",
                 "display_name": f"{group.public_name} Section Teams",
+                "short_name": "Section Teams",
                 "can_receive_external_email": False,
                 "can_members_send_as": False,
                 "config": {
@@ -404,6 +419,7 @@ class MailingGroupUpdater:
                 defaults={
                     "name": f"{group.ordinal}-{section_type.lower()}",
                     "display_name": f"{group.public_name} {section_type}",
+                    "short_name": str(section_type),
                     "can_receive_external_email": True,
                     "can_members_send_as": True,
                     "config": config,
@@ -422,6 +438,7 @@ class MailingGroupUpdater:
                     defaults={
                         "name": f"{group.ordinal}-{section_type.lower()}-team",
                         "display_name": f"{group.public_name} {section_type} Team",
+                        "short_name": f"{section_type} Team",
                         "can_receive_external_email": False,
                         "can_members_send_as": False,
                         "config": {
@@ -461,6 +478,7 @@ class MailingGroupUpdater:
             defaults={
                 "name": f"{group.ordinal}-{section.section_type}-{section.usual_weekday}".lower(),
                 "display_name": f"{group.public_name} {section.usual_weekday.title()} {section.section_type}",  # noqa: E501
+                "short_name": f"{section.usual_weekday.title()} {section.section_type}",
                 "can_receive_external_email": True,
                 "can_members_send_as": True,
                 "config": config,

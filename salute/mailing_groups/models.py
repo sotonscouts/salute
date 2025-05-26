@@ -45,6 +45,7 @@ class GroupSectionSystemMailingPreference(BaseModel):
 class SystemMailingGroup(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     display_name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=255)
     composite_key = models.CharField(max_length=255, unique=True)
     config = models.JSONField()
     can_receive_external_email = models.BooleanField(
