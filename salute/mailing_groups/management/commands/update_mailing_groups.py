@@ -130,7 +130,7 @@ class MailingGroupUpdater:
                         "name": f"{team.team_type.mailing_slug}",
                         "display_name": f"District {team.team_type.display_name}",
                         "can_receive_external_email": True,
-                        "can_members_send_as": True,
+                        "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
                             "team_type_id": str(team.team_type.id),
                             "units": [{"type": "district", "unit_id": str(self.district.id)}],
@@ -320,7 +320,7 @@ class MailingGroupUpdater:
                         "name": f"{group.ordinal}-{team.team_type.mailing_slug}",
                         "display_name": f"{group.public_name} {team.team_type.display_name}",
                         "can_receive_external_email": True,
-                        "can_members_send_as": True,
+                        "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
                             "team_type_id": str(team.team_type.id),
                             "units": [{"type": "group", "unit_id": str(group.id)}],

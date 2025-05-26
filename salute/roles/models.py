@@ -29,9 +29,10 @@ class TeamType(TSATaxonomy):
         blank=True,
         help_text="Slug for generating mailing lists. Do not change unless you understand the impact.",
     )
-    has_team_lead = models.BooleanField(default=False)
+    has_team_lead = models.BooleanField(default=False, help_text="If true, generate a -lead mailing list.")
     has_all_list = models.BooleanField(default=False, help_text="If has sub-teams, whether to generate a -all list.")
     included_in_all_members = models.BooleanField(default=True, help_text="Included in all members -all addresses")
+    members_can_send_as = models.BooleanField(default=True, help_text="If true, members can send as this team.")
 
     def __str__(self) -> str:
         return self.display_name

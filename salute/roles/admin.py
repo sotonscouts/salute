@@ -40,16 +40,24 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("name", "display_name", "nickname")}),
-        ("Mail Settings", {"fields": ("mailing_slug", "has_team_lead", "has_all_list", "included_in_all_members")}),
+        (
+            "Mail Settings",
+            {
+                "description": "Do not change these settings unless you know what you are doing.",
+                "fields": (
+                    "mailing_slug",
+                    "has_team_lead",
+                    "has_all_list",
+                    "included_in_all_members",
+                    "members_can_send_as",
+                ),
+            },
+        ),
     ) + TSAObjectModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: TeamType | None = None) -> list[str]:  # type: ignore[override]
         return super().get_readonly_fields(request, obj) + [
             "display_name",
-            "mailing_slug",
-            "has_team_lead",
-            "has_all_list",
-            "included_in_all_members",
         ]
 
     def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
