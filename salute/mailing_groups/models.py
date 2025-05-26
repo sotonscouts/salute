@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from django.db.models.fields.related import ManyToManyField
 
     from salute.people.models import Person
+    from salute.roles.models import Team
 
 
 class GroupSectionMailingPreferenceOption(models.TextChoices):
@@ -63,6 +64,13 @@ class SystemMailingGroup(BaseModel):
         help_text="Whether to always include the fallback group in this group.",
     )
 
+    teams: ManyToManyField[Team, Never] = models.ManyToManyField(  # type: ignore[assignment]
+        "roles.Team",
+        blank=True,
+        editable=False,
+        related_name="system_mailing_groups",
+        help_text="The teams that this mailing group belongs to.",
+    )
     members: ManyToManyField[Person, Never] = models.ManyToManyField(
         "people.Person", related_name="system_mailing_groups", through="SystemMailingGroupMembership"
     )
