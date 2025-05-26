@@ -15,7 +15,7 @@ from strawberry_django.permissions import HasPerm
 from salute.accounts.models import User
 from salute.hierarchy.graphql.graph_types import District, Group, Section
 from salute.mailing_groups import models as mailing_groups_models
-from salute.mailing_groups.graphql.graphql_types import SystemMailingGroup
+from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
 from salute.people.graphql.graph_types import Person, PersonFilter
 from salute.roles import models
 
