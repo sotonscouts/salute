@@ -7,7 +7,18 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import URLPattern, path, reverse
 
-from salute.mailing_groups.models import SystemMailingGroup, SystemMailingGroupMembership
+from salute.mailing_groups.models import (
+    GroupSectionSystemMailingPreference,
+    SystemMailingGroup,
+    SystemMailingGroupMembership,
+)
+
+
+class GroupSectionMailingPreferenceInline(admin.TabularInline):
+    model = GroupSectionSystemMailingPreference
+    extra = 0
+    verbose_name = "Section Mailing Preference"
+    verbose_name_plural = "Section Mailing Preferences"
 
 
 class SystemMailingGroupMembershipInline(admin.TabularInline):

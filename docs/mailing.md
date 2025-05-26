@@ -119,6 +119,26 @@ When a mailing group might not have members (e.g., a section without leaders), a
 For example:
 - Explorer units may have no leaders at times, so emails fall back to the 14-24 Team Lead
 
+## Group Section Type Mailing Preferences
+
+Each group can have a mailing preference for a section type. This determines if the team members or leaders should be included in the mailing group.
+
+The mailing preferences are stored in the `GroupSectionTypeMailingPreference` model.
+
+### Example 1: Teams (recommended, default)
+
+- 20th-cubs - Goes to all teams leaders and members for cub sections at 20th
+- 20th-cubs-monday - Goes to all teams leaders and members for cub sections at 20th on Monday
+- 20th-cubs-tuesday - Goes to all teams leaders and members for cub sections at 20th on Tuesday
+
+### Example 2: Leaders (not recommended)
+
+- 20th-cubs - Goes to team leaders only for cub sections at 20th
+- 20th-cubs-monday - Goes to team leaders only for cub sections at 20th on Monday
+- 20th-cubs-tuesday - Goes to team leaders only for cub sections at 20th on Tuesday
+- 20th-cubs-team - Goes to all team leaders and members for cub sections at 20th (Internal use only)
+
+
 ## Google Workspace Integration
 
 Mailing groups are synchronised with Google Workspace through the `sync_workspace_groups` management command:

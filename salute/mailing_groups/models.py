@@ -5,12 +5,40 @@ from typing import TYPE_CHECKING, Never
 from django.db import models
 
 from salute.core.models import BaseModel
+from salute.hierarchy.constants import GROUP_SECTION_TYPE_OPTIONS
 from salute.mailing_groups.schema import MailGroupConfig
 
 if TYPE_CHECKING:
     from django.db.models.fields.related import ManyToManyField
 
     from salute.people.models import Person
+
+
+class GroupSectionMailingPreferenceOption(models.TextChoices):
+    TEAMS = "TEAMS", "Teams (Recommended, Default)"
+    LEADERS = "LEADERS", "Team Leaders"
+
+
+class GroupSectionSystemMailingPreference(BaseModel):
+    group = models.ForeignKey("hierarchy.Group", on_delete=models.CASCADE)
+    section_type = models.CharField(max_length=32, choices=GROUP_SECTION_TYPE_OPTIONS)
+    mailing_preference = models.CharField(
+        max_length=32,
+        choices=GroupSectionMailingPreferenceOption.choices,
+        default=GroupSectionMailingPreferenceOption.TEAMS,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["group", "section_type"],
+                name="unique_group_section_type",
+                violation_error_message="Mailing preference already exists for this group and section type.",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.group} - {self.section_type} - {self.mailing_preference}"
 
 
 class SystemMailingGroup(BaseModel):
