@@ -17,6 +17,8 @@ from salute.mailing_groups import models as mailing_groups_models
 from salute.people.models import Person
 from salute.roles.models import Role
 
+from .graph_filters import GroupFilter, SectionFilter
+
 if TYPE_CHECKING:
     from salute.locations.graphql.graph_types import Site
     from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
@@ -87,11 +89,6 @@ class District(Unit, sb.relay.Node):
 @sd.order_type(models.Group)
 class GroupOrder:
     local_unit_number: auto
-
-
-@sd.filter_type(models.Group)
-class GroupFilter:
-    group_type: models.GroupType
 
 
 @sd.type(
@@ -166,15 +163,6 @@ class SectionOrder:
         )
         ordering = value.resolve(f"{prefix}_ordered__weekday_num")
         return queryset, [ordering]
-
-
-@sd.filter_type(models.Section, lookups=True)
-class SectionFilter:
-    section_type: sb.auto
-    usual_weekday: sb.auto
-    group: GroupFilter | None = sd.filter_field(
-        filter_none=True, description="Filter by group. Set to null for district sections"
-    )
 
 
 @sd.interface(models.Section)
