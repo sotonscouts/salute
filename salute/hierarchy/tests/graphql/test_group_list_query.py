@@ -149,6 +149,45 @@ class TestGroupListQuery:
             }
         }
 
+    def test_query__filter__id(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        groups = GroupFactory.create_batch(size=5, district=district)
+        expected_groups = sorted(groups[:2], key=lambda g: (g.locality.name, g.local_unit_number))
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                """
+                query groupOrderTest($idlist: [ID!]!) {
+                    groups (filters: {id: {inList: $idlist}}) {
+                        edges {
+                            node {
+                                unitName
+                                ordinal
+                            }
+                        }
+                    }
+                }
+                """,
+                variables={"idlist": [to_base64("Group", g.id) for g in expected_groups]},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "groups": {
+                "edges": [
+                    {
+                        "node": {
+                            "unitName": group.unit_name,
+                            "ordinal": group.ordinal,
+                        }
+                    }
+                    for group in sorted(expected_groups, key=lambda g: (g.locality.name, g.local_unit_number))
+                ]
+            }
+        }
+
     @pytest.mark.parametrize("group_type", GroupType)
     def test_query__filter__group_type(self, group_type: GroupType, user_with_person: User) -> None:
         district = DistrictFactory()
@@ -185,6 +224,44 @@ class TestGroupListQuery:
                     }
                     for group in sorted(groups[group_type], key=lambda g: (g.locality.name, g.local_unit_number))
                     if group.group_type == str(group_type)
+                ],
+            }
+        }
+
+    def test_query__filter__local_unit_number(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        GroupFactory.create_batch(size=5, district=district)
+        group = GroupFactory(district=district, local_unit_number=10)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                """
+                query groupOrderTest($localUnitNumber: IntComparisonFilterLookup!) {
+                    groups (filters: {localUnitNumber: $localUnitNumber}) {
+                        edges {
+                            node {
+                                unitName
+                                ordinal
+                            }
+                        }
+                    }
+                }
+                """,
+                variables={"localUnitNumber": {"exact": 10}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "groups": {
+                "edges": [
+                    {
+                        "node": {
+                            "unitName": group.unit_name,
+                            "ordinal": group.ordinal,
+                        }
+                    }
                 ],
             }
         }

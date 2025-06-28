@@ -445,3 +445,80 @@ class TestSectionListQuery:
                 ],
             }
         }
+
+    def test_query__filter__group__id(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        group_sections = [
+            GroupSectionFactory(group__district=district, section_type=section_type)
+            for section_type in GROUP_SECTION_TYPES
+        ]
+        section = group_sections[0]
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                """
+                query groupOrderTest($groupID: ID!) {
+                    sections (filters: {group: {id: {exact: $groupID}}}) {
+                        edges {
+                            node {
+                                unitName
+                            }
+                        }
+                    }
+                }
+                """,
+                variables={"groupID": to_base64("Group", section.group.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "sections": {
+                "edges": [
+                    {
+                        "node": {
+                            "unitName": section.unit_name,
+                        }
+                    }
+                ],
+            }
+        }
+
+    def test_query__filter__group__none(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        _group_sections = [
+            GroupSectionFactory(group__district=district, section_type=section_type)
+            for section_type in GROUP_SECTION_TYPES
+        ]
+        district_section = DistrictSectionFactory(district=district, section_type=SectionType.EXPLORERS)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                """
+                query groupOrderTest {
+                    sections (filters: {group: null}) {
+                        edges {
+                            node {
+                                unitName
+                            }
+                        }
+                    }
+                }
+                """,
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "sections": {
+                "edges": [
+                    {
+                        "node": {
+                            "unitName": district_section.unit_name,
+                        }
+                    }
+                ],
+            }
+        }
