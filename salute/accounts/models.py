@@ -22,7 +22,7 @@ from salute.core.models import BaseModel
 _T = TypeVar("_T", bound=models.Model)
 
 
-class UserManager[_T](DjangoUserManager):
+class UserManager[_T](DjangoUserManager):  # noqa: UP049
     def _create_user(self, email: str, password: str | None, **extra_fields: Any) -> _T:
         """
         Create and save a user with the given email, and password.

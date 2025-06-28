@@ -34,7 +34,7 @@ class Unit:
         only="tsa_id",
     )
     def tsa_details_link(self) -> str:
-        template = Template(settings.TSA_UNIT_LINK_TEMPLATE)  # type: ignore[misc]
+        template = Template(settings.TSA_UNIT_LINK_TEMPLATE)
         return template.safe_substitute(tsaid=self.tsa_id)  # type: ignore[attr-defined]
 
 
