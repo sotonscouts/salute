@@ -98,7 +98,7 @@ class TeamInterface(sb.relay.Node):
         description="Link to the TSA unit details.",
     )
     def tsa_details_link(self) -> str:
-        template = Template(settings.TSA_TEAM_LINK_TEMPLATE)  # type: ignore[misc]
+        template = Template(settings.TSA_TEAM_LINK_TEMPLATE)
         return template.safe_substitute(unitid=self.unit.tsa_id, teamtypeid=self.team_type.tsa_id)  # type: ignore[attr-defined]
 
 
