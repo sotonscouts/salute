@@ -12,8 +12,8 @@ class TestTeamTypeListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query {
-        teamTypes {
+    query listTeamTypes($filters: TeamTypeFilter) {
+        teamTypes(filters: $filters) {
             edges {
                 node {
                     id
@@ -85,5 +85,32 @@ class TestTeamTypeListQuery:
                     for tt in sorted(team_types, key=lambda tt: tt.name)
                 ],
                 "totalCount": 5,
+            }
+        }
+
+    def test_query__filter_by_id(self, user_with_person: User) -> None:
+        team_types = TeamTypeFactory.create_batch(size=5)
+        expected_team_type = team_types[0]
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"id": {"exact": to_base64("TeamType", expected_team_type.id)}}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teamTypes": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("TeamType", expected_team_type.id),
+                            "displayName": expected_team_type.name,
+                        }
+                    }
+                ],
+                "totalCount": 1,
             }
         }

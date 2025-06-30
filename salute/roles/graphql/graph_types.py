@@ -19,6 +19,8 @@ from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
 from salute.people.graphql.graph_types import Person, PersonFilter
 from salute.roles import models
 
+from .graph_filters import AccreditationFilter, RoleFilter, TeamFilter, TeamTypeFilter
+
 
 @sd.type(models.AccreditationType)
 class AccreditationType(sb.relay.Node):
@@ -47,21 +49,9 @@ class RoleType(sb.relay.Node):
         return self.name
 
 
-@sd.type(models.TeamType)
+@sd.type(models.TeamType, filters=TeamTypeFilter)
 class TeamType(sb.relay.Node):
-    display_name: str = sd.field(description="Formatted name for the team type", only="name")
-
-
-# TODO filters:
-# - has_sub_teams
-# - is_sub_team
-# - parent_team
-# - level (district, group, section) - note: includes sub teams
-
-
-@sd.filter_type(models.Team, lookups=True)
-class TeamFilter:
-    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    display_name: str = sd.field(description="Formatted name for the team type")
 
 
 @sd.interface(models.Team)
@@ -146,19 +136,6 @@ class Team(TeamWithChildInterface, sb.relay.Node):
         return UnitInfo(display_name=self.unit.display_name)
 
 
-@sd.filter_type(models.Role)
-class RoleFilter:
-    person: PersonFilter | None
-    team: TeamFilter | None
-
-    @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
-    def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
-        expr = Q(**{f"{prefix}status__name": "-"})
-        if value:
-            return expr
-        return ~expr
-
-
 @sd.type(models.Role, filters=RoleFilter)
 class Role(sb.relay.Node):
     person: Person = sb.field(description="The person the role belongs to")
@@ -180,12 +157,6 @@ class Role(sb.relay.Node):
         if hasattr(queryset, "for_user"):
             return queryset.for_user(user)
         return queryset
-
-
-@sd.filter_type(models.Accreditation)
-class AccreditationFilter:
-    person: PersonFilter | None
-    team: TeamFilter | None
 
 
 @sd.type(models.Accreditation, filters=AccreditationFilter)
