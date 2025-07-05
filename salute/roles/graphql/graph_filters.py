@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import strawberry as sb
 import strawberry_django as sd
 from django.db.models import Q
 
+from salute.hierarchy.graphql.graph_filters import GroupFilter, SectionFilter
 from salute.people.graphql.graph_types import PersonFilter
 from salute.roles import models
 
@@ -20,6 +23,25 @@ class TeamFilter:
     level: sd.BaseFilterLookup[models.TeamLevel] | None = sd.filter_field(
         description="Filter by team level",
     )
+    group: GroupFilter | None = sd.filter_field(
+        description="Filter by group",
+        filter_none=True,
+    )
+    section: SectionFilter | None = sd.filter_field(
+        description="Filter by section",
+        filter_none=True,
+    )
+    parent_team: TeamFilter | None = sd.filter_field(
+        description="Filter by parent team",
+        filter_none=True,
+    )
+
+    @sd.filter_field(description="Filter by whether the team is a sub-team")
+    def is_sub_team(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
+        expr = Q(**{f"{prefix}parent_team__isnull": False})
+        if value:
+            return expr
+        return ~expr
 
 
 @sd.filter_type(models.Role)
