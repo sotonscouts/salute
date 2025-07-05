@@ -8,7 +8,7 @@ from typing import Any, cast
 import strawberry as sb
 import strawberry_django as sd
 from django.conf import settings
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
 from strawberry_django.permissions import HasPerm
 
@@ -16,7 +16,7 @@ from salute.accounts.models import User
 from salute.hierarchy.graphql.graph_types import District, Group, Section
 from salute.mailing_groups import models as mailing_groups_models
 from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
-from salute.people.graphql.graph_types import Person, PersonFilter
+from salute.people.graphql.graph_types import Person
 from salute.roles import models
 
 from .graph_filters import AccreditationFilter, RoleFilter, TeamFilter, TeamTypeFilter
@@ -61,6 +61,7 @@ class TeamInterface(sb.relay.Node):
         description="The formatted name of the team",
         select_related=["team_type", "parent_team", "district", "group", "section"],
     )
+    level: models.TeamLevel = sd.field(description="The level of the team")
 
     roles: sd.relay.DjangoListConnection[Role] = sd.connection(
         description="List roles",

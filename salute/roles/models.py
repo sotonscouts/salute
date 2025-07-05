@@ -47,38 +47,31 @@ class TeamLevel(models.TextChoices):
     GROUP = "GROUP"
     SECTION = "SECTION"
 
+
 class TeamQuerySet(models.QuerySet):
     def for_user(self, user: User) -> TeamQuerySet:
         return self.all()
 
-    def annotate_level(self) -> TeamQuerySet:
-
-        def _whens(prefix: str = "") -> list[models.When]:
-            levels = [
-                "district",
-                "group",
-                "section",
-            ]
-            return [
-                models.When(**{f"{prefix}{level}__isnull": False, "then": models.Value(level.upper())})
-                for level in levels
-            ]
-
-        return self.annotate(
-            level=models.Case(
-                *_whens(),
-                models.When(
-                    parent_team__isnull=False,
-                    then=models.Case(
-                        *_whens(prefix="parent_team__"),
-                        default=None,
-                        output_field=TextChoicesField(choices_enum=TeamLevel)
-                    )
-                ),
+    def update_levels(self) -> None:
+        # First handle direct relationships
+        direct_updates = self.annotate(
+            expected_level=models.Case(
+                models.When(district__isnull=False, then=models.Value(TeamLevel.DISTRICT)),
+                models.When(group__isnull=False, then=models.Value(TeamLevel.GROUP)),
+                models.When(section__isnull=False, then=models.Value(TeamLevel.SECTION)),
                 default=None,
                 output_field=TextChoicesField(choices_enum=TeamLevel),
             )
         )
+        direct_updates.filter(parent_team__isnull=True).update(level=models.F("expected_level"))
+
+        # Then handle parent team relationships in batches
+        parent_teams = self.filter(parent_team__isnull=False).select_related("parent_team")
+        for team in parent_teams:
+            parent_level = team.parent_team.level
+            if parent_level:
+                team.level = parent_level
+                team.save(update_fields=["level"])
 
 
 TeamManager = models.Manager.from_queryset(TeamQuerySet)
@@ -91,6 +84,7 @@ class Team(BaseModel):
     group = models.ForeignKey(Group, null=True, on_delete=models.PROTECT, related_name="teams")
     section = models.ForeignKey(Section, null=True, on_delete=models.PROTECT, related_name="teams")
     parent_team = models.ForeignKey("Team", null=True, on_delete=models.PROTECT, related_name="sub_teams")
+    level = TextChoicesField(choices_enum=TeamLevel, null=True, editable=False)
 
     allow_sub_team = models.BooleanField()
     inherit_permissions = models.BooleanField()
