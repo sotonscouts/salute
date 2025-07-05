@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django_choices_field import TextChoicesField
 
 from salute.accounts.models import User
 from salute.core.models import BaseModel, Taxonomy
@@ -41,6 +42,48 @@ class TeamType(TSATaxonomy):
         ordering = ("display_name",)
 
 
+class TeamLevel(models.TextChoices):
+    DISTRICT = "DISTRICT"
+    GROUP = "GROUP"
+    SECTION = "SECTION"
+
+class TeamQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> TeamQuerySet:
+        return self.all()
+
+    def annotate_level(self) -> TeamQuerySet:
+
+        def _whens(prefix: str = "") -> list[models.When]:
+            levels = [
+                "district",
+                "group",
+                "section",
+            ]
+            return [
+                models.When(**{f"{prefix}{level}__isnull": False, "then": models.Value(level.upper())})
+                for level in levels
+            ]
+
+        return self.annotate(
+            level=models.Case(
+                *_whens(),
+                models.When(
+                    parent_team__isnull=False,
+                    then=models.Case(
+                        *_whens(prefix="parent_team__"),
+                        default=None,
+                        output_field=TextChoicesField(choices_enum=TeamLevel)
+                    )
+                ),
+                default=None,
+                output_field=TextChoicesField(choices_enum=TeamLevel),
+            )
+        )
+
+
+TeamManager = models.Manager.from_queryset(TeamQuerySet)
+
+
 class Team(BaseModel):
     team_type = models.ForeignKey(TeamType, on_delete=models.PROTECT)
 
@@ -51,6 +94,8 @@ class Team(BaseModel):
 
     allow_sub_team = models.BooleanField()
     inherit_permissions = models.BooleanField()
+
+    objects = TeamManager()
 
     TSA_FIELDS: tuple[str, ...] = (
         "team_type",

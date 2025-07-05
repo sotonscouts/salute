@@ -18,7 +18,7 @@ from salute.roles.factories import (
     TeamFactory,
     TeamTypeFactory,
 )
-from salute.roles.models import TeamType
+from salute.roles.models import Team, TeamLevel, TeamType
 
 
 @pytest.mark.django_db
@@ -148,6 +148,53 @@ class TestTeam:
         district = DistrictFactory()
         team = TeamFactory(team_type=team_type, district=district)
         assert str(team) == f"Test TeamType - {team.unit}"
+
+
+@pytest.mark.django_db
+class TestTeamQuerySetAnnotateLevel:
+    def test_annotate_level__district_team(self) -> None:
+        district = DistrictFactory()
+        team = DistrictTeamFactory(district=district)
+
+        team = Team.objects.annotate_level().get(pk=team.pk)
+        assert team.level == TeamLevel.DISTRICT
+
+    def test_annotate_level__district_subteam(self) -> None:
+        district = DistrictFactory()
+        parent_team = DistrictTeamFactory(district=district)
+        team = DistrictSubTeamFactory(parent_team=parent_team)
+
+        teams = Team.objects.annotate_level().get(pk=team.pk)
+        assert teams.level == TeamLevel.DISTRICT
+
+    def test_annotate_level__group_team(self) -> None:
+        group = GroupFactory()
+        team = GroupTeamFactory(group=group)
+
+        teams = Team.objects.annotate_level().get(pk=team.pk)
+        assert teams.level == TeamLevel.GROUP
+
+    def test_annotate_level__group_subteam(self) -> None:
+        group = GroupFactory()
+        parent_team = GroupTeamFactory(group=group)
+        team = GroupSubTeamFactory(parent_team=parent_team)
+
+        teams = Team.objects.annotate_level().get(pk=team.pk)
+        assert teams.level == TeamLevel.GROUP
+
+    def test_annotate_level__group_section_team(self) -> None:
+        section = GroupSectionFactory()
+        team = GroupSectionTeamFactory(section=section)
+
+        teams = Team.objects.annotate_level().get(pk=team.pk)
+        assert teams.level == TeamLevel.SECTION
+
+    def test_annotate_level__district_section_team(self) -> None:
+        section = DistrictSectionFactory()
+        team = DistrictSectionTeamFactory(section=section)
+
+        teams = Team.objects.annotate_level().get(pk=team.pk)
+        assert teams.level == TeamLevel.SECTION
 
 
 @pytest.mark.django_db
