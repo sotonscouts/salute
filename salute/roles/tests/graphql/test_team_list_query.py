@@ -5,7 +5,8 @@ from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
-from salute.roles.factories import DistrictTeamFactory
+from salute.roles.factories import DistrictSubTeamFactory, DistrictTeamFactory, TeamTypeFactory
+from salute.roles.models import Team
 
 
 @pytest.mark.django_db
@@ -117,6 +118,102 @@ class TestTeamListQuery:
                         }
                     }
                     for team in sorted(teams[:2], key=lambda team: team.team_type.name)
+                ],
+                "totalCount": 2,
+            }
+        }
+
+    def test_query__filter_by_team_type(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        DistrictTeamFactory.create_batch(size=5)
+        team_type = TeamTypeFactory(name="Expected Team Type")
+        expected_teams = DistrictTeamFactory.create_batch(size=2, team_type=team_type)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"teamType": {"id": {"exact": to_base64("TeamType", team_type.id)}}}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teams": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("Team", team.id),
+                            "displayName": team.display_name,
+                        }
+                    }
+                    for team in sorted(expected_teams, key=lambda team: team.team_type.name)
+                ],
+                "totalCount": 2,
+            }
+        }
+
+    def test_query__filter_by_level(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        teams = DistrictTeamFactory.create_batch(size=5)
+        Team.objects.update_levels()
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"level": {"exact": "DISTRICT"}}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teams": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("Team", team.id),
+                            "displayName": team.display_name,
+                        }
+                    }
+                    for team in sorted(teams, key=lambda team: team.team_type.name)
+                ],
+                "totalCount": 5,
+            }
+        }
+
+    def test_query__filter_by_is_sub_team(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        teams = DistrictTeamFactory.create_batch(size=5)
+        sub_teams = DistrictSubTeamFactory.create_batch(size=2, parent_team=teams[0])
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"isSubTeam": True}},
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "teams": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("Team", team.id),
+                            "displayName": team.display_name,
+                        }
+                    }
+                    for team in sorted(sub_teams, key=lambda team: team.team_type.name)
                 ],
                 "totalCount": 2,
             }

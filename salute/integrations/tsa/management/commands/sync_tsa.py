@@ -309,6 +309,10 @@ class Command(BaseCommand):
         for section in Section.objects.all():
             self.sync_teams_for_section(membership, section)
 
+        # Update the levels of all teams
+        print("Updating team levels")
+        Team.objects.update_levels()
+
         person_ids: set[UUID] = set()
 
         # Next, we need to find people in our district.

@@ -18,7 +18,7 @@ from salute.roles.factories import (
     TeamFactory,
     TeamTypeFactory,
 )
-from salute.roles.models import TeamType
+from salute.roles.models import Team, TeamLevel, TeamType
 
 
 @pytest.mark.django_db
@@ -148,6 +148,78 @@ class TestTeam:
         district = DistrictFactory()
         team = TeamFactory(team_type=team_type, district=district)
         assert str(team) == f"Test TeamType - {team.unit}"
+
+
+@pytest.mark.django_db
+class TestTeamQuerySetUpdateLevels:
+    def test_update_levels__district_team(self) -> None:
+        district = DistrictFactory()
+        team = DistrictTeamFactory(district=district)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        assert team.level == TeamLevel.DISTRICT
+
+    def test_update_levels__district_subteam(self) -> None:
+        district = DistrictFactory()
+        parent_team = DistrictTeamFactory(district=district)
+        team = DistrictSubTeamFactory(parent_team=parent_team)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        parent_team.refresh_from_db()
+        assert parent_team.level == TeamLevel.DISTRICT
+        assert team.level == TeamLevel.DISTRICT
+
+    def test_update_levels__group_team(self) -> None:
+        group = GroupFactory()
+        team = GroupTeamFactory(group=group)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        assert team.level == TeamLevel.GROUP
+
+    def test_update_levels__group_subteam(self) -> None:
+        group = GroupFactory()
+        parent_team = GroupTeamFactory(group=group)
+        team = GroupSubTeamFactory(parent_team=parent_team)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        parent_team.refresh_from_db()
+        assert parent_team.level == TeamLevel.GROUP
+        assert team.level == TeamLevel.GROUP
+
+    def test_update_levels__group_section_team(self) -> None:
+        section = GroupSectionFactory()
+        team = GroupSectionTeamFactory(section=section)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        assert team.level == TeamLevel.SECTION
+
+    def test_update_levels__district_section_team(self) -> None:
+        section = DistrictSectionFactory()
+        team = DistrictSectionTeamFactory(section=section)
+
+        Team.objects.update_levels()
+        team.refresh_from_db()
+        assert team.level == TeamLevel.SECTION
+
+    def test_update_levels__updates_all_teams_in_hierarchy(self) -> None:
+        # Create a complex hierarchy
+        district = DistrictFactory()
+        district_team = DistrictTeamFactory(district=district)
+        district_subteam = DistrictSubTeamFactory(parent_team=district_team)
+
+        Team.objects.update_levels()
+
+        # Refresh all objects
+        district_team.refresh_from_db()
+        district_subteam.refresh_from_db()
+
+        # Verify all levels are set correctly
+        assert district_team.level == TeamLevel.DISTRICT
 
 
 @pytest.mark.django_db

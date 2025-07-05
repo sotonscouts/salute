@@ -88,7 +88,7 @@ class TeamAdmin(BaseModelAdminMixin, admin.ModelAdmin):
     inlines = (TeamRoleInlineAdmin, TeamAccreditationInlineAdmin, TeamInlineAdmin)
 
     fieldsets = (
-        (None, {"fields": ("team_type", "parent")}),
+        (None, {"fields": ("team_type", "level", "parent")}),
         ("Parent", {"fields": ("district", "group", "section", "parent_team")}),
         ("TSA Permissions", {"fields": ("allow_sub_team", "inherit_permissions")}),
         (

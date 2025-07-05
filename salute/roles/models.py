@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django_choices_field import TextChoicesField
 
 from salute.accounts.models import User
 from salute.core.models import BaseModel, Taxonomy
@@ -41,6 +42,41 @@ class TeamType(TSATaxonomy):
         ordering = ("display_name",)
 
 
+class TeamLevel(models.TextChoices):
+    DISTRICT = "DISTRICT"
+    GROUP = "GROUP"
+    SECTION = "SECTION"
+
+
+class TeamQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> TeamQuerySet:
+        return self.all()
+
+    def update_levels(self) -> None:
+        # First handle direct relationships
+        direct_updates = self.annotate(
+            expected_level=models.Case(
+                models.When(district__isnull=False, then=models.Value(TeamLevel.DISTRICT)),
+                models.When(group__isnull=False, then=models.Value(TeamLevel.GROUP)),
+                models.When(section__isnull=False, then=models.Value(TeamLevel.SECTION)),
+                default=None,
+                output_field=TextChoicesField(choices_enum=TeamLevel),
+            )
+        )
+        direct_updates.filter(parent_team__isnull=True).update(level=models.F("expected_level"))
+
+        # Then handle parent team relationships in batches
+        parent_teams = self.filter(parent_team__isnull=False).select_related("parent_team")
+        for team in parent_teams:
+            parent_level = team.parent_team.level
+            if parent_level:
+                team.level = parent_level
+                team.save(update_fields=["level"])
+
+
+TeamManager = models.Manager.from_queryset(TeamQuerySet)
+
+
 class Team(BaseModel):
     team_type = models.ForeignKey(TeamType, on_delete=models.PROTECT)
 
@@ -48,9 +84,12 @@ class Team(BaseModel):
     group = models.ForeignKey(Group, null=True, on_delete=models.PROTECT, related_name="teams")
     section = models.ForeignKey(Section, null=True, on_delete=models.PROTECT, related_name="teams")
     parent_team = models.ForeignKey("Team", null=True, on_delete=models.PROTECT, related_name="sub_teams")
+    level = TextChoicesField(choices_enum=TeamLevel, null=True, editable=False)
 
     allow_sub_team = models.BooleanField()
     inherit_permissions = models.BooleanField()
+
+    objects = TeamManager()
 
     TSA_FIELDS: tuple[str, ...] = (
         "team_type",
