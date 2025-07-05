@@ -11,18 +11,14 @@ class TeamTypeFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
 
 
-# TODO filters:
-# - has_sub_teams
-# - is_sub_team
-# - parent_team
-# - level (district, group, section) - note: includes sub teams
-
-
 @sd.filter_type(models.Team)
 class TeamFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
     team_type: TeamTypeFilter | None = sd.filter_field(
         description="Filter by team type",
+    )
+    level: sd.BaseFilterLookup[models.TeamLevel] | None = sd.filter_field(
+        description="Filter by team level",
     )
 
 
