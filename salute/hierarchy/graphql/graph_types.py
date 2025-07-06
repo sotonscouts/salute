@@ -117,6 +117,7 @@ class Group(Unit, sb.relay.Node):
 
     @sd.field(
         description="The system mailing groups that are important for this group. Only returns fully configured mailing groups.",  # noqa: E501
+        deprecation_reason="Use system_mailing_groups with a filter instead.",
     )
     def system_mailing_groups(
         self,
