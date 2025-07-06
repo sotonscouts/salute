@@ -3,7 +3,7 @@ from typing import Any
 
 import factory
 
-from salute.integrations.workspace.models import WorkspaceAccount
+from salute.integrations.workspace.models import WorkspaceAccount, WorkspaceGroup
 
 
 class WorkspaceAccountFactory(factory.django.DjangoModelFactory):
@@ -35,3 +35,13 @@ class WorkspaceAccountFactory(factory.django.DjangoModelFactory):
     # Timestamps
     creation_time = factory.Faker("past_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))
     last_login_time = factory.Faker("past_datetime", tzinfo=zoneinfo.ZoneInfo("Europe/London"))
+
+
+class WorkspaceGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = WorkspaceGroup
+
+    google_id = factory.Faker("uuid4")
+    email = factory.Faker("email")
+    name = factory.Faker("company")
+    description = factory.Faker("sentence")

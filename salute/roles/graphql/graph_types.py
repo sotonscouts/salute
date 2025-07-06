@@ -79,6 +79,7 @@ class TeamInterface(sb.relay.Node):
 
     @sd.field(
         description="The system mailing groups that this team belongs to. Only returns fully configured mailing groups.",  # noqa: E501
+        deprecation_reason="Use system_mailing_groups with a filter instead.",
     )
     def system_mailing_groups(self) -> list[SystemMailingGroup]:
         return mailing_groups_models.SystemMailingGroup.objects.filter(
