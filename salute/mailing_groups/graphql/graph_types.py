@@ -1,11 +1,16 @@
+from typing import Any
+
 import strawberry as sb
 import strawberry_django as sd
 from django.conf import settings
+from django.db.models import QuerySet
 
 from salute.mailing_groups import models
 
+from .graph_filters import SystemMailingGroupFilter
 
-@sd.type(models.SystemMailingGroup)
+
+@sd.type(models.SystemMailingGroup, filters=SystemMailingGroupFilter)
 class SystemMailingGroup(sb.relay.Node):
     name: sb.Private[str]
     display_name: str
@@ -19,3 +24,7 @@ class SystemMailingGroup(sb.relay.Node):
     )
     def address(self) -> str:
         return f"{self.name}@{settings.GOOGLE_DOMAIN}"  # type: ignore[misc]
+
+    @classmethod
+    def get_queryset(cls, queryset: QuerySet, info: sb.Info, **kwargs: Any) -> QuerySet:
+        return queryset.filter(workspace_group__isnull=False)

@@ -51,3 +51,7 @@ rules.add_perm("team.view", user_has_related_person)
 rules.add_perm("site.list", user_has_related_person)
 rules.add_perm("site.view", user_has_related_person)
 rules.add_perm("site.view_site_tenure_type", can_view_site_tenure_type)
+
+# Mailing Groups
+rules.add_perm("system_mailing_group.list", user_has_related_person)
+rules.add_perm("system_mailing_group.view", user_has_related_person)
