@@ -2,6 +2,7 @@ from uuid import UUID
 
 import pytest
 from django.conf import settings
+from django.test import override_settings
 from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
@@ -112,6 +113,7 @@ class TestSystemMailingGroupQuery:
             }
         ]
 
+    @override_settings(GOOGLE_DOMAIN="example.com")
     def test_query(self, user_with_person: User) -> None:
         system_mailing_group = SystemMailingGroupFactory()
         WorkspaceGroupFactory(system_mailing_group=system_mailing_group)

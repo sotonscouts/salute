@@ -1,5 +1,6 @@
 import pytest
 from django.conf import settings
+from django.test import override_settings
 from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
@@ -84,6 +85,7 @@ class TestSystemMailingGroupListQuery:
             }
         }
 
+    @override_settings(GOOGLE_DOMAIN="example.com")
     def test_query(self, user_with_person: User) -> None:
         system_mailing_groups = SystemMailingGroupFactory.create_batch(size=10)
         for system_mailing_group in system_mailing_groups:
@@ -116,6 +118,7 @@ class TestSystemMailingGroupListQuery:
             }
         }
 
+    @override_settings(GOOGLE_DOMAIN="example.com")
     def test_query__filter_by_team(self, user_with_person: User) -> None:
         team = DistrictTeamFactory()
         system_mailing_group = SystemMailingGroupFactory()
