@@ -14,3 +14,9 @@ class SystemMailingGroupFilter:
     teams: TeamFilter | None = sd.filter_field(
         description="Filter by team",
     )
+    name: sd.FilterLookup[str] | None = sd.filter_field(
+        description="Filter by name",
+    )
+    display_name: sd.FilterLookup[str] | None = sd.filter_field(
+        description="Filter by display name",
+    )
