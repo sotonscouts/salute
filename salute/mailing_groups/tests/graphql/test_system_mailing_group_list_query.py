@@ -148,3 +148,61 @@ class TestSystemMailingGroupListQuery:
                 "totalCount": 1,
             }
         }
+
+    @override_settings(GOOGLE_DOMAIN="example.com")
+    def test_query__filter_by_display_name(self, user_with_person: User) -> None:
+        team = DistrictTeamFactory()
+        system_mailing_group = SystemMailingGroupFactory(display_name="beans")
+        system_mailing_group.teams.add(team)
+        WorkspaceGroupFactory(system_mailing_group=system_mailing_group)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY, variables={"filters": {"displayName": {"exact": "beans"}}})
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "systemMailingGroups": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("SystemMailingGroup", system_mailing_group.id),
+                            "displayName": system_mailing_group.display_name,
+                            "shortName": system_mailing_group.short_name,
+                            "address": f"{system_mailing_group.name}@{settings.GOOGLE_DOMAIN}",  # type: ignore[misc]
+                        }
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
+
+    @override_settings(GOOGLE_DOMAIN="example.com")
+    def test_query__filter_by_name(self, user_with_person: User) -> None:
+        team = DistrictTeamFactory()
+        system_mailing_group = SystemMailingGroupFactory(name="beans")
+        system_mailing_group.teams.add(team)
+        WorkspaceGroupFactory(system_mailing_group=system_mailing_group)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY, variables={"filters": {"name": {"exact": "beans"}}})
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "systemMailingGroups": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("SystemMailingGroup", system_mailing_group.id),
+                            "displayName": system_mailing_group.display_name,
+                            "shortName": system_mailing_group.short_name,
+                            "address": f"{system_mailing_group.name}@{settings.GOOGLE_DOMAIN}",  # type: ignore[misc]
+                        }
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
