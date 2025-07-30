@@ -10,6 +10,7 @@ from strawberry_django.permissions import HasPerm, HasSourcePerm
 
 from salute.accounts.models import User
 from salute.people import models
+from salute.people.utils import format_phone_number
 
 if TYPE_CHECKING:
     from salute.roles.graphql.graph_types import Accreditation, Role
@@ -67,11 +68,29 @@ class Person(sb.relay.Node):
         This logic is repeated in the Person model.
         """
         try:
-            return self.workspace_account.primary_email  # type: ignore[attr-defined]
+            return self.workspace_account.primary_email  # type: ignore
         except models.Person.workspace_account.RelatedObjectDoesNotExist:
             if info.context["request"].user.has_perm("person.view_pii", self):
                 return self.tsa_email  # type: ignore[attr-defined]
         return None
+
+    @sd.field(
+        name="phoneNumber",
+        description="Phone Number",
+        only="phone_number",
+        extensions=[HasSourcePerm("person.view_pii", fail_silently=True)],
+    )
+    def formatted_phone_number(self) -> str | None:
+        return format_phone_number(self.phone_number)  # type: ignore[attr-defined]
+
+    @sd.field(
+        name="alternatePhoneNumber",
+        description="Alternate Phone Number",
+        only="alternate_phone_number",
+        extensions=[HasSourcePerm("person.view_pii", fail_silently=True)],
+    )
+    def formatted_alternative_phone_number(self) -> str | None:
+        return format_phone_number(self.alternate_phone_number)  # type: ignore[attr-defined]
 
     @sd.field(
         description="Link to the TSA person profile.",

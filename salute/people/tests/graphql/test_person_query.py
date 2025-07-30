@@ -10,6 +10,7 @@ from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.integrations.workspace.factories import WorkspaceAccountFactory
 from salute.people.factories import PersonFactory
+from salute.people.utils import format_phone_number
 from salute.roles.factories import AccreditationFactory, RoleFactory
 
 
@@ -24,6 +25,8 @@ class TestPersonQuery:
             firstName
             formattedMembershipNumber
             contactEmail
+            phoneNumber
+            alternatePhoneNumber
         }
     }
     """
@@ -86,6 +89,9 @@ class TestPersonQuery:
                 "firstName": user_with_person.person.first_name,
                 "formattedMembershipNumber": user_with_person.person.formatted_membership_number,
                 "contactEmail": user_with_person.person.contact_email,
+                # User can see their own phone numbers
+                "phoneNumber": format_phone_number(user_with_person.person.phone_number),
+                "alternatePhoneNumber": format_phone_number(user_with_person.person.alternate_phone_number),
             }
         }
 
@@ -132,6 +138,9 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": person.contact_email,
+                # District Admin can see phone numbers
+                "phoneNumber": format_phone_number(person.phone_number),
+                "alternatePhoneNumber": format_phone_number(person.alternate_phone_number),
             }
         }
 
@@ -157,6 +166,9 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": None,  # no workspace account, so no contact email
+                # District Manager cannot see other's phone numbers
+                "phoneNumber": None,
+                "alternatePhoneNumber": None,
             }
         }
 
@@ -183,6 +195,9 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": workspace_account.primary_email,  # workspace email
+                # District Manager cannot see other's phone numbers
+                "phoneNumber": None,
+                "alternatePhoneNumber": None,
             }
         }
 
