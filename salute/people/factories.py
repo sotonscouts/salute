@@ -29,10 +29,10 @@ class PersonFactory(factory.django.DjangoModelFactory):
         factory.Faker("email"),
         "",
     )
-    phone_number = factory.Faker("phone_number")
+    phone_number = factory.Faker("phone_number", locale="en_GB")  # Force UK format
     alternate_phone_number = factory.Maybe(
         factory.Faker("boolean"),
-        factory.Faker("phone_number"),
+        factory.Faker("phone_number", locale="en_GB"),  # Force UK format
         None,
     )
 

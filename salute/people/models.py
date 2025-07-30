@@ -93,6 +93,12 @@ class Person(TSAObject):
 
     @property
     def contact_email(self) -> str:
+        """
+        Get the contact email for the person.
+
+        This logic is repeated in the Person GraphQL type and this function is mostly used
+        for convenience and Django Admin display.
+        """
         try:
             return self.workspace_account.primary_email
         except Person.workspace_account.RelatedObjectDoesNotExist:
