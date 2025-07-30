@@ -8,6 +8,7 @@ from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
+from salute.integrations.workspace.factories import WorkspaceAccountFactory
 from salute.people.factories import PersonFactory
 from salute.roles.factories import AccreditationFactory, RoleFactory
 
@@ -134,7 +135,7 @@ class TestPersonQuery:
             }
         }
 
-    def test_query__district_manager(self, user_with_person: User) -> None:
+    def test_query__district_manager__no_workspace_account(self, user_with_person: User) -> None:
         district = DistrictFactory()
         DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
 
@@ -155,7 +156,33 @@ class TestPersonQuery:
                 "displayName": person.display_name,
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
-                "contactEmail": None,
+                "contactEmail": None,  # no workspace account, so no contact email
+            }
+        }
+
+    def test_query__district_manager__with_workspace_account(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        person = PersonFactory()
+        workspace_account = WorkspaceAccountFactory(person=person)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": person.display_name,
+                "firstName": person.first_name,
+                "formattedMembershipNumber": person.formatted_membership_number,
+                "contactEmail": workspace_account.primary_email,  # workspace email
             }
         }
 

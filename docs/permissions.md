@@ -20,7 +20,7 @@ As there is only one district in a deployment of Salute, a user can have exactly
 * District Admin
     * View all people including PII
 * District Manager
-    * View all people, excluding PII
+    * View all people, excluding PII. Workspace accounts are not PII, as the Google email directory is available to all volunteers.
     * View all roles
     * View all accreditations
 

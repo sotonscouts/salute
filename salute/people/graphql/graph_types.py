@@ -36,11 +36,6 @@ class Person(sb.relay.Node):
     first_name: str
     display_name: str
     formatted_membership_number: str = sd.field(only="membership_number")
-    contact_email: str | None = sd.field(
-        only="tsa_email",
-        select_related="workspace_account",
-        extensions=[HasSourcePerm("person.view_pii", fail_silently=True)],
-    )
 
     roles: sd.relay.DjangoListConnection[Annotated["Role", sb.lazy("salute.roles.graphql.graph_types")]] = (
         sd.connection(
@@ -59,6 +54,24 @@ class Person(sb.relay.Node):
             )
         ],
     )
+
+    @sd.field(
+        only="tsa_email",
+        select_related="workspace_account",
+        extensions=[HasSourcePerm("person.view", fail_silently=True)],
+    )
+    def contact_email(self, info: sb.Info) -> str | None:
+        """
+        Get the contact email for the person.
+
+        This logic is repeated in the Person model.
+        """
+        try:
+            return self.workspace_account.primary_email  # type: ignore[attr-defined]
+        except models.Person.workspace_account.RelatedObjectDoesNotExist:
+            if info.context["request"].user.has_perm("person.view_pii", self):
+                return self.tsa_email  # type: ignore[attr-defined]
+        return None
 
     @sd.field(
         description="Link to the TSA person profile.",
