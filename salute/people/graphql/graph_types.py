@@ -6,13 +6,14 @@ import strawberry_django as sd
 from django.conf import settings
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
-from strawberry_django.permissions import HasPerm, HasSourcePerm
+from strawberry_django.permissions import HasPerm, HasRetvalPerm, HasSourcePerm
 
 from salute.accounts.models import User
 from salute.people import models
 from salute.people.utils import format_phone_number
 
 if TYPE_CHECKING:
+    from salute.integrations.workspace.graphql.graph_types import WorkspaceAccount
     from salute.roles.graphql.graph_types import Accreditation, Role
 
 
@@ -54,6 +55,13 @@ class Person(sb.relay.Node):
                 "accreditation.list", message="You don't have permission to list accreditations.", fail_silently=False
             )
         ],
+    )
+
+    workspace_account: (  # type: ignore[misc]
+        Annotated["WorkspaceAccount", sb.lazy("salute.integrations.workspace.graphql.graph_types")] | None
+    ) = sd.field(
+        description="Workspace account",
+        extensions=[HasRetvalPerm("workspace_account.view", fail_silently=True)],
     )
 
     @sd.field(
