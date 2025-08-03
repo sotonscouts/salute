@@ -401,3 +401,55 @@ class TestPersonJoinAccreditationsQuery:
                 },
             }
         }
+
+
+@pytest.mark.django_db
+class TestPersonJoinWorkspaceAccountQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getPerson($id: ID!) {
+        person(personId: $id) {
+            displayName
+            workspaceAccount {
+                id
+            }
+        }
+    }
+    """
+
+    def test_query__no_workspace_account(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {"displayName": user_with_person.person.display_name, "workspaceAccount": None}
+        }
+
+    def test_query(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        workspace_account = WorkspaceAccountFactory(person=user_with_person.person)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "workspaceAccount": {"id": to_base64("WorkspaceAccount", workspace_account.id)},
+            }
+        }

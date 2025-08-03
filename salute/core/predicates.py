@@ -9,6 +9,7 @@ from salute.roles.models import Accreditation
 
 if TYPE_CHECKING:
     from salute.accounts.models import User
+    from salute.integrations.workspace.models import WorkspaceAccount
     from salute.people.models import Person
     from salute.roles.models import Role
 
@@ -27,6 +28,14 @@ def user_is_person(user: User, person: Person | None) -> bool:
         return False
 
     return user.person == person
+
+
+@rules.predicate
+def user_is_workspace_account(user: User, workspace_account: WorkspaceAccount | None) -> bool:
+    if workspace_account is None:
+        return False
+
+    return user.person == workspace_account.person
 
 
 @rules.predicate
@@ -63,3 +72,10 @@ can_view_accreditation = can_list_accreditations | role_belongs_to_person
 can_view_site_tenure_type = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
     DistrictUserRoleType.ADMIN
 )
+
+
+can_list_workspace_accounts = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
+    DistrictUserRoleType.ADMIN
+)
+can_view_workspace_account = can_list_workspace_accounts | user_is_workspace_account
+can_view_workspace_account_pii = has_district_role(DistrictUserRoleType.ADMIN) | user_is_workspace_account

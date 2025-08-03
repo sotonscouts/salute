@@ -2,11 +2,14 @@
 import rules
 
 from salute.core.predicates import (
+    can_list_workspace_accounts,
     can_view_accreditation,
     can_view_person,
     can_view_person_pii,
     can_view_role,
     can_view_site_tenure_type,
+    can_view_workspace_account,
+    can_view_workspace_account_pii,
     user_has_related_person,
 )
 
@@ -55,3 +58,8 @@ rules.add_perm("site.view_site_tenure_type", can_view_site_tenure_type)
 # Mailing Groups
 rules.add_perm("system_mailing_group.list", user_has_related_person)
 rules.add_perm("system_mailing_group.view", user_has_related_person)
+
+# Workspace
+rules.add_perm("workspace_account.list", can_list_workspace_accounts)
+rules.add_perm("workspace_account.view", can_view_workspace_account)
+rules.add_perm("workspace_account.view_pii", can_view_workspace_account_pii)
