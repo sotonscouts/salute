@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zoneinfo
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
@@ -38,7 +39,19 @@ class WorkspaceAccount(sb.relay.Node):
 
     # Timestamps
     creation_time: datetime = sb.field(description="Creation Time")
-    last_login_time: datetime | None = sb.field(description="Last Login Time")
+    last_login_time: sb.Private[datetime] = sb.field(description="Last Login Time.")
+
+    @sd.field(
+        name="lastLoginTime",
+        description="Last Login Time. Null if never logged in",
+        only=["last_login_time"],
+    )
+    def nulled_creation_time(self) -> datetime | None:
+        if self.last_login_time < datetime(1990, 1, 1, tzinfo=zoneinfo.ZoneInfo("UTC")):
+            # If the last login time is before a certain date, we consider it as never logged in
+            # If they somehow logged into Google in the 80s, then fair enough.
+            return None
+        return self.last_login_time
 
     @sd.field(
         description="Email Address Aliases",
