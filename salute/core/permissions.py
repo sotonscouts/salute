@@ -8,6 +8,7 @@ from salute.core.predicates import (
     can_view_person_pii,
     can_view_role,
     can_view_site_tenure_type,
+    can_view_team_person_count,
     can_view_workspace_account,
     can_view_workspace_account_pii,
     user_has_related_person,
@@ -49,6 +50,7 @@ rules.add_perm("team_type.view", user_has_related_person)
 
 rules.add_perm("team.list", user_has_related_person)
 rules.add_perm("team.view", user_has_related_person)
+rules.add_perm("team.view_person_count", can_view_team_person_count)
 
 # Locations
 rules.add_perm("site.list", user_has_related_person)

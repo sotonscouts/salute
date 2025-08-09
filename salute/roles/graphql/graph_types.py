@@ -78,6 +78,22 @@ class TeamInterface(sb.relay.Node):
     )
 
     @sd.field(
+        description="The number of people in the team",
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "team.view_person_count",
+                message="You don't have permission to view the person count for this team.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def person_count(self, info: sb.Info) -> int | None:
+        # We need to use a dataloader to avoid an issue with annotations on nested queries.
+        # See https://github.com/strawberry-graphql/strawberry-django/issues/549
+        return await info.context.roles["person_count"].load(self.pk)  # type: ignore[attr-defined]
+
+    @sd.field(
         description="The system mailing groups that this team belongs to. Only returns fully configured mailing groups.",  # noqa: E501
         deprecation_reason="Use system_mailing_groups with a filter instead.",
     )

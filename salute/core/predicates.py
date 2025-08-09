@@ -64,6 +64,10 @@ can_view_person = can_list_people | user_is_person
 can_list_roles = can_list_people
 can_view_role = can_list_people | role_belongs_to_person
 
+can_view_team_person_count = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
+    DistrictUserRoleType.ADMIN
+)
+
 can_list_accreditations = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
     DistrictUserRoleType.ADMIN
 )
