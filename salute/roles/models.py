@@ -168,6 +168,11 @@ class Team(BaseModel):
 class RoleType(Taxonomy):
     TSA_FIELDS = ("name",)
 
+    display_priority = models.PositiveIntegerField(default=100, help_text="Used to order roles in the UI.")
+
+    class Meta:
+        ordering = ("-display_priority", "name")
+
 
 class RoleStatus(Taxonomy):
     TSA_FIELDS = ("name",)
@@ -202,7 +207,7 @@ class Role(TSAObject):
     TSA_FIELDS = ("team", "person", "role_type", "status")
 
     class Meta:
-        ordering = ("team", "role_type", "person")
+        ordering = ("role_type", "team", "person")
 
     def __str__(self) -> str:
         return f"{self.person} is {self.role_type.name} for {self.team}"
