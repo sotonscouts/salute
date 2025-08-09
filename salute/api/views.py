@@ -12,12 +12,16 @@ from salute.api.auth0.auth import (
     RequestAuthenticationError,
     authenticate_user_with_bearer_token,
 )
+from salute.api.context import SaluteContext
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse, HttpResponseBase
 
 
 class SaluteAsyncGraphQLView(AsyncGraphQLView):
+    async def get_context(self, request: HttpRequest, response: HttpResponse) -> SaluteContext:  # type: ignore[override]
+        return SaluteContext(request=request, response=response)
+
     async def render_graphql_ide(self, request: HttpRequest) -> HttpResponse:
         user = await request.auser()
 

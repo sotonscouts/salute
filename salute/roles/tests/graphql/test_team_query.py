@@ -240,6 +240,74 @@ class TestTeamQuery:
 
 
 @pytest.mark.django_db
+class TestTeamPersonCountQuery:
+    url = reverse("graphql")
+    QUERY = """
+    query getTeam($teamId: ID!) {
+        team(teamId: $teamId) {
+            personCount
+        }
+    }
+    """
+
+    def test_query__person_count__no_role(self, user_with_person: User) -> None:
+        team = DistrictTeamFactory()
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {"personCount": None},
+        }
+
+    def test_query__person_count(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        team = DistrictTeamFactory(district=district)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {"personCount": 0},
+        }
+
+    def test_query__person_count_with_roles(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+
+        team = DistrictTeamFactory(district=district)
+        roles = RoleFactory.create_batch(size=5, team=team)
+        RoleFactory(team=team, person=roles[0].person)  # Add a duplicate role
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "team": {"personCount": 5},
+        }
+
+
+@pytest.mark.django_db
 class TestTeamTSAProfileLinkQuery:
     url = reverse("graphql")
 
