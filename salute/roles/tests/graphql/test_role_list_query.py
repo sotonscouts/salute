@@ -154,7 +154,7 @@ class TestRoleListQuery:
             "roles": {
                 "edges": [
                     {"node": self._get_expected_data_for_role(role)}
-                    for role in sorted(roles, key=lambda role: role.team.display_name)
+                    for role in sorted(roles, key=lambda r: (r.role_type.display_priority, r.role_type.name))
                 ],
                 "totalCount": 10,
             }

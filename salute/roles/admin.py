@@ -66,10 +66,16 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
 @admin.register(RoleType)
 class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ("name",)
+    list_display = ("name", "display_priority")
     search_fields = ("name", "tsa_id")
 
-    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+    fieldsets = ((None, {"fields": ("name", "display_priority")}),) + BaseModelAdminMixin.FIELDSETS
+
+    def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
+        return list(super().get_readonly_fields(request, obj)) + ["name"]
+
+    def has_change_permission(self, request: HttpRequest, obj: BaseModel | None = None) -> bool:
+        return request.user.is_superuser
 
 
 @admin.register(RoleStatus)

@@ -314,7 +314,7 @@ class TestPersonJoinRolesQuery:
                                 "status": {"displayName": role.status.name},
                             }
                         }
-                        for role in sorted(roles, key=lambda r: (r.team.team_type.name))
+                        for role in sorted(roles, key=lambda r: (r.role_type.display_priority, r.role_type.name))
                     ],
                     "totalCount": 5,
                 },
