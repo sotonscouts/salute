@@ -1,3 +1,4 @@
+import math
 from typing import Any
 from uuid import UUID
 
@@ -125,6 +126,12 @@ class TestSiteQuery:
 
         assert isinstance(result, Response)
 
+        # Extract location for separate floating point comparison
+        site_data = result.data["site"]  # type: ignore
+        location = site_data.pop("location")  # type: ignore
+        assert location is not None
+
+        # Check non-floating point fields
         assert result.data == {
             "site": {
                 "id": site_id,
@@ -140,12 +147,20 @@ class TestSiteQuery:
                 "town": site.town,
                 "county": site.county,
                 "postcode": site.postcode,
-                "location": {
-                    "latitude": round(float(site.latitude), 6),
-                    "longitude": round(float(site.longitude), 6),
-                },
             }
         }
+
+        # Check coordinates separately using math.isclose
+        assert math.isclose(
+            location["latitude"],
+            float(site.latitude),
+            rel_tol=1e-5,
+        )
+        assert math.isclose(
+            location["longitude"],
+            float(site.longitude),
+            rel_tol=1e-5,
+        )
 
     def test_query__manager(self, user_with_person: User) -> None:
         district = DistrictFactory()
