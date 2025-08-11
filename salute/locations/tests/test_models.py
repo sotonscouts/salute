@@ -102,7 +102,10 @@ class TestSite:
         with pytest.raises(IntegrityError):
             with transaction.atomic():
                 SiteFactory(uprn="123")  # Too short
-        with pytest.raises(IntegrityError):
+        # Over-length will hit varchar length first in Postgres
+        from django.db.utils import DataError
+
+        with pytest.raises(DataError):
             with transaction.atomic():
                 SiteFactory(uprn="1234567890123")  # Too long
         with pytest.raises(IntegrityError):

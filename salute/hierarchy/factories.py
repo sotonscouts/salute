@@ -2,8 +2,9 @@ import uuid
 import zoneinfo
 
 import factory
+from faker import Faker as PyFaker
 
-from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, Weekday
+from .constants import DISTRICT_SECTION_TYPES, GROUP_SECTION_TYPES, GroupType, SectionType, Weekday
 from .models import District, Group, Locality, Section, TSAUnit
 
 
@@ -23,7 +24,7 @@ class DistrictFactory(TSAUnitFactory):
 
 
 class LocalityFactory(factory.django.DjangoModelFactory):
-    name = factory.Faker("city")
+    name = factory.Sequence(lambda n: f"{PyFaker('en_GB').city()} {n}")
 
     class Meta:
         model = Locality
@@ -45,7 +46,12 @@ class DistrictSectionFactory(TSAUnitFactory):
     section_type = factory.Iterator(DISTRICT_SECTION_TYPES)
     usual_weekday = factory.Iterator(Weekday)
     district = factory.SubFactory(DistrictFactory)
-    nickname = factory.Faker("company")
+    # Only Explorers must have a nickname; ensure max 32 chars to satisfy DB constraint
+    nickname = factory.Maybe(
+        factory.LazyAttribute(lambda o: o.section_type == SectionType.EXPLORERS),
+        yes_declaration=factory.LazyFunction(lambda: PyFaker("en_GB").company()[:32]),
+        no_declaration="",
+    )
 
     group = None
 
