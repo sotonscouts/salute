@@ -29,6 +29,7 @@ factory-boy = "3.3.2"  # 3.3.3 exports incompatible type hints
 mypy = "^1.16.1"
 pytest = "^8.4.1"
 ruff = "^0.12.1"
+psycopg = {extras = ["binary"], version = "^3.2.9"}
 pytest-cov = "^6.2.1"
 pytest-django = "^4.11.1"
 types-requests = "^2.32.4.20250611"

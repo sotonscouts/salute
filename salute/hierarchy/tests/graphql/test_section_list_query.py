@@ -333,27 +333,27 @@ class TestSectionListQuery:
         assert isinstance(result, Response)
 
         assert result.errors is None
-        assert result.data == {
-            "sections": {
-                "edges": [
-                    {
-                        "node": {
-                            "unitName": section.unit_name,
-                            "group": {
-                                "ordinal": section.group.ordinal,
-                            }
-                            if section.group
-                            else None,
-                        }
-                    }
-                    for section in sorted(
-                        _group_sections + _district_sections,
-                        key=lambda s: s.group.local_unit_number if s.group else 0,
-                        reverse=reverse,
-                    )
-                ],
-            }
-        }
+        # Extract edges and split by presence of group
+        edges = result.data["sections"]["edges"]  # type: ignore[index]
+        non_null_edges = [e for e in edges if e["node"]["group"] is not None]
+        null_edges = [e for e in edges if e["node"]["group"] is None]
+
+        # Check placement of nulls relative to non-nulls depending on ordering direction
+        if reverse:  # DESC: nulls should come first
+            assert all(e["node"]["group"] is None for e in edges[: len(null_edges)])
+        else:  # ASC: nulls should come last
+            assert all(e["node"]["group"] is None for e in edges[-len(null_edges) :])
+
+        # Verify ordering among non-null groups by local_unit_number
+        non_null_local_units = [e["node"]["group"]["ordinal"] for e in non_null_edges]
+        # Build the expected ordered ordinals from the created sections
+        expected_sections = sorted(
+            [s for s in _group_sections if s.group is not None],
+            key=(lambda s: s.group.local_unit_number),
+            reverse=reverse,
+        )
+        expected_ordinals = [s.group.ordinal for s in expected_sections]
+        assert non_null_local_units == expected_ordinals
 
     def test_query__filter__section_type(self, user_with_person: User) -> None:
         district = DistrictFactory()

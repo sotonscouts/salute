@@ -112,35 +112,35 @@ class TestTeam:
         assert team.unit == group
 
     def test_creation_without_parent(self, team_type: TeamType) -> None:
-        with pytest.raises(IntegrityError, match="CHECK constraint failed: team_only_has_one_parent_object"):
+        with pytest.raises(IntegrityError, match='violates check constraint "team_only_has_one_parent_object"'):
             TeamFactory(team_type=team_type)
 
     def test_creation_with_multiple_parents(self, team_type: TeamType) -> None:
-        with pytest.raises(IntegrityError, match="CHECK constraint failed: team_only_has_one_parent_object"):
+        with pytest.raises(IntegrityError, match='violates check constraint "team_only_has_one_parent_object"'):
             TeamFactory(team_type=team_type, district=DistrictFactory(), group=GroupFactory())
 
     def test_cannot_have_multiple_teams_of_same_type_within_district(self, team_type: TeamType) -> None:
         district = DistrictFactory()
         TeamFactory(team_type=team_type, district=district)
-        with pytest.raises(IntegrityError, match="UNIQUE constraint failed"):
+        with pytest.raises(IntegrityError, match="duplicate key value violates unique constraint"):
             TeamFactory(team_type=team_type, district=district)
 
     def test_cannot_have_multiple_teams_of_same_type_within_group(self, team_type: TeamType) -> None:
         group = GroupFactory()
         TeamFactory(team_type=team_type, group=group)
-        with pytest.raises(IntegrityError, match="UNIQUE constraint failed"):
+        with pytest.raises(IntegrityError, match="duplicate key value violates unique constraint"):
             TeamFactory(team_type=team_type, group=group)
 
     def test_cannot_have_multiple_teams_of_same_type_within_section(self, team_type: TeamType) -> None:
         section = GroupSectionFactory()
         TeamFactory(team_type=team_type, section=section)
-        with pytest.raises(IntegrityError, match="UNIQUE constraint failed"):
+        with pytest.raises(IntegrityError, match="duplicate key value violates unique constraint"):
             TeamFactory(team_type=team_type, section=section)
 
     def test_cannot_have_multiple_subteams_of_same_type(self, team_type: TeamType) -> None:
         parent_team = DistrictTeamFactory()
         TeamFactory(team_type=team_type, parent_team=parent_team)
-        with pytest.raises(IntegrityError, match="UNIQUE constraint failed"):
+        with pytest.raises(IntegrityError, match="duplicate key value violates unique constraint"):
             TeamFactory(team_type=team_type, parent_team=parent_team)
 
     def test_str(self) -> None:
