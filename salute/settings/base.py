@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "salute.mailing_groups",
     "salute.people",
     "salute.roles",
+    "salute.stats",
     # Third Party
     "birdbath",
     "corsheaders",
