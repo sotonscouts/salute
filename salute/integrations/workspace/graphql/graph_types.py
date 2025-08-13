@@ -29,8 +29,10 @@ class WorkspaceAccount(sb.relay.Node):
 
     # Read Only Attributes
     agreed_to_terms: bool = sb.field(description="Agreed to Google Terms of Service")
-    is_enforced_in_2sv: sb.Private[bool] = sb.field(description="Is Enforced in 2SV")
-    is_enrolled_in_2sv: sb.Private[bool] = sb.field(description="Is Enrolled in 2SV")
+    is_enrolled_in_2sv: bool = sd.field(  # type: ignore[misc]
+        name="is2svConfigured",
+        description="Is 2SV correctly configured",
+    )
     org_unit_path: str = sb.field(description="Org Unit Path")
 
     # Security
@@ -61,10 +63,3 @@ class WorkspaceAccount(sb.relay.Node):
     def aliases(self, info: sb.Info) -> list[str]:
         # note: this looks inefficient, but it is optimised by the above prefetch_related
         return [alias.address for alias in self.aliases.all()]
-
-    @sd.field(
-        description="Is 2SV correctly configured",
-        only=["is_enforced_in_2sv", "is_enrolled_in_2sv"],
-    )
-    def is_2sv_configured(self) -> bool:
-        return self.is_enforced_in_2sv and self.is_enrolled_in_2sv

@@ -77,6 +77,8 @@ class TeamInterface(sb.relay.Node):
         ],
     )
 
+    related_teams: list[Team] = sd.field(description="Teams that are related to this team")
+
     @sd.field(
         description="The number of people in the team",
         only=["pk"],

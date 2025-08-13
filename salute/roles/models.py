@@ -86,6 +86,8 @@ class Team(BaseModel):
     parent_team = models.ForeignKey("Team", null=True, on_delete=models.PROTECT, related_name="sub_teams")
     level = TextChoicesField(choices_enum=TeamLevel, null=True, editable=False)
 
+    related_teams = models.ManyToManyField("self", symmetrical=True, blank=True)
+
     allow_sub_team = models.BooleanField()
     inherit_permissions = models.BooleanField()
 
