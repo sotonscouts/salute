@@ -40,6 +40,7 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("name", "display_name", "nickname")}),
+        ("Description", {"fields": ("description",)}),
         (
             "Mail Settings",
             {

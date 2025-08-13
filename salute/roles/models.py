@@ -23,6 +23,10 @@ class TeamType(TSATaxonomy):
         output_field=models.CharField(max_length=255),
         db_persist=True,
     )
+    description = models.TextField(
+        blank=True,
+        help_text="Description of the team as markdown",
+    )
 
     # Mailing Lists
     mailing_slug = models.CharField(

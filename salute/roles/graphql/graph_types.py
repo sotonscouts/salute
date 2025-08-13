@@ -53,6 +53,10 @@ class RoleType(sb.relay.Node):
 class TeamType(sb.relay.Node):
     display_name: str = sd.field(description="Formatted name for the team type")
 
+    @sd.field(description="Description of the team type as markdown", only="description")
+    def description(self, info: sb.Info) -> str | None:
+        return self.description or None
+
 
 @sd.interface(models.Team)
 class TeamInterface(sb.relay.Node):
