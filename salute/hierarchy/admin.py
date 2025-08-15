@@ -86,7 +86,17 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
         (None, {"fields": ("display_name", "shortcode", "district", "group")}),
         (
             "Section",
-            {"fields": ("unit_name", "section_type", "nickname", "mailing_slug", "usual_weekday", "site")},
+            {
+                "fields": (
+                    "unit_name",
+                    "section_type",
+                    "nickname",
+                    "mailing_slug",
+                    "usual_weekday",
+                    "usual_meeting_slot",
+                    "site",
+                )
+            },
         ),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 

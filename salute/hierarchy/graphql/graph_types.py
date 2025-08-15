@@ -1,6 +1,7 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+from datetime import time
 from string import Template
 from typing import TYPE_CHECKING, Annotated
 
@@ -131,6 +132,12 @@ class Group(Unit, sb.relay.Node):
         ).order_by("name")  # type: ignore[return-value]
 
 
+@sb.type
+class TimeRange:
+    start: time
+    end: time
+
+
 @sd.order_type(models.Section)
 class SectionOrder:
     group: GroupOrder
@@ -175,6 +182,15 @@ class Section(Unit, sb.relay.Node):
     )
     section_type: sb.Private[models.SectionType]
     usual_weekday: models.Weekday | None
+
+    @sd.field(description="The usual meeting slot for the section", only=["usual_meeting_slot"])
+    def usual_meeting_slot(self) -> TimeRange | None:
+        if self.usual_meeting_slot is not None:
+            return TimeRange(
+                start=self.usual_meeting_slot.lower,
+                end=self.usual_meeting_slot.upper,
+            )
+        return None
 
     @sd.field(
         description="Get the site for the section",

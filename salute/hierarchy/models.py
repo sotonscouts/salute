@@ -1,6 +1,7 @@
 from django.db import models
 from django_choices_field import TextChoicesField
 
+from salute.core.fields import TimeRangeField
 from salute.core.models import Taxonomy
 from salute.hierarchy.utils import get_ordinal_suffix
 from salute.integrations.tsa.models import TSATimestampedObject
@@ -126,6 +127,7 @@ class Section(TSAUnit):
         help_text="Slug for generating mailing lists. Do not change unless you understand the impact. Only applicable to district sections.",  # noqa: E501
     )
     usual_weekday = TextChoicesField(choices_enum=Weekday, null=True)
+    usual_meeting_slot = TimeRangeField(null=True, blank=True)
     site = models.ForeignKey("locations.Site", on_delete=models.PROTECT, related_name="sections", null=True, blank=True)
 
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
