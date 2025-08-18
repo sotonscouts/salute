@@ -48,6 +48,10 @@ TSA_PERSON_PROFILE_LINK_TEMPLATE = "https://example.com/people/$tsaid/"
 TSA_UNIT_LINK_TEMPLATE = "https://example.com/units/$tsaid/details/"
 TSA_TEAM_LINK_TEMPLATE = "https://example.com/teams/$unitid/$teamtypeid/details/"
 
+OSM_CLIENT_ID = "1234567890"
+OSM_CLIENT_SECRET = "1234567890"  # noqa: S105
+OSM_DISTRICT_SECTION_ID = "1234567890"
+
 try:
     from .local import *  # noqa: F403, W292
 except ModuleNotFoundError:

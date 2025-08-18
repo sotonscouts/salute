@@ -13,6 +13,6 @@ class OSMSyncLogAdmin(BaseModelAdminMixin, admin.ModelAdmin):
 
 @admin.register(OSMSectionHeadcountRecord)
 class OSMSectionHeadcountRecordAdmin(BaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ("section", "date", "young_person_count", "sync_log")
+    list_display = ("section", "date", "young_person_count", "adult_count", "sync_log")
     list_filter = ("date", "section__group", "section__section_type")
     raw_id_fields = ("section", "sync_log")
