@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "salute.accounts",
     "salute.core",
     "salute.hierarchy",
+    "salute.integrations.osm",
     "salute.integrations.tsa",
     "salute.integrations.workspace",
     "salute.locations",

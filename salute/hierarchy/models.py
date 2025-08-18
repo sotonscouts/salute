@@ -130,6 +130,21 @@ class Section(TSAUnit):
     usual_meeting_slot = TimeRangeField(null=True, blank=True)
     site = models.ForeignKey("locations.Site", on_delete=models.PROTECT, related_name="sections", null=True, blank=True)
 
+    osm_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="OSM ID",
+        unique=True,
+        help_text="The ID of the section in Online Scout Manager. Do not change unless you understand the impact.",  # noqa: E501
+    )
+
+    def clean(self) -> None:
+        super().clean()
+        # Ensure empty strings are converted to None for uniqueness constraint
+        if self.osm_id == "":
+            self.osm_id = None
+
     TSA_FIELDS = TSAUnit.TSA_FIELDS + ("district", "group", "section_type")
 
     class Meta:

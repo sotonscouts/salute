@@ -79,7 +79,7 @@ class GroupAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
 @admin.register(Section)
 class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
     list_display = ("display_name", "section_type", "group", "district")
-    list_filter = ("section_type", "group", "usual_weekday")
+    list_filter = ("section_type", "group", "usual_weekday", ("osm_id", admin.EmptyFieldListFilter))
     search_fields = ("unit_name", "tsa_id")
 
     fieldsets = (
@@ -97,6 +97,10 @@ class SectionAdmin(TSATimestampedObjectModelAdminMixin, admin.ModelAdmin):
                     "site",
                 )
             },
+        ),
+        (
+            "Integrations",
+            {"fields": ("osm_id",)},
         ),
     ) + TSATimestampedObjectModelAdminMixin.FIELDSETS
 
