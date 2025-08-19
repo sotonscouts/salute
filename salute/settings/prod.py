@@ -77,3 +77,7 @@ TSA_TEAM_LINK_TEMPLATE = env(
     str,
     default="https://example.com/teams/$unitid/$teamtypeid/details/",
 )
+
+OSM_CLIENT_ID = env("OSM_CLIENT_ID", str)
+OSM_CLIENT_SECRET = env("OSM_CLIENT_SECRET", str)
+OSM_DISTRICT_SECTION_ID = env("OSM_DISTRICT_SECTION_ID", str)
