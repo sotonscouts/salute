@@ -8,6 +8,7 @@ from strawberry_django.test.client import Response, TestClient
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.constants import SectionType
 from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupSectionFactory
+from salute.integrations.osm.factories import OSMSectionHeadcountRecordFactory
 from salute.roles.factories import GroupSectionTeamFactory
 
 
@@ -150,6 +151,71 @@ class TestSectionQuery:
                 "district": {
                     "unitName": section.district.unit_name,
                 },
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestSectionYoungPersonCountQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getSection($sectionId: ID!) {
+        section(sectionId: $sectionId) {
+            youngPersonCount
+        }
+    }
+    """
+
+    def test_query_young_person_count__none(self, user_with_person: User) -> None:
+        section = GroupSectionFactory()
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+
+        assert result.data == {
+            "section": {
+                "youngPersonCount": None,
+            }
+        }
+
+    def test_query_young_person_count__no_permission(self, user_with_person: User) -> None:
+        section = GroupSectionFactory()
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "section": {
+                "youngPersonCount": None,
+            }
+        }
+
+    def test_query_young_person_count__with_sections(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+        section = GroupSectionFactory(group__district=district)
+        OSMSectionHeadcountRecordFactory(section=section, young_person_count=10)
+        section_id = to_base64("DistrictOrGroupSection", section.id)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "section": {
+                "youngPersonCount": 10,
             }
         }
 

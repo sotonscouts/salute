@@ -77,6 +77,13 @@ can_view_site_tenure_type = has_district_role(DistrictUserRoleType.MANAGER) | ha
     DistrictUserRoleType.ADMIN
 )
 
+can_view_group_summary_data = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
+    DistrictUserRoleType.ADMIN
+)
+
+can_view_section_summary_data = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
+    DistrictUserRoleType.ADMIN
+)
 
 can_list_workspace_accounts = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(
     DistrictUserRoleType.ADMIN

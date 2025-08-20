@@ -4,9 +4,11 @@ import rules
 from salute.core.predicates import (
     can_list_workspace_accounts,
     can_view_accreditation,
+    can_view_group_summary_data,
     can_view_person,
     can_view_person_pii,
     can_view_role,
+    can_view_section_summary_data,
     can_view_site_tenure_type,
     can_view_team_person_count,
     can_view_workspace_account,
@@ -16,12 +18,15 @@ from salute.core.predicates import (
 
 # Hierarchy
 rules.add_perm("district.view", user_has_related_person)
+rules.add_perm("district.view_young_person_count", user_has_related_person)
 
 rules.add_perm("group.list", user_has_related_person)
 rules.add_perm("group.view", user_has_related_person)
+rules.add_perm("group.view_young_person_count", can_view_group_summary_data)
 
 rules.add_perm("section.list", user_has_related_person)
 rules.add_perm("section.view", user_has_related_person)
+rules.add_perm("section.view_young_person_count", can_view_section_summary_data)
 
 rules.add_perm("section_type.list", user_has_related_person)
 
