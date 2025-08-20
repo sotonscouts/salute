@@ -86,6 +86,33 @@ class District(Unit, sb.relay.Node):
     def total_sections_count(self) -> int:
         return self.direct_section_count + self.group_section_count  # type: ignore[attr-defined]
 
+    @sd.field(
+        description=("The young person count for the district. Data sourced from OSM."),
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "district.view_young_person_count",
+                message="You don't have permission to view the young person count for this district.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def young_person_count(
+        self,
+        info: sb.Info,
+        *,
+        include_group_sections: bool = True,
+    ) -> int | None:
+        """Get the young person count for the district.
+
+        Args:
+            include_group_sections: If True (default), includes sections in groups.
+                If False, only counts sections directly in the district.
+        """
+        return await info.context.osm_dataloaders["total_young_person_count_for_district"].load(
+            (self.pk, include_group_sections)  # type: ignore[attr-defined]
+        )
+
 
 @sd.order_type(models.Group)
 class GroupOrder:
@@ -115,6 +142,20 @@ class Group(Unit, sb.relay.Node):
     teams: list[Annotated[GroupTeam, sb.lazy("salute.roles.graphql.graph_types")]] = sd.field(
         extensions=[HasPerm("team.list", message="You don't have permission to list teams.")]
     )
+
+    @sd.field(
+        description="The latest young person count for the group. Data sourced from OSM.",
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "group.view_young_person_count",
+                message="You don't have permission to view the young person count for this group.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def young_person_count(self, info: sb.Info) -> int | None:
+        return await info.context.osm_dataloaders["latest_young_person_count_for_groups"].load(self.pk)  # type: ignore[attr-defined]
 
     @sd.field(
         description="The system mailing groups that are important for this group. Only returns fully configured mailing groups.",  # noqa: E501
@@ -223,6 +264,20 @@ class Section(Unit, sb.relay.Node):
             value=self.section_type,
             **sti,
         )
+
+    @sd.field(
+        description="The latest young person count for the section. Data sourced from OSM.",
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "section.view_young_person_count",
+                message="You don't have permission to view the young person count for this section.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def young_person_count(self, info: sb.Info) -> int | None:
+        return await info.context.osm_dataloaders["latest_young_person_count_for_sections"].load(self.pk)  # type: ignore[attr-defined]
 
 
 @sd.type(

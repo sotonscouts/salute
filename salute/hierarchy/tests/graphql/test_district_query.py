@@ -4,6 +4,7 @@ from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory, DistrictSectionFactory, GroupFactory, GroupSectionFactory
+from salute.integrations.osm.factories import OSMSectionHeadcountRecordFactory
 from salute.roles.factories import DistrictTeamFactory, RoleFactory
 
 
@@ -167,6 +168,101 @@ class TestDistrictTSADetailsLinkQuery:
         assert results.data == {
             "district": {
                 "tsaDetailsLink": f"https://example.com/units/{district.tsa_id}/",
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestDistrictYoungPersonCountQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    {
+        district {
+            youngPersonCount
+        }
+    }
+    """
+
+    def test_query__not_authenticated(self) -> None:
+        client = TestClient(self.url)
+        results = client.query(self.QUERY, assert_no_errors=False)
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view the district.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["district"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__no_permission(self, user: User) -> None:
+        client = TestClient(self.url)
+        with client.login(user):
+            results = client.query(self.QUERY, assert_no_errors=False)
+
+        assert isinstance(results, Response)
+
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view the district.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["district"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query_young_person_count__none(self, user_with_person: User) -> None:
+        DistrictFactory()
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY)
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "youngPersonCount": 0,
+            }
+        }
+
+    def test_query_young_person_count__with_district_sections(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        sections = DistrictSectionFactory.create_batch(size=5, district=district)
+        for section in sections:
+            OSMSectionHeadcountRecordFactory(section=section, young_person_count=10)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY)
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "youngPersonCount": 50,
+            }
+        }
+
+    def test_query_young_person_count__with_group_sections(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        sections = GroupSectionFactory.create_batch(size=5, group__district=district)
+        for section in sections:
+            OSMSectionHeadcountRecordFactory(section=section, young_person_count=10)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(self.QUERY)
+
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "district": {
+                "youngPersonCount": 50,
             }
         }
 
