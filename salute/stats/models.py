@@ -84,3 +84,31 @@ class SectionCensusReturn(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.section} - {self.year}"
+
+
+class TeamSummaryRecord(BaseModel):
+    team = models.ForeignKey(
+        "roles.Team",
+        on_delete=models.PROTECT,
+        related_name="summary_records",
+    )
+    date = models.DateField()
+    total_people = models.IntegerField()
+    count_by_role_type = models.JSONField()
+    count_by_role_status = models.JSONField()
+    count_by_accreditation_type = models.JSONField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team", "date"],
+                name="unique_team_date",
+            ),
+        ]
+        ordering = ["-date"]
+        indexes = [
+            models.Index(fields=["date"], name="idx_teamsummaryrecord_date"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.team} - {self.date}"
