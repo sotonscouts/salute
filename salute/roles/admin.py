@@ -47,6 +47,7 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
                 "description": "Do not change these settings unless you know what you are doing.",
                 "fields": (
                     "mailing_slug",
+                    "mailing_name_prefix_for_district_teams",
                     "has_team_lead",
                     "has_all_list",
                     "included_in_all_members",

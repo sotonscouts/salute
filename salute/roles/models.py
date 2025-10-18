@@ -34,6 +34,10 @@ class TeamType(TSATaxonomy):
         blank=True,
         help_text="Slug for generating mailing lists. Do not change unless you understand the impact.",
     )
+    mailing_name_prefix_for_district_teams = models.BooleanField(
+        default=True,
+        help_text='If true, prefix the mailing list name with "District" for district teams.',
+    )
     has_team_lead = models.BooleanField(default=False, help_text="If true, generate a -lead mailing list.")
     has_all_list = models.BooleanField(default=False, help_text="If has sub-teams, whether to generate a -all list.")
     included_in_all_members = models.BooleanField(default=True, help_text="Included in all members -all addresses")
