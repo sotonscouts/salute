@@ -136,14 +136,23 @@ class MailingGroupUpdater:
         team_qs = Team.objects.filter(models.Q(district=self.district) | models.Q(parent_team__district=self.district))
         for team in team_qs:
             # If the team has a mailing slug, we want to create addresses for it.
-            # TODO: District Wilverley Team -> Wilverley Team
             if team.team_type.mailing_slug:
+                team_short_name = team.team_type.display_name
+
+                # Prefix the display name with "District" if the team type has the flag set.
+                # e.g District Support Team
+                # or Wilverley Team
+                if team.team_type.mailing_name_prefix_for_district_teams:
+                    team_display_name = f"District {team_short_name}"
+                else:
+                    team_display_name = team_short_name
+
                 team_mailing_group, _ = SystemMailingGroup.objects.update_or_create(
                     composite_key=f"district_team_{team.team_type.id}",
                     defaults={
                         "name": f"{team.team_type.mailing_slug}",
-                        "display_name": f"District {team.team_type.display_name}",
-                        "short_name": team.team_type.display_name,
+                        "display_name": team_display_name,
+                        "short_name": team_short_name,
                         "can_receive_external_email": True,
                         "can_members_send_as": team.team_type.members_can_send_as,
                         "config": {
@@ -163,8 +172,8 @@ class MailingGroupUpdater:
                         composite_key=f"district_team_{team.team_type.id}__lead",
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-lead",
-                            "display_name": f"District {team.team_type.display_name} Lead",
-                            "short_name": f"{team.team_type.display_name} Lead",
+                            "display_name": f"{team_display_name} Lead",
+                            "short_name": f"{team_short_name} Lead",
                             "can_receive_external_email": True,
                             "can_members_send_as": True,
                             "config": {
@@ -191,8 +200,8 @@ class MailingGroupUpdater:
                         composite_key=f"district_team_{team.team_type.id}__all",
                         defaults={
                             "name": f"{team.team_type.mailing_slug}-all",
-                            "display_name": f"District {team.team_type.display_name} All Members",
-                            "short_name": f"{team.team_type.display_name} All Members",
+                            "display_name": f"{team_display_name} All Members",
+                            "short_name": f"{team_short_name} All Members",
                             "can_receive_external_email": False,
                             "can_members_send_as": False,
                             "config": {
