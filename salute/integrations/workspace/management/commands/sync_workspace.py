@@ -114,4 +114,8 @@ class Command(BaseCommand):
             google_id__in=[workspace_group["id"] for workspace_group in groups]
         ):
             print(f"Deleting workspace groups that no longer exist: {spurious_workspace_groups}")
-            spurious_workspace_groups.delete()
+
+            if spurious_workspace_groups.count() > 5:
+                print(f"Would delete {spurious_workspace_groups.count()} workspace groups, skipping")
+            else:
+                spurious_workspace_groups.delete()
