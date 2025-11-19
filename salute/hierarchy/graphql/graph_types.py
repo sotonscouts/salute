@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import time
+from decimal import Decimal
 from string import Template
 from typing import TYPE_CHECKING, Annotated
 
@@ -278,6 +279,13 @@ class Section(Unit, sb.relay.Node):
     )
     async def young_person_count(self, info: sb.Info) -> int | None:
         return await info.context.osm_dataloaders["latest_young_person_count_for_sections"].load(self.pk)  # type: ignore[attr-defined]
+
+    @sd.field(
+        description="The annual subscription cost for the section from the latest census return.",
+        only=["pk"],
+    )
+    async def annual_subs_cost(self, info: sb.Info) -> Decimal | None:
+        return await info.context.stats_dataloaders["latest_annual_subs_cost_for_sections"].load(self.pk)  # type: ignore[attr-defined]
 
 
 @sd.type(
