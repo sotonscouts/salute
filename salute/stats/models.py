@@ -86,17 +86,32 @@ class SectionCensusReturn(BaseModel):
         return f"{self.section} - {self.year}"
 
 
-class TeamSummaryRecord(BaseModel):
-    team = models.ForeignKey(
-        "roles.Team",
-        on_delete=models.PROTECT,
-        related_name="summary_records",
-    )
+class BaseSummaryRecord(BaseModel):
     date = models.DateField()
     total_people = models.IntegerField()
     count_by_role_type = models.JSONField()
     count_by_role_status = models.JSONField()
     count_by_accreditation_type = models.JSONField()
+
+    total_people_with_sub_units = models.IntegerField()
+    count_by_role_type_with_sub_units = models.JSONField()
+    count_by_role_status_with_sub_units = models.JSONField()
+    count_by_accreditation_type_with_sub_units = models.JSONField()
+
+    class Meta:
+        abstract = True
+        ordering = ["-date"]
+        indexes = [
+            models.Index(fields=["date"], name="idx_summaryrecord_date"),
+        ]
+
+
+class TeamSummaryRecord(BaseSummaryRecord):
+    team = models.ForeignKey(
+        "roles.Team",
+        on_delete=models.PROTECT,
+        related_name="summary_records",
+    )
 
     class Meta:
         constraints = [
@@ -105,10 +120,65 @@ class TeamSummaryRecord(BaseModel):
                 name="unique_team_date",
             ),
         ]
-        ordering = ["-date"]
-        indexes = [
-            models.Index(fields=["date"], name="idx_teamsummaryrecord_date"),
-        ]
 
     def __str__(self) -> str:
         return f"{self.team} - {self.date}"
+
+
+class SectionSummaryRecord(BaseSummaryRecord):
+    # Technically, we can look at the relevant TeamSummaryRecord to get the summary for a section,
+    # but it's useful to have a section-level summary record for quick access.
+    section = models.ForeignKey(
+        "hierarchy.Section",
+        on_delete=models.PROTECT,
+        related_name="section_summary_records",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["section", "date"],
+                name="unique_section_summary_date",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.section} - {self.date}"
+
+
+class GroupSummaryRecord(BaseSummaryRecord):
+    group = models.ForeignKey(
+        "hierarchy.Group",
+        on_delete=models.PROTECT,
+        related_name="group_summary_records",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["group", "date"],
+                name="unique_group_summary_date",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.group} - {self.date}"
+
+
+class DistrictSummaryRecord(BaseSummaryRecord):
+    district = models.ForeignKey(
+        "hierarchy.District",
+        on_delete=models.PROTECT,
+        related_name="district_summary_records",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["district", "date"],
+                name="unique_district_summary_date",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.district} - {self.date}"
