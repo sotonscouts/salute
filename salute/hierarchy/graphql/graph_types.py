@@ -1,6 +1,7 @@
 # mypy: disable-error-code="misc"
 from __future__ import annotations
 
+import datetime
 from datetime import time
 from decimal import Decimal
 from string import Template
@@ -15,6 +16,7 @@ from strawberry_django.permissions import HasPerm
 
 from salute.hierarchy import models
 from salute.hierarchy.constants import SECTION_TYPE_INFO, SectionOperatingCategory, SectionType, Weekday
+from salute.integrations.osm.graphql.graph_types import HeadcountAggregationPeriod, HeadcountDataPoint
 from salute.mailing_groups import models as mailing_groups_models
 from salute.people.models import Person
 from salute.roles.models import Role
@@ -286,6 +288,50 @@ class Section(Unit, sb.relay.Node):
     )
     async def annual_subs_cost(self, info: sb.Info) -> Decimal | None:
         return await info.context.stats_dataloaders["latest_annual_subs_cost_for_sections"].load(self.pk)  # type: ignore[attr-defined]
+
+    @sd.field(
+        description=(
+            "Headcount data for the section, aggregated by the specified period with maximum counts. "
+            "Data sourced from OSM."
+        ),
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "section.view_young_person_count",
+                message="You don't have permission to view the headcount data for this section.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def headcount_history(
+        self,
+        info: sb.Info,
+        *,
+        period: HeadcountAggregationPeriod = HeadcountAggregationPeriod.WEEK,
+        start_date: datetime.date | None = sb.UNSET,
+        end_date: datetime.date | None = sb.UNSET,
+    ) -> list[HeadcountDataPoint]:
+        """Get headcount history for the section, aggregated by the specified period.
+
+        Args:
+            period: Aggregation period (week, month, or year). Defaults to week.
+            start_date: Optional start date to filter results (inclusive).
+            end_date: Optional end date to filter results (inclusive).
+        """
+        # Convert UNSET to None for the dataloader
+        start = None if start_date is sb.UNSET else start_date
+        end = None if end_date is sb.UNSET else end_date
+
+        data = await info.context.osm_dataloaders["headcount_for_sections"].load(
+            (self.pk, start, end, period)  # type: ignore[attr-defined]
+        )
+        return [
+            HeadcountDataPoint(
+                period_start=item["period_start"],
+                young_person_count=item["young_person_count"],
+            )
+            for item in data
+        ]
 
 
 @sd.type(
