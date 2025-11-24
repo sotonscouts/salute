@@ -217,7 +217,7 @@ class SectionOrder:
         return queryset, [ordering]
 
 
-@sd.interface(models.Section)
+@sd.type(models.Section, filters=SectionFilter)
 class Section(Unit, sb.relay.Node):
     display_name: str = sd.field(
         description="Formatted name for the unit",
