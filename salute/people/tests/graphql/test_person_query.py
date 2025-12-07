@@ -12,6 +12,9 @@ from salute.integrations.workspace.factories import WorkspaceAccountFactory
 from salute.people.factories import PersonFactory
 from salute.people.utils import format_phone_number
 from salute.roles.factories import AccreditationFactory, RoleFactory
+from salute.wifi.factories import WifiAccountGroupFactory
+from salute.wifi.models import WifiAccount
+from salute.wifi.repository import create_wifi_account
 
 
 @pytest.mark.django_db
@@ -237,6 +240,122 @@ class TestPersonTSAProfileLinkQuery:
                 "tsaProfileLink": f"https://example.com/people/{user_with_person.person.tsa_id}/",
             }
         }
+
+
+@pytest.mark.django_db
+class TestPersonWifiAccountQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getPersonWithWifiAccount($id: ID!) {
+        person(personId: $id) {
+            wifiAccount {
+                group {
+                    displayName
+                }
+                username
+                password
+                isActive
+            }
+        }
+    }
+    """
+
+    def test_query_wifi_account__current_person__no_wifi_account(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        assert WifiAccount.objects.filter(person=user_with_person.person).count() == 0
+
+        group = WifiAccountGroupFactory.create(is_default=True)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        wifi_account = WifiAccount.objects.filter(person=user_with_person.person).get()
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "wifiAccount": {
+                    "group": {
+                        "displayName": group.name,
+                    },
+                    "username": wifi_account.username,
+                    "password": wifi_account.password,
+                    "isActive": True,
+                },
+            }
+        }
+
+    def test_query_wifi_account__current_person__with_wifi_account(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        group = WifiAccountGroupFactory.create(is_default=False)
+        wifi_account = create_wifi_account(user_with_person.person, group=group)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "wifiAccount": {
+                    "group": {
+                        "displayName": wifi_account.group.name,
+                    },
+                    "username": wifi_account.username,
+                    "password": wifi_account.password,
+                    "isActive": True,
+                },
+            }
+        }
+
+    @pytest.mark.parametrize("role", [DistrictUserRoleType.MANAGER, DistrictUserRoleType.ADMIN, None])
+    def test_query_wifi_account__other_person(self, user_with_person: User, role: DistrictUserRoleType | None) -> None:
+        assert user_with_person.person is not None
+        person = PersonFactory()
+
+        if role is not None:
+            DistrictUserRole.objects.create(user=user_with_person, district=DistrictFactory(), level=role)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        if role is None:
+            # User without role cannot view other people at all
+            assert results.errors == [
+                {
+                    "message": "You don't have permission to view that person.",
+                    "locations": [{"line": 3, "column": 9}],
+                    "path": ["person"],
+                }
+            ]
+        else:
+            # Managers and Admins can view the person but not their wifi account credentials
+            assert results.errors == [
+                {
+                    "message": "You don't have permission to view that person's WiFi account.",
+                    "locations": [{"line": 4, "column": 13}],
+                    "path": ["person", "wifiAccount"],
+                }
+            ]
 
 
 @pytest.mark.django_db

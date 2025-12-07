@@ -7,6 +7,7 @@ from salute.core.predicates import (
     can_view_group_summary_data,
     can_view_person,
     can_view_person_pii,
+    can_view_person_wifi_account,
     can_view_role,
     can_view_section_summary_data,
     can_view_site_tenure_type,
@@ -34,6 +35,7 @@ rules.add_perm("section_type.list", user_has_related_person)
 rules.add_perm("person.list", user_has_related_person)
 rules.add_perm("person.view", can_view_person)
 rules.add_perm("person.view_pii", can_view_person_pii)
+rules.add_perm("person.view_wifi_account", can_view_person_wifi_account)
 
 # Roles
 rules.add_perm("accreditation_type.list", user_has_related_person)

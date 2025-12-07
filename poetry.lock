@@ -2262,7 +2262,18 @@ files = [
 [package.extras]
 brotli = ["brotli"]
 
+[[package]]
+name = "xkcdpass"
+version = "1.20.0"
+description = "Generate secure multiword passwords/passphrases, inspired by XKCD"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "xkcdpass-1.20.0.tar.gz", hash = "sha256:b5abfd7d2b59cdda59f937fb22210ac4649ad0d2e09e1f87bfe74a54e23ad18a"},
+]
+
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "f31860a916b960690570d7f5dcdde9069fb20cd1f312d44db0739aca9e311ff6"
+content-hash = "e02cec0e4104d5ba78f0de7d6ed956a3bc0b121f55a1a493396d25244af90536"

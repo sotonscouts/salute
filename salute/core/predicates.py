@@ -59,6 +59,7 @@ def has_district_role(role_type: DistrictUserRoleType) -> rules.predicates.Predi
 
 can_list_people = has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)
 can_view_person_pii = has_district_role(DistrictUserRoleType.ADMIN) | user_is_person
+can_view_person_wifi_account = user_is_person
 can_view_person = can_list_people | user_is_person
 
 can_list_roles = can_list_people

@@ -21,6 +21,7 @@ strawberry-graphql-django = "~0.60.0"  # Issue in 0.61.0 to do with lazy orderin
 tqdm = "^4.67.1"
 whitenoise = "^6.9.0"
 django-birdbath = "^2.0.1"
+xkcdpass = "^1.20.0"
 
 [tool.poetry.group.dev.dependencies]
 django-debug-toolbar = "^5.2.0"
