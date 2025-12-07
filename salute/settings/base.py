@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "salute.people",
     "salute.roles",
     "salute.stats",
+    "salute.wifi",
     # Third Party
     "birdbath",
     "corsheaders",

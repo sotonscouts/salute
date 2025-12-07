@@ -11,10 +11,12 @@ from strawberry_django.permissions import HasPerm, HasRetvalPerm, HasSourcePerm
 from salute.accounts.models import User
 from salute.people import models
 from salute.people.utils import format_phone_number
+from salute.wifi.repository import get_wifi_account_for_person
 
 if TYPE_CHECKING:
     from salute.integrations.workspace.graphql.graph_types import WorkspaceAccount
     from salute.roles.graphql.graph_types import Accreditation, Role
+    from salute.wifi.graphql.graph_types import WifiAccount
 
 
 @sd.filter_type(models.Person, lookups=True)
@@ -107,6 +109,20 @@ class Person(sb.relay.Node):
     def tsa_profile_link(self) -> str:
         template = Template(settings.TSA_PERSON_PROFILE_LINK_TEMPLATE)  # type: ignore[misc]
         return template.safe_substitute(tsaid=self.tsa_id)  # type: ignore[attr-defined]
+
+    @sd.field(
+        description="WiFi account",
+        select_related="wifi_account",
+        extensions=[
+            HasSourcePerm(
+                "person.view_wifi_account",
+                message="You don't have permission to view that person's WiFi account.",
+                fail_silently=False,
+            )
+        ],
+    )
+    def wifi_account(self) -> Annotated["WifiAccount", sb.lazy("salute.wifi.graphql.graph_types")]:
+        return get_wifi_account_for_person(self)  # type: ignore[return-value, arg-type]
 
     @classmethod
     def get_queryset(
