@@ -17,6 +17,7 @@ class GroupFilter:
 
 @sd.filter_type(models.Section)
 class SectionFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
     section_type: sd.BaseFilterLookup[SectionType] | None = sb.UNSET
     usual_weekday: sd.BaseFilterLookup[models.Weekday] | None = sb.UNSET
     group: GroupFilter | None = sd.filter_field(

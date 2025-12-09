@@ -20,6 +20,7 @@ from salute.integrations.osm.graphql.graph_types import HeadcountAggregationPeri
 from salute.mailing_groups import models as mailing_groups_models
 from salute.people.models import Person
 from salute.roles.models import Role
+from salute.stats.graphql.graphql_types import SectionCensusReturn as SectionCensusReturnType
 
 from .graph_filters import GroupFilter, SectionFilter
 
@@ -331,6 +332,37 @@ class Section(Unit, sb.relay.Node):
                 young_person_count=item["young_person_count"],
             )
             for item in data
+        ]
+
+    @sd.field(
+        description="Census returns for the section, ordered by year ascending.",
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "section.view_census_returns",
+                message="You don't have permission to view the census returns for this section.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def census_returns(
+        self, info: sb.Info, *, start_year: int | None = sb.UNSET, end_year: int | None = sb.UNSET
+    ) -> list[SectionCensusReturnType]:
+        start = None if start_year is sb.UNSET else start_year
+        end = None if end_year is sb.UNSET else end_year
+
+        census_returns = await info.context.stats_dataloaders["census_returns_for_sections"].load(
+            (self.pk, start, end)  # type: ignore[attr-defined]
+        )
+        return [
+            SectionCensusReturnType(
+                year=census_return.year,
+                annual_subs_cost=census_return.annual_subs_cost,
+                total_volunteers=census_return.total_volunteers,
+                total_young_people=census_return.total_young_people,
+                ratio_young_people_to_volunteers=census_return.ratio_young_people_to_volunteers,
+            )
+            for census_return in census_returns
         ]
 
 
