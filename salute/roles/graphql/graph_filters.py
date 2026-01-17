@@ -46,8 +46,9 @@ class TeamFilter:
 
 @sd.filter_type(models.Role)
 class RoleFilter:
-    person: PersonFilter | None
-    team: TeamFilter | None
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    person: PersonFilter | None = sb.UNSET
+    team: TeamFilter | None = sb.UNSET
 
     @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
     def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
@@ -59,5 +60,16 @@ class RoleFilter:
 
 @sd.filter_type(models.Accreditation)
 class AccreditationFilter:
-    person: PersonFilter | None
-    team: TeamFilter | None
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    person: PersonFilter | None = sb.UNSET
+    team: TeamFilter | None = sb.UNSET
+
+
+@sd.filter_type(models.AccreditationType)
+class AccreditationTypeFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+
+
+@sd.filter_type(models.RoleType)
+class RoleTypeFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
