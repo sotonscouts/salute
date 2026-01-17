@@ -61,13 +61,26 @@ class District(Unit, sb.relay.Node):
     @sd.field(
         description="Count of all people in this district, including in groups",
     )
-    def total_people_count(self) -> int:
+    def total_people_count(
+        self,
+        *,
+        is_member: bool | None = sb.UNSET,
+        is_included_in_census: bool | None = sb.UNSET,
+    ) -> int:
         """
         Count of all people in this district, including in groups.
 
         Assumes only one district in the database.
         """
-        return Person.objects.count()
+        qs = Person.objects.all()
+
+        if is_member is not sb.UNSET:
+            qs = qs.annotate_is_member().filter(is_member=is_member)
+
+        if is_included_in_census is not sb.UNSET:
+            qs = qs.annotate_is_included_in_census().filter(is_included_in_census=is_included_in_census)
+
+        return qs.count()
 
     @sd.field(
         description="Count of all people in this district, including in groups",
