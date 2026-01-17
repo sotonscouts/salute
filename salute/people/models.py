@@ -40,6 +40,16 @@ class PersonQuerySet(models.QuerySet):
             )
         )
 
+    def annotate_is_youth_member(self) -> PersonQuerySet:
+        return self.annotate(
+            is_youth_member=models.Exists(
+                Role.objects.filter(
+                    person=models.OuterRef("pk"),
+                    role_type__is_youth_member=True,
+                ).only("id")
+            )
+        )
+
 
 PersonManager = models.Manager.from_queryset(PersonQuerySet)
 

@@ -186,6 +186,10 @@ class RoleType(Taxonomy):
         default=False,
         help_text="If true, the role is a member role. Used for emails and other communications to members.",
     )  # noqa: E501
+    is_youth_member = models.BooleanField(
+        default=False,
+        help_text="If true, the role is a youth member role (e.g., Network Member). Used for member count calculations.",  # noqa: E501
+    )
 
     class Meta:
         ordering = ("-display_priority", "name")

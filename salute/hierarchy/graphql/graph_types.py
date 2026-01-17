@@ -130,6 +130,56 @@ class District(Unit, sb.relay.Node):
             (self.pk, include_group_sections)  # type: ignore[attr-defined]
         )
 
+    @sd.field(
+        description=(
+            "Total member count for the district. "
+            "Includes adult members (people with member roles), young people (from OSM), "
+            "and unique people with network member roles (is_youth_member=True). "
+            "Note: This may double count individuals who are both adult members and have a network member role."
+        ),
+        only=["pk"],
+        extensions=[
+            HasPerm(
+                "district.view_young_person_count",
+                message="You don't have permission to view the member count for this district.",
+                fail_silently=True,
+            )
+        ],
+    )
+    async def total_member_count(
+        self,
+        info: sb.Info,
+    ) -> int | None:
+        """Get the total member count for the district.
+
+        This is a number that Hants County uses to report.
+
+        This includes:
+        - Adult (Censused) members (people with is_included_in_census=True roles)
+        - Young people (from OSM data)
+        - Unique people with youth member roles (is_youth_member=True roles)
+        """
+        from asgiref.sync import sync_to_async
+
+        # Count adult members (distinct people with is_member_role=True roles)
+        def _count_adult_members() -> int:
+            return Person.objects.annotate_is_included_in_census().filter(is_included_in_census=True).count()
+
+        # Count unique people with youth member roles (is_youth_member=True)
+        def _count_youth_members() -> int:
+            return Person.objects.annotate_is_youth_member().filter(is_youth_member=True).count()
+
+        adult_member_count = await sync_to_async(_count_adult_members)()
+        youth_member_count = await sync_to_async(_count_youth_members)()
+        young_person_count_result = await info.context.osm_dataloaders["total_young_person_count_for_district"].load(
+            (self.pk, True)  # type: ignore[attr-defined]
+        )
+
+        if young_person_count_result is None:
+            return None
+
+        return adult_member_count + young_person_count_result + youth_member_count
+
 
 @sd.order_type(models.Group)
 class GroupOrder:
