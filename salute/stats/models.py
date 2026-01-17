@@ -93,6 +93,15 @@ class BaseSummaryRecord(BaseModel):
     count_by_role_status = models.JSONField()
     count_by_accreditation_type = models.JSONField()
 
+    class Meta:
+        abstract = True
+        ordering = ["-date"]
+        indexes = [
+            models.Index(fields=["date"], name="idx_summaryrecord_date"),
+        ]
+
+
+class BaseUnitSummaryRecord(BaseSummaryRecord):
     total_people_with_sub_units = models.IntegerField()
     count_by_role_type_with_sub_units = models.JSONField()
     count_by_role_status_with_sub_units = models.JSONField()
@@ -100,10 +109,6 @@ class BaseSummaryRecord(BaseModel):
 
     class Meta:
         abstract = True
-        ordering = ["-date"]
-        indexes = [
-            models.Index(fields=["date"], name="idx_summaryrecord_date"),
-        ]
 
 
 class TeamSummaryRecord(BaseSummaryRecord):
@@ -125,7 +130,7 @@ class TeamSummaryRecord(BaseSummaryRecord):
         return f"{self.team} - {self.date}"
 
 
-class SectionSummaryRecord(BaseSummaryRecord):
+class SectionSummaryRecord(BaseUnitSummaryRecord):
     # Technically, we can look at the relevant TeamSummaryRecord to get the summary for a section,
     # but it's useful to have a section-level summary record for quick access.
     section = models.ForeignKey(
@@ -146,7 +151,7 @@ class SectionSummaryRecord(BaseSummaryRecord):
         return f"{self.section} - {self.date}"
 
 
-class GroupSummaryRecord(BaseSummaryRecord):
+class GroupSummaryRecord(BaseUnitSummaryRecord):
     group = models.ForeignKey(
         "hierarchy.Group",
         on_delete=models.PROTECT,
@@ -165,7 +170,7 @@ class GroupSummaryRecord(BaseSummaryRecord):
         return f"{self.group} - {self.date}"
 
 
-class DistrictSummaryRecord(BaseSummaryRecord):
+class DistrictSummaryRecord(BaseUnitSummaryRecord):
     district = models.ForeignKey(
         "hierarchy.District",
         on_delete=models.PROTECT,
