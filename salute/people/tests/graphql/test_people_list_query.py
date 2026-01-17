@@ -294,6 +294,7 @@ class TestPersonListQuery:
             }
         }
 
+
 @pytest.mark.django_db
 class TestPersonMemberStatusQuery:
     url = reverse("graphql")
@@ -399,11 +400,14 @@ class TestPersonMemberStatusQuery:
     @pytest.mark.parametrize("role_level", DistrictUserRoleType)
     def test_query__network_member(self, user_with_person: User, role_level: DistrictUserRoleType) -> None:
         assert user_with_person.person
-        
+
         district = DistrictFactory()
         DistrictUserRole.objects.create(user=user_with_person, district=district, level=role_level)
 
-        RoleFactory.create(person=user_with_person.person, role_type=RoleTypeFactory.create(included_in_census=False, is_member_role=True))
+        RoleFactory.create(
+            person=user_with_person.person,
+            role_type=RoleTypeFactory.create(included_in_census=False, is_member_role=True),
+        )
 
         client = TestClient(self.url)
         with client.login(user_with_person):

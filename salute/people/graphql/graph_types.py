@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Annotated, Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
-from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
