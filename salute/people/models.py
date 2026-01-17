@@ -7,6 +7,7 @@ from django.db.models.functions import Concat
 from phonenumber_field.modelfields import PhoneNumberField
 
 from salute.integrations.tsa.models import TSAObject
+from salute.roles.models import Role
 
 if TYPE_CHECKING:
     from salute.accounts.models import User
@@ -18,6 +19,26 @@ class PersonQuerySet(models.QuerySet):
             return self.all()
 
         return self.filter(id=user.person_id)
+
+    def annotate_is_member(self) -> PersonQuerySet:
+        return self.annotate(
+            is_member=models.Exists(
+                Role.objects.filter(
+                    person=models.OuterRef("pk"),
+                    role_type__is_member_role=True,
+                ).only("id")
+            )
+        )
+
+    def annotate_is_included_in_census(self) -> PersonQuerySet:
+        return self.annotate(
+            is_included_in_census=models.Exists(
+                Role.objects.filter(
+                    person=models.OuterRef("pk"),
+                    role_type__included_in_census=True,
+                ).only("id")
+            )
+        )
 
 
 PersonManager = models.Manager.from_queryset(PersonQuerySet)

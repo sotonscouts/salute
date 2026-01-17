@@ -1,6 +1,7 @@
 # mypy: disable-error-code="no-untyped-call"
 import rules
 
+from salute.accounts.models import DistrictUserRoleType
 from salute.core.predicates import (
     can_list_workspace_accounts,
     can_view_accreditation,
@@ -14,6 +15,7 @@ from salute.core.predicates import (
     can_view_team_person_count,
     can_view_workspace_account,
     can_view_workspace_account_pii,
+    has_district_role,
     user_has_related_person,
 )
 
@@ -37,6 +39,14 @@ rules.add_perm("person.list", user_has_related_person)
 rules.add_perm("person.view", can_view_person)
 rules.add_perm("person.view_pii", can_view_person_pii)
 rules.add_perm("person.view_wifi_account", can_view_person_wifi_account)
+rules.add_perm(
+    "person.view_member_status",
+    can_view_person & (has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)),
+)
+rules.add_perm(
+    "person.view_census_status",
+    can_view_person & (has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)),
+)
 
 # Roles
 rules.add_perm("accreditation_type.list", user_has_related_person)

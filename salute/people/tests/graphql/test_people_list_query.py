@@ -7,6 +7,7 @@ from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.people.factories import PersonFactory
 from salute.people.models import Person
+from salute.roles.factories import RoleFactory, RoleTypeFactory
 
 
 @pytest.mark.django_db
@@ -290,5 +291,137 @@ class TestPersonListQuery:
                     }
                 ],
                 "totalCount": 1,
+            }
+        }
+
+@pytest.mark.django_db
+class TestPersonMemberStatusQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query listPeopleMemberStatus {
+        people {
+            edges {
+                node {
+                    displayName
+                    isMember
+                    isIncludedInCensus
+                }
+            }
+        }
+    }
+    """
+
+    def test_query__no_permission(self, user_with_person: User) -> None:
+        assert user_with_person.person
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(results, Response)
+        assert results.errors is None
+        assert results.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": user_with_person.person.display_name,
+                            "isMember": None,
+                            "isIncludedInCensus": None,
+                        }
+                    }
+                ],
+            }
+        }
+
+    @pytest.mark.parametrize("role_level", DistrictUserRoleType)
+    def test_query__no_roles(self, user_with_person: User, role_level: DistrictUserRoleType) -> None:
+        assert user_with_person.person
+
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=role_level)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+            )
+
+        assert isinstance(results, Response)
+        assert results.errors is None
+        assert results.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": user_with_person.person.display_name,
+                            "isMember": False,
+                            "isIncludedInCensus": False,
+                        }
+                    }
+                ],
+            }
+        }
+
+    @pytest.mark.parametrize("role_level", DistrictUserRoleType)
+    def test_query__full_censused_member(self, user_with_person: User, role_level: DistrictUserRoleType) -> None:
+        assert user_with_person.person
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=role_level)
+
+        RoleFactory.create(person=user_with_person.person, role_type=RoleTypeFactory.create(included_in_census=True))
+        RoleFactory.create(person=user_with_person.person, role_type=RoleTypeFactory.create(is_member_role=True))
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+            )
+        assert isinstance(results, Response)
+        assert results.errors is None
+        assert results.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": user_with_person.person.display_name,
+                            "isMember": True,
+                            "isIncludedInCensus": True,
+                        }
+                    }
+                ],
+            }
+        }
+
+    @pytest.mark.parametrize("role_level", DistrictUserRoleType)
+    def test_query__network_member(self, user_with_person: User, role_level: DistrictUserRoleType) -> None:
+        assert user_with_person.person
+        
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=role_level)
+
+        RoleFactory.create(person=user_with_person.person, role_type=RoleTypeFactory.create(included_in_census=False, is_member_role=True))
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+            )
+        assert isinstance(results, Response)
+        assert results.errors is None
+        assert results.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": user_with_person.person.display_name,
+                            "isMember": True,
+                            "isIncludedInCensus": False,
+                        }
+                    }
+                ],
             }
         }

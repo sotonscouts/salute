@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from strawberry.django.context import StrawberryDjangoContext
 
 from salute.integrations.osm.graphql.data_loaders import create_osm_dataloaders
+from salute.people.graphql.data_loaders import create_people_dataloaders
 from salute.roles.graphql.data_loaders import create_roles_dataloaders
 from salute.stats.graphql.data_loaders import create_stats_dataloaders
 
@@ -16,3 +17,4 @@ class SaluteContext(StrawberryDjangoContext):
         self.roles = create_roles_dataloaders()
         self.osm_dataloaders = create_osm_dataloaders()
         self.stats_dataloaders = create_stats_dataloaders()
+        self.people_dataloaders = create_people_dataloaders()

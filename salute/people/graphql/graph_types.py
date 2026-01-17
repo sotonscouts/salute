@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Annotated, Any, cast
 
 import strawberry as sb
 import strawberry_django as sd
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db.models import QuerySet
 from strawberry_django.auth.utils import get_current_user
@@ -109,6 +110,34 @@ class Person(sb.relay.Node):
     def tsa_profile_link(self) -> str:
         template = Template(settings.TSA_PERSON_PROFILE_LINK_TEMPLATE)  # type: ignore[misc]
         return template.safe_substitute(tsaid=self.tsa_id)  # type: ignore[attr-defined]
+
+    @sd.field(
+        description="Whether the person is a member of the Scout Association.",
+        extensions=[
+            HasPerm(
+                "person.view_member_status",
+                message="You don't have permission to view the member status for this person.",
+                fail_silently=True,
+            )
+        ],
+        only="id",
+    )
+    async def is_member(self, info: sb.Info) -> bool | None:
+        return await info.context.people_dataloaders["latest_is_member_for_people"].load(self.id)  # type: ignore[attr-defined]
+
+    @sd.field(
+        description="Whether the person is included in the census as an adult volunteer.",
+        extensions=[
+            HasPerm(
+                "person.view_census_status",
+                message="You don't have permission to view the census status for this person.",
+                fail_silently=True,
+            )
+        ],
+        only="id",
+    )
+    async def is_included_in_census(self, info: sb.Info) -> bool | None:
+        return await info.context.people_dataloaders["latest_is_included_in_census_for_people"].load(self.id)  # type: ignore[attr-defined]
 
     @sd.field(
         description="WiFi account",
