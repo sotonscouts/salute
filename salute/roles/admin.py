@@ -68,10 +68,13 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
 @admin.register(RoleType)
 class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "display_priority")
+    list_display = ("name", "display_priority", "included_in_census", "is_member_role")
+    list_filter = ("included_in_census", "is_member_role")
     search_fields = ("name", "tsa_id")
 
-    fieldsets = ((None, {"fields": ("name", "display_priority")}),) + BaseModelAdminMixin.FIELDSETS
+    fieldsets = (
+        (None, {"fields": ("name", "display_priority", "included_in_census", "is_member_role")}),
+    ) + BaseModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:
         return list(super().get_readonly_fields(request, obj)) + ["name"]

@@ -179,6 +179,13 @@ class RoleType(Taxonomy):
     TSA_FIELDS = ("name",)
 
     display_priority = models.PositiveIntegerField(default=100, help_text="Used to order roles in the UI.")
+    included_in_census = models.BooleanField(
+        default=False, help_text="If true, the role is included in the census as an adult volunteer."
+    )  # noqa: E501
+    is_member_role = models.BooleanField(
+        default=False,
+        help_text="If true, the role is a member role. Used for emails and other communications to members.",
+    )  # noqa: E501
 
     class Meta:
         ordering = ("-display_priority", "name")
