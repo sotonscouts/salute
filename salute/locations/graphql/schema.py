@@ -12,6 +12,7 @@ class LocationsQuery:
     @sd.field(
         description="Get a site by ID",
         extensions=[HasPerm("site.view", message="You don't have permission to view that site.")],
+        deprecation_reason="Use the `sites` field instead.",
     )
     def site(self, site_id: sb.relay.GlobalID, info: sb.Info) -> Site:
         return locations_models.Site.objects.filter(id=site_id.node_id)  # type: ignore[return-value]

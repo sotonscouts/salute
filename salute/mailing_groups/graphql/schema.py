@@ -14,6 +14,7 @@ class MailingGroupsQuery:
         extensions=[
             HasPerm("system_mailing_group.view", message="You don't have permission to view that mailing group.")
         ],
+        deprecation_reason="Use the `system_mailing_groups` field instead.",
     )
     def system_mailing_group(self, system_mailing_group_id: sb.relay.GlobalID, info: sb.Info) -> SystemMailingGroup:
         return mailing_groups_models.SystemMailingGroup.objects.filter(id=system_mailing_group_id.node_id)  # type: ignore[return-value]
