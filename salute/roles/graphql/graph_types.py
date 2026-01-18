@@ -19,10 +19,17 @@ from salute.mailing_groups.graphql.graph_types import SystemMailingGroup
 from salute.people.graphql.graph_types import Person
 from salute.roles import models
 
-from .graph_filters import AccreditationFilter, RoleFilter, TeamFilter, TeamTypeFilter
+from .graph_filters import (
+    AccreditationFilter,
+    AccreditationTypeFilter,
+    RoleFilter,
+    RoleTypeFilter,
+    TeamFilter,
+    TeamTypeFilter,
+)
 
 
-@sd.type(models.AccreditationType)
+@sd.type(models.AccreditationType, filters=AccreditationTypeFilter)
 class AccreditationType(sb.relay.Node):
     name: sb.Private[str]
 
@@ -40,7 +47,7 @@ class RoleStatus(sb.relay.Node):
         return self.name
 
 
-@sd.type(models.RoleType)
+@sd.type(models.RoleType, filters=RoleTypeFilter)
 class RoleType(sb.relay.Node):
     name: sb.Private[str]
 

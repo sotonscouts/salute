@@ -25,6 +25,7 @@ class HierarchyQuery:
     @sd.field(
         description="Get a group by ID",
         extensions=[HasPerm("group.view", message="You don't have permission to view that group.")],
+        deprecation_reason="Use the `groups` field instead.",
     )
     def group(self, group_id: sb.relay.GlobalID, info: sb.Info) -> Group:
         return hierarchy_models.Group.objects.filter(id=group_id.node_id)  # type: ignore[return-value]
@@ -37,6 +38,7 @@ class HierarchyQuery:
     @sd.field(
         description="Get a section by ID",
         extensions=[HasPerm("section.view", message="You don't have permission to view that section.")],
+        deprecation_reason="Use the `sections` field instead.",
     )
     def section(self, section_id: sb.relay.GlobalID, info: sb.Info) -> DistrictOrGroupSection:
         return hierarchy_models.Section.objects.filter(id=section_id.node_id)  # type: ignore[return-value]

@@ -193,6 +193,31 @@ class TestRoleListQuery:
             }
         }
 
+    def test_query__filter__by_id(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        role = RoleFactory(person=user_with_person.person, team__district=district)
+        RoleFactory.create_batch(size=10, team__district=district)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "filters": {"id": {"exact": to_base64("Role", role.id)}},
+                },
+            )
+        assert isinstance(result, Response)
+
+        assert result.errors is None
+        assert result.data == {
+            "roles": {
+                "edges": [{"node": self._get_expected_data_for_role(role)}],
+                "totalCount": 1,
+            }
+        }
+
     def test_query__filter__by_person(self, user_with_person: User) -> None:
         assert user_with_person.person
 

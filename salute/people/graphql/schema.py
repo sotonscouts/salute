@@ -14,6 +14,7 @@ class PeopleQuery:
         extensions=[
             HasRetvalPerm("person.view", message="You don't have permission to view that person.", fail_silently=False)
         ],
+        deprecation_reason="Use the `people` field instead.",
     )
     def person(self, person_id: sb.relay.GlobalID, info: sb.Info) -> Person:
         return people_models.Person.objects.get(id=person_id.node_id)  # type: ignore[return-value]

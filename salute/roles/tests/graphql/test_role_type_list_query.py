@@ -12,8 +12,8 @@ class TestRoleTypeListQuery:
     url = reverse("graphql")
 
     QUERY = """
-    query {
-        roleTypes {
+    query listRoleTypes($filters: RoleTypeFilter) {
+        roleTypes(filters: $filters) {
             edges {
                 node {
                     id
@@ -85,5 +85,30 @@ class TestRoleTypeListQuery:
                     for rt in sorted(role_types, key=lambda rt: rt.name)
                 ],
                 "totalCount": 5,
+            }
+        }
+
+    def test_query__filter__by_id(self, user_with_person: User) -> None:
+        role_types = RoleTypeFactory.create_batch(size=5)
+        expected_role_type = role_types[0]
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={"filters": {"id": {"exact": to_base64("RoleType", expected_role_type.id)}}},
+            )
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data == {
+            "roleTypes": {
+                "edges": [
+                    {
+                        "node": {
+                            "id": to_base64("RoleType", expected_role_type.id),
+                            "displayName": expected_role_type.name,
+                        }
+                    }
+                ],
+                "totalCount": 1,
             }
         }
