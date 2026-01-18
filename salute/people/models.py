@@ -61,9 +61,8 @@ class Person(TSAObject):
     last_name = models.CharField(max_length=255, editable=False)
     membership_number = models.PositiveIntegerField(verbose_name="Membership Number", unique=True, editable=False)
     is_suspended = models.BooleanField(editable=False)
-    primary_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
-    default_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
-    alternate_email = models.EmailField(blank=True, editable=False)  # noqa: DJ001
+    default_email = models.EmailField(verbose_name="TSA Login Email", blank=True, editable=False)  # noqa: DJ001
+    alternate_email = models.EmailField(verbose_name="TSA Communication Email", blank=True, editable=False)  # noqa: DJ001
     phone_number = PhoneNumberField(null=True, editable=False)
     alternate_phone_number = PhoneNumberField(null=True, editable=False)
 
@@ -90,13 +89,13 @@ class Person(TSAObject):
     )
     tsa_email = models.GeneratedField(
         expression=models.Case(
-            models.When(~models.Q(primary_email__exact=""), models.F("primary_email")),
-            models.When(~models.Q(default_email__exact=""), models.F("default_email")),
             models.When(~models.Q(alternate_email__exact=""), models.F("alternate_email")),
+            models.When(~models.Q(default_email__exact=""), models.F("default_email")),
             default=models.Value(None),
         ),
         output_field=models.EmailField(),
         db_persist=True,
+        verbose_name="TSA Preferred Email",
     )
 
     TSA_FIELDS = (
@@ -105,7 +104,6 @@ class Person(TSAObject):
         "last_name",
         "membership_number",
         "is_suspended",
-        "primary_email",
         "default_email",
         "alternate_email",
         "phone_number",
