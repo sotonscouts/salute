@@ -6,15 +6,15 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-django = "^5.2.3"
+django = "^5.2.10"
 django-choices-field = "^2.3.0"
 django-cors-headers = "^4.7.0"
 django-environ = "^0.12.0"
 django-phonenumber-field = {extras = ["phonenumberslite"], version = "^8.1.0"}
 google-api-python-client = "^2.174.0"
 joserfc = "^1.1.0"
-pydantic = "^2.11.7"
-requests = "^2.32.4"
+pydantic = "^2.12.5"
+requests = "^2.32.5"
 rules = "^3.5"
 strawberry-graphql = "~0.275.5"
 strawberry-graphql-django = "~0.60.0"  # Issue in 0.61.0 to do with lazy ordering type resolution
