@@ -14,11 +14,6 @@ class PersonFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     membership_number = factory.Sequence(lambda n: n + 1)  # Incremental unique numbers
     is_suspended = factory.Faker("boolean")
-    primary_email = factory.Maybe(
-        factory.Faker("boolean"),
-        factory.Faker("email"),
-        "",
-    )
     default_email = factory.Maybe(
         factory.Faker("boolean"),
         factory.Faker("email"),

@@ -68,7 +68,6 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
                 "classes": ("collapse",),
                 "fields": (
                     "tsa_email",
-                    "primary_email",
                     "default_email",
                     "alternate_email",
                 ),

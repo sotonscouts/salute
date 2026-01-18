@@ -34,23 +34,18 @@ class TestPersonModel:
 
     def test_generated_tsa_email(self) -> None:
         person = PersonFactory(
-            primary_email="primary@example.com",
             default_email="default@example.com",
             alternate_email="alternate@example.com",
         )
-        assert person.tsa_email == "primary@example.com"
+        assert person.tsa_email == "alternate@example.com"
 
-        person_without_primary_email = PersonFactory(
-            primary_email="", default_email="default@example.com", alternate_email="alternate@example.com"
-        )
-        assert person_without_primary_email.tsa_email == "default@example.com"
+        person_without_default_email = PersonFactory(default_email="", alternate_email="alternate@example.com")
+        assert person_without_default_email.tsa_email == "alternate@example.com"
 
-        person_without_primary_and_default_email = PersonFactory(
-            primary_email="", default_email="", alternate_email="alternate@example.com"
-        )
-        assert person_without_primary_and_default_email.tsa_email == "alternate@example.com"
+        person_without_alternate_email = PersonFactory(default_email="default@example.com", alternate_email="")
+        assert person_without_alternate_email.tsa_email == "default@example.com"
 
-        person_without_any_email = PersonFactory(primary_email="", default_email="", alternate_email="")
+        person_without_any_email = PersonFactory(default_email="", alternate_email="")
         assert person_without_any_email.tsa_email is None
 
 

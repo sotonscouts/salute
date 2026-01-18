@@ -11,14 +11,13 @@ class PersonDetail(BaseModel):
     preferred_name: str | None = Field(alias="preffered_name")
     last_name: str = Field(alias="lastname")
     membership_number: int = Field(alias="membershipno")
-    primary_email: str | None = Field(alias="primaryEmail")
     default_email: str | None = Field(alias="defaultemail>>email")
     alternate_email: str | None = Field(alias="alternateemail>>email")
     is_suspended: bool = Field(alias="suspended")
     phone_number: str | None = Field(alias="defaultphone>>phone")
     alternate_phone_number: str | None = Field(alias="alternatephone>>phone")
 
-    @field_validator("preferred_name", "primary_email", "default_email", "alternate_email", mode="after")
+    @field_validator("preferred_name", "default_email", "alternate_email", mode="after")
     @classmethod
     def normalise_empty_value(cls, val: str) -> str:
         return val or ""
