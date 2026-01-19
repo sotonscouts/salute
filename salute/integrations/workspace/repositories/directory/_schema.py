@@ -20,7 +20,7 @@ class WorkspaceAccountInfo(BaseModel):
     name: NameInfo
     is_admin: bool = Field(alias="isAdmin")
     is_delegated_admin: bool = Field(alias="isDelegatedAdmin")
-    last_login_time: datetime | None = Field(alias="lastLoginTime")
+    last_login_time: datetime | None = Field(alias="lastLoginTime", default=None)
     creation_time: datetime = Field(alias="creationTime")
     agreed_to_terms: bool = Field(alias="agreedToTerms")
     suspended: bool
