@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "salute.hierarchy",
     "salute.integrations.osm",
     "salute.integrations.tsa",
+    "salute.integrations.waiting_list",
     "salute.integrations.workspace",
     "salute.locations",
     "salute.mailing_groups",
