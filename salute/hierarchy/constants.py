@@ -39,6 +39,8 @@ class SectionTypeInfoDict(TypedDict):
     operating_category: SectionOperatingCategory
     min_age: str
     max_age: str
+    min_age_numeric: float
+    max_age_numeric: float
 
 
 SECTION_TYPE_INFO: dict[SectionType, SectionTypeInfoDict] = {
@@ -47,42 +49,56 @@ SECTION_TYPE_INFO: dict[SectionType, SectionTypeInfoDict] = {
         "operating_category": SectionOperatingCategory.GROUP,
         "min_age": "4",
         "max_age": "5",
+        "min_age_numeric": 4.0,
+        "max_age_numeric": 5.0,
     },
     SectionType.BEAVERS: {
         "display_name": "Beavers",
         "operating_category": SectionOperatingCategory.GROUP,
         "min_age": "6",
         "max_age": "8",
+        "min_age_numeric": 6.0,
+        "max_age_numeric": 8.0,
     },
     SectionType.CUBS: {
         "display_name": "Cubs",
         "operating_category": SectionOperatingCategory.GROUP,
         "min_age": "8",
         "max_age": "10½",
+        "min_age_numeric": 8.0,
+        "max_age_numeric": 10.5,
     },
     SectionType.SCOUTS: {
         "display_name": "Scouts",
         "operating_category": SectionOperatingCategory.GROUP,
         "min_age": "10½",
         "max_age": "14",
+        "min_age_numeric": 10.5,
+        "max_age_numeric": 14.0,
     },
     SectionType.EXPLORERS: {
         "display_name": "Explorers",
         "operating_category": SectionOperatingCategory.DISTRICT,
         "min_age": "14",
         "max_age": "18",
+        "min_age_numeric": 14.0,
+        "max_age_numeric": 18.0,
     },
     SectionType.YOUNG_LEADERS: {
         "display_name": "Young Leaders",
         "operating_category": SectionOperatingCategory.DISTRICT,
         "min_age": "14",
         "max_age": "18",
+        "min_age_numeric": 14.0,
+        "max_age_numeric": 18.0,
     },
     SectionType.NETWORK: {
         "display_name": "Network",
         "operating_category": SectionOperatingCategory.DISTRICT,
         "min_age": "18",
         "max_age": "25",
+        "min_age_numeric": 18.0,
+        "max_age_numeric": 25.0,
     },
 }
 

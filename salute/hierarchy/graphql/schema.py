@@ -62,7 +62,10 @@ class HierarchyQuery:
         return [
             SectionTypeInfo(
                 value=section_type,
-                **info,
+                display_name=info["display_name"],
+                operating_category=info["operating_category"],
+                min_age=info["min_age"],
+                max_age=info["max_age"],
             )
             for section_type, info in SECTION_TYPE_INFO.items()
         ]

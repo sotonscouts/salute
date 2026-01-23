@@ -329,7 +329,10 @@ class Section(Unit, sb.relay.Node):
         sti = SECTION_TYPE_INFO[self.section_type]
         return SectionTypeInfo(
             value=self.section_type,
-            **sti,
+            display_name=sti["display_name"],
+            operating_category=sti["operating_category"],
+            min_age=sti["min_age"],
+            max_age=sti["max_age"],
         )
 
     @sd.field(
