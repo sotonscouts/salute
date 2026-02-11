@@ -180,6 +180,13 @@ class District(Unit, sb.relay.Node):
 
         return adult_member_count + young_person_count_result + youth_member_count
 
+    @sd.field(
+        description="The total waiting list count for the district.",
+        only=["pk"],
+    )
+    async def total_waiting_list_count(self, info: sb.Info) -> int | None:
+        return await info.context.waiting_list_dataloaders["total_waiting_list_count_for_districts"].load(self.pk)  # type: ignore[attr-defined]
+
 
 @sd.order_type(models.Group)
 class GroupOrder:
@@ -238,6 +245,13 @@ class Group(Unit, sb.relay.Node):
         return mailing_groups_models.SystemMailingGroup.objects.filter(
             teams=leadership_team, workspace_group__isnull=False
         ).order_by("name")  # type: ignore[return-value]
+
+    @sd.field(
+        description="The total waiting list count for the group.",
+        only=["pk"],
+    )
+    async def total_waiting_list_count(self, info: sb.Info) -> int | None:
+        return await info.context.waiting_list_dataloaders["total_waiting_list_count_for_groups"].load(self.pk)  # type: ignore[attr-defined]
 
 
 @sb.type
@@ -430,6 +444,13 @@ class Section(Unit, sb.relay.Node):
             )
             for census_return in census_returns
         ]
+
+    @sd.field(
+        description="The waiting list count for the section.",
+        only=["pk"],
+    )
+    async def total_waiting_list_count(self, info: sb.Info) -> int | None:
+        return await info.context.waiting_list_dataloaders["total_waiting_list_count_for_sections"].load(self.pk)  # type: ignore[attr-defined]
 
 
 @sd.type(
