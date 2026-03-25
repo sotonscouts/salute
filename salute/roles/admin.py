@@ -35,8 +35,9 @@ class TeamInlineAdmin(admin.TabularInline):
 
 @admin.register(TeamType)
 class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
-    list_display = ("display_name", "mailing_slug")
+    list_display = ("display_name", "mailing_slug", "mailing_list_filterable")
     search_fields = ("name", "nickname", "tsa_id")
+    list_filter = ("mailing_list_filterable",)
 
     fieldsets = (
         (None, {"fields": ("name", "display_name", "nickname")}),
@@ -52,6 +53,7 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
                     "has_all_list",
                     "included_in_all_members",
                     "members_can_send_as",
+                    "mailing_list_filterable",
                 ),
             },
         ),
@@ -68,12 +70,31 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
 @admin.register(RoleType)
 class RoleTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "display_priority", "included_in_census", "is_member_role", "is_youth_member")
-    list_filter = ("included_in_census", "is_member_role", "is_youth_member")
+    list_display = (
+        "name",
+        "display_priority",
+        "included_in_census",
+        "is_member_role",
+        "is_youth_member",
+        "mailing_list_filterable",
+    )
+    list_filter = ("included_in_census", "is_member_role", "is_youth_member", "mailing_list_filterable")
     search_fields = ("name", "tsa_id")
 
     fieldsets = (
-        (None, {"fields": ("name", "display_priority", "included_in_census", "is_member_role", "is_youth_member")}),
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "display_priority",
+                    "included_in_census",
+                    "is_member_role",
+                    "is_youth_member",
+                    "mailing_list_filterable",
+                )
+            },
+        ),
     ) + BaseModelAdminMixin.FIELDSETS
 
     def get_readonly_fields(self, request: HttpRequest, obj: BaseModel | None = None) -> list[str]:

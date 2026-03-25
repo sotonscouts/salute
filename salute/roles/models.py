@@ -42,6 +42,10 @@ class TeamType(TSATaxonomy):
     has_all_list = models.BooleanField(default=False, help_text="If has sub-teams, whether to generate a -all list.")
     included_in_all_members = models.BooleanField(default=True, help_text="Included in all members -all addresses")
     members_can_send_as = models.BooleanField(default=True, help_text="If true, members can send as this team.")
+    mailing_list_filterable = models.BooleanField(
+        default=True,
+        help_text="If true, this team type can be used to filter mailing lists.",
+    )
 
     def __str__(self) -> str:
         return self.display_name
@@ -189,6 +193,10 @@ class RoleType(Taxonomy):
     is_youth_member = models.BooleanField(
         default=False,
         help_text="If true, the role is a youth member role (e.g., Network Member). Used for member count calculations.",  # noqa: E501
+    )
+    mailing_list_filterable = models.BooleanField(
+        default=True,
+        help_text="If true, this role can be used to filter mailing lists.",
     )
 
     class Meta:

@@ -42,10 +42,18 @@ class Command(BaseCommand):
             List of tag names to apply
         """
         # Role Types (i.e Trustee, Chair, GLV, etc)
-        role_types = person.roles.values_list("role_type__name", flat=True).distinct()
+        role_types = (
+            person.roles.filter(role_type__mailing_list_filterable=True)
+            .values_list("role_type__name", flat=True)
+            .distinct()
+        )
 
         # Team Types (i.e 14-24 Team, Beaver Section Team, Helpers, etc)
-        team_types = person.roles.values_list("team__team_type__display_name", flat=True).distinct()
+        team_types = (
+            person.roles.filter(team__team_type__mailing_list_filterable=True)
+            .values_list("team__team_type__display_name", flat=True)
+            .distinct()
+        )
 
         tags = [f"Role Type: {role_type}" for role_type in role_types] + [
             f"Team Type: {team_type}" for team_type in team_types
