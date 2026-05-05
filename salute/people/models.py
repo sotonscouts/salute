@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.functions import Concat
 from phonenumber_field.modelfields import PhoneNumberField
 
+from salute.core.models import BaseModel, Taxonomy
 from salute.integrations.tsa.models import TSAObject
 from salute.roles.models import Role
 
@@ -136,3 +137,52 @@ class Person(TSAObject):
     @property
     def formatted_membership_number(self) -> str:
         return str(self.membership_number).zfill(10)
+
+
+# "MembershipNumber",
+#     "PermitActivity",
+#     "PermitCategory",
+#     "PermitType",
+#     "ExpiryDate",
+#     "Status",
+#     "PermitRestrictionDetails",
+#     "StartDate",
+#     "AssessorName",
+#     "DateOfPermitApplication",
+#     "GrantedOn"
+
+
+class PermitActivity(Taxonomy):
+    pass
+
+
+class PermitCategory(Taxonomy):
+    pass
+
+
+class PermitType(Taxonomy):
+    pass
+
+
+class PermitStatus(Taxonomy):
+    pass
+
+
+class Permit(BaseModel):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="permits")
+    activity = models.ForeignKey(PermitActivity, on_delete=models.CASCADE, related_name="permits")
+    category = models.ForeignKey(PermitCategory, on_delete=models.CASCADE, related_name="permits")
+    type = models.ForeignKey(PermitType, on_delete=models.CASCADE, related_name="permits")
+
+    status = models.ForeignKey(PermitStatus, on_delete=models.CASCADE, related_name="permits")
+
+    start_date = models.DateField()
+    date_of_permit_application = models.DateTimeField()
+    granted_on = models.DateTimeField(null=True)
+    expiry_date = models.DateField(null=True)
+
+    assessor_name = models.CharField(max_length=255)
+    restriction_details = models.TextField()
+
+    def __str__(self) -> str:
+        return f"{self.person} - {self.activity} - {self.category}"

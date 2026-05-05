@@ -14,7 +14,7 @@ from salute.hierarchy.constants import Weekday
 from salute.hierarchy.models import District, Group, Section
 from salute.integrations.tsa.client import MembershipAPIClient
 from salute.integrations.tsa.schemata.units import UnitListingResult, UnitTypeID
-from salute.people.models import Person
+from salute.people.models import Permit, PermitActivity, PermitCategory, PermitStatus, PermitType, Person
 from salute.roles.models import Accreditation, AccreditationType, Role, RoleStatus, RoleType, Team, TeamType
 
 
@@ -257,6 +257,34 @@ class Command(BaseCommand):
             print(f"Deleting accreditations that no longer exist: {spurious_accreditations}")
             spurious_accreditations.delete()
 
+    def sync_permits(self, membership: MembershipAPIClient) -> None:
+        permits = membership.get_permits()
+        for permit in permits:
+            try:
+                person = Person.objects.get(membership_number=permit.membership_number)
+            except Person.DoesNotExist:
+                print(f"Person {permit.membership_number} does not exist.")
+                continue
+            activity, _ = PermitActivity.objects.get_or_create(name=permit.permit_activity)
+            category, _ = PermitCategory.objects.get_or_create(name=permit.permit_category)
+            permit_type, _ = PermitType.objects.get_or_create(name=permit.permit_type)
+            status, _ = PermitStatus.objects.get_or_create(name=permit.status)
+            permit_obj, _ = Permit.objects.update_or_create(
+                {
+                    "granted_on": permit.granted_on,
+                    "expiry_date": permit.expiry_date,
+                    "assessor_name": permit.assessor_name,
+                    "date_of_permit_application": permit.date_of_permit_application,
+                    "status": status,
+                    "restriction_details": permit.permit_restriction_details,
+                },
+                person=person,
+                activity=activity,
+                category=category,
+                type=permit_type,
+                start_date=permit.start_date,
+            )
+
     def handle(self, *args: str, **options: str) -> None:
         fetch_existing_people = options["fetch_existing_people"]
         read_extra_data = bool(options["read_extra_data"])
@@ -366,6 +394,8 @@ class Command(BaseCommand):
         self.sync_accreditations_for_unit(membership=membership, unit=district, unit_parent_field="district")
         for group in Group.objects.all():
             self.sync_accreditations_for_unit(membership=membership, unit=group, unit_parent_field="group")
+
+        self.sync_permits(membership)
 
         people_without_roles_or_accreditations = Person.objects.annotate(
             accreditation_count=Count("accreditations"),

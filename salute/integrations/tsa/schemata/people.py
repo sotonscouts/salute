@@ -1,4 +1,6 @@
+from datetime import datetime
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import phonenumbers
 from django.conf import settings
@@ -32,4 +34,42 @@ class PersonDetail(BaseModel):
                     return val
             except phonenumbers.phonenumberutil.NumberParseException:
                 return None
+        return None
+
+
+class PermitDetail(BaseModel):
+    membership_number: int = Field(alias="Membership number")
+    permit_activity: str = Field(alias="Permit activity")
+    permit_category: str = Field(alias="Permit category")
+    permit_type: str = Field(alias="Permit Type")
+    expiry_date: datetime | None = Field(alias="Expiry date")
+    status: str = Field(alias="Status")
+    permit_restriction_details: str = Field(alias="Permit restriction details")
+    start_date: datetime = Field(alias="Start date")
+    assessor_name: str = Field(alias="Assessor name")
+    date_of_permit_application: datetime = Field(alias="Date of permit application")
+    granted_on: datetime | None = Field(alias="Granted on")
+
+    @field_validator("assessor_name", mode="before")
+    @classmethod
+    def normalise_empty_string(cls, val: str) -> str:
+        return val or ""
+
+    @field_validator("expiry_date", "start_date", "date_of_permit_application", "granted_on", mode="after")
+    @classmethod
+    def normalise_datetime(cls, val: datetime | None) -> datetime | None:
+        if val:
+            return val.replace(tzinfo=ZoneInfo("Europe/London"))
+        return None
+
+
+class PermitListingResponse(BaseModel):
+    data: list[PermitDetail]
+    next_page: int | None = Field(alias="nextPage")
+
+    @field_validator("next_page", mode="before")
+    @classmethod
+    def normalise_empty_string(cls, val: str) -> int | None:
+        if val:
+            return int(val)
         return None

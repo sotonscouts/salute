@@ -11,7 +11,7 @@ from salute.integrations.tsa.schemata.accreditations import (
     UnitAccreditationListingItem,
     UnitAccreditationListingResponse,
 )
-from salute.integrations.tsa.schemata.people import PersonDetail
+from salute.integrations.tsa.schemata.people import PermitDetail, PermitListingResponse, PersonDetail
 from salute.integrations.tsa.schemata.roles import TeamMemberListingEntry, TeamMemberListingResponse
 from salute.integrations.tsa.schemata.teams import TeamsAndRolesListingResponse, TeamsAndRolesListingTeamEntry
 from salute.integrations.tsa.schemata.units import UnitDetail, UnitListingPageResult, UnitListingResult
@@ -247,6 +247,50 @@ class MembershipAPIClient:
 
         data = list(self.fetch_unit_accreditations(unit_id=unit_id))
 
+        self._set_cache_data(cache_key, ta.dump_python(data, mode="json", by_alias=True))
+        return data
+
+    def fetch_permit_listing_page(self, *, page_no: int = 1, page_size: int = 99) -> PermitListingResponse:
+        print(f"Fetching permits. Page {page_no}")
+        payload = {
+            "table": "PermitsDashboardView",
+            "selectFields": [
+                "MembershipNumber",
+                "PermitActivity",
+                "PermitCategory",
+                "PermitType",
+                "ExpiryDate",
+                "Status",
+                "PermitRestrictionDetails",
+                "StartDate",
+                "AssessorName",
+                "DateOfPermitApplication",
+                "GrantedOn",
+            ],
+            "pageNo": page_no,
+            "pageSize": page_size,
+            "isDashboardQuery": False,
+            "distinct": True,
+            "unitId": "608a27d8-d19f-afce-c777-287339746221",
+            "isHierarchy": True,
+        }
+        return self._request("POST", "DataExplorer/GetResultsAsync", PermitListingResponse, json=payload)
+
+    def fetch_permits(self) -> Generator[PermitDetail, None, None]:
+        page_no: int | None = 1
+        while page_no is not None:
+            page = self.fetch_permit_listing_page(page_no=page_no)
+            yield from page.data
+            page_no = page.next_page
+
+    def get_permits(self) -> list[PermitDetail]:
+        cache_key = "get_permits"
+        ta = TypeAdapter(list[PermitDetail])
+        cached_data = self._get_cache_data(cache_key)
+        if cached_data is not None:
+            return ta.validate_python(cached_data)
+
+        data = list(self.fetch_permits())
         self._set_cache_data(cache_key, ta.dump_python(data, mode="json", by_alias=True))
         return data
 
