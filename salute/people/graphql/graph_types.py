@@ -1,3 +1,4 @@
+from datetime import datetime
 from string import Template
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
@@ -17,6 +18,41 @@ if TYPE_CHECKING:
     from salute.integrations.workspace.graphql.graph_types import WorkspaceAccount
     from salute.roles.graphql.graph_types import Accreditation, Role
     from salute.wifi.graphql.graph_types import WifiAccount
+
+
+@sd.type(models.PermitActivity)
+class PermitActivity(sb.relay.Node):
+    name: str
+
+
+@sd.type(models.PermitCategory)
+class PermitCategory(sb.relay.Node):
+    name: str
+
+
+@sd.type(models.PermitType)
+class PermitType(sb.relay.Node):
+    name: str
+
+
+@sd.type(models.PermitStatus)
+class PermitStatus(sb.relay.Node):
+    name: str
+
+
+@sd.type(models.Permit)
+class Permit(sb.relay.Node):
+    person: Annotated["Person", sb.lazy("salute.people.graphql.graph_types")]
+    activity: PermitActivity
+    category: PermitCategory
+    type: PermitType
+    status: PermitStatus
+    start_date: datetime
+    date_of_permit_application: datetime
+    granted_on: datetime | None
+    expiry_date: datetime | None
+    assessor_name: str
+    restriction_details: str
 
 
 @sd.filter_type(models.Person, lookups=True)
@@ -57,6 +93,11 @@ class Person(sb.relay.Node):
                 "accreditation.list", message="You don't have permission to list accreditations.", fail_silently=False
             )
         ],
+    )
+
+    permits: sd.relay.DjangoListConnection[Permit] = sd.connection(
+        description="List permits",
+        extensions=[HasSourcePerm("person.view", fail_silently=True)],
     )
 
     workspace_account: (  # type: ignore[misc]
