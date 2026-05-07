@@ -274,7 +274,7 @@ class Command(BaseCommand):
                     "granted_on": permit.granted_on,
                     "expiry_date": permit.expiry_date,
                     "assessor_name": permit.assessor_name,
-                    "date_of_permit_application": permit.date_of_permit_application,
+                    "start_date": permit.start_date,
                     "status": status,
                     "restriction_details": permit.permit_restriction_details,
                 },
@@ -282,7 +282,7 @@ class Command(BaseCommand):
                 activity=activity,
                 category=category,
                 type=permit_type,
-                start_date=permit.start_date,
+                date_of_permit_application=permit.date_of_permit_application,
             )
 
     def handle(self, *args: str, **options: str) -> None:
