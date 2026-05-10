@@ -186,3 +186,6 @@ class Permit(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.person} - {self.activity} - {self.category}"
+
+    class Meta:
+        ordering = ("activity__name", "category__name", "type__name", "status__name", "start_date")
