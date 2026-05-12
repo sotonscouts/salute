@@ -647,7 +647,9 @@ class TestPersonPermitsQuery:
         assert isinstance(results, Response)
 
         # Sort to match model's Meta.ordering: activity, category, type, status, start_date
-        sorted_permits = sorted(permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date))
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
 
         utc = ZoneInfo("UTC")
         assert results.errors is None
@@ -724,7 +726,9 @@ class TestPersonPermitsQuery:
         assert isinstance(results, Response)
 
         # Sort to match model's Meta.ordering: activity, category, type, status, start_date
-        sorted_permits = sorted(permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date))
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
 
         utc = ZoneInfo("UTC")
         assert results.errors is None
@@ -776,7 +780,9 @@ class TestPersonPermitsQuery:
         assert isinstance(results, Response)
 
         # Sort to match model's Meta.ordering: activity, category, type, status, start_date
-        sorted_permits = sorted(permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date))
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
 
         utc = ZoneInfo("UTC")
         assert results.errors is None

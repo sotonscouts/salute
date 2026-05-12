@@ -168,6 +168,17 @@ class PermitStatus(Taxonomy):
     pass
 
 
+class PermitQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> PermitQuerySet:
+        if user.district_role_list:
+            return self.all()
+
+        return self.filter(person__id=user.person_id)
+
+
+PermitManager = models.Manager.from_queryset(PermitQuerySet)
+
+
 class Permit(BaseModel):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="permits")
     activity = models.ForeignKey(PermitActivity, on_delete=models.CASCADE, related_name="permits")
@@ -183,6 +194,8 @@ class Permit(BaseModel):
 
     assessor_name = models.CharField(max_length=255)
     restriction_details = models.TextField()
+
+    objects = PermitManager()
 
     def __str__(self) -> str:
         return f"{self.person} - {self.activity} - {self.category}"

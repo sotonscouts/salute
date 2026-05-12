@@ -20,27 +20,63 @@ if TYPE_CHECKING:
     from salute.wifi.graphql.graph_types import WifiAccount
 
 
-@sd.type(models.PermitActivity)
+@sd.filter_type(models.PermitActivity, lookups=True)
+class PermitActivityFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitActivity, filters=PermitActivityFilter)
 class PermitActivity(sb.relay.Node):
     name: str
 
 
-@sd.type(models.PermitCategory)
+@sd.filter_type(models.PermitCategory, lookups=True)
+class PermitCategoryFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitCategory, filters=PermitCategoryFilter)
 class PermitCategory(sb.relay.Node):
     name: str
 
 
-@sd.type(models.PermitType)
+@sd.filter_type(models.PermitType, lookups=True)
+class PermitTypeFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitType, filters=PermitTypeFilter)
 class PermitType(sb.relay.Node):
     name: str
 
 
-@sd.type(models.PermitStatus)
+@sd.filter_type(models.PermitStatus, lookups=True)
+class PermitStatusFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitStatus, filters=PermitStatusFilter)
 class PermitStatus(sb.relay.Node):
     name: str
 
 
-@sd.type(models.Permit)
+@sd.filter_type(models.Permit, lookups=True)
+class PermitFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    activity: PermitActivityFilter | None = sb.UNSET
+    category: PermitCategoryFilter | None = sb.UNSET
+    type: PermitTypeFilter | None = sb.UNSET
+    status: PermitStatusFilter | None = sb.UNSET
+
+
+@sd.type(
+    models.Permit,
+    filters=PermitFilter,
+)
 class Permit(sb.relay.Node):
     person: Annotated["Person", sb.lazy("salute.people.graphql.graph_types")]
     activity: PermitActivity
@@ -53,6 +89,21 @@ class Permit(sb.relay.Node):
     expiry_date: datetime | None
     assessor_name: str
     restriction_details: str
+
+    @classmethod
+    def get_queryset(
+        cls, queryset: models.PermitQuerySet | QuerySet, info: sb.Info, **kwargs: Any
+    ) -> models.PermitQuerySet | QuerySet:
+        user = get_current_user(info)
+        if not user.is_authenticated:
+            return queryset.none()
+
+        user = cast(User, user)
+        # When the strawberry optimiser is determining the queryset relations, it will call this method.
+        # In such calls, the queryset is not a PermitQuerySet, but a Django QuerySet.
+        if hasattr(queryset, "for_user"):
+            return queryset.for_user(user)
+        return queryset
 
 
 @sd.filter_type(models.Person, lookups=True)
