@@ -4,10 +4,17 @@ from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
-from salute.hierarchy.factories import DistrictFactory
+from salute.hierarchy.constants import SectionType
+from salute.hierarchy.factories import DistrictFactory, GroupFactory, GroupSectionFactory, LocalityFactory
 from salute.people.factories import PersonFactory
 from salute.people.models import Person
-from salute.roles.factories import RoleFactory, RoleTypeFactory
+from salute.roles.factories import (
+    GroupSectionTeamFactory,
+    GroupSubTeamFactory,
+    GroupTeamFactory,
+    RoleFactory,
+    RoleTypeFactory,
+)
 
 
 @pytest.mark.django_db
@@ -293,6 +300,154 @@ class TestPersonListQuery:
                 "totalCount": 1,
             }
         }
+
+    def test_query__filter__has_role__group_team(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+        locality = LocalityFactory()
+        group = GroupFactory(district=district, locality=locality, local_unit_number=12)
+        other_group = GroupFactory(district=district, locality=locality, local_unit_number=13)
+
+        with_role = PersonFactory()
+        PersonFactory()
+        RoleFactory(person=with_role, team=GroupTeamFactory(group=group))
+        RoleFactory(person=PersonFactory(), team=GroupTeamFactory(group=other_group))
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "order": {"displayName": "ASC"},
+                    "filters": {
+                        "hasRole": {"group": {"localUnitNumber": {"exact": 12}}},
+                    },
+                },
+            )
+
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": with_role.display_name,
+                            "firstName": with_role.first_name,
+                            "formattedMembershipNumber": with_role.formatted_membership_number,
+                            "contactEmail": with_role.contact_email,
+                        }
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
+
+    def test_query__filter__has_role__section_team(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+        locality = LocalityFactory()
+        group = GroupFactory(district=district, locality=locality, local_unit_number=20)
+        section = GroupSectionFactory(group=group, section_type=SectionType.CUBS)
+        team = GroupSectionTeamFactory(section=section)
+
+        with_role = PersonFactory()
+        PersonFactory()
+        RoleFactory(person=with_role, team=team)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "order": {"displayName": "ASC"},
+                    "filters": {
+                        "hasRole": {"group": {"localUnitNumber": {"exact": 20}}},
+                    },
+                },
+            )
+
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": with_role.display_name,
+                            "firstName": with_role.first_name,
+                            "formattedMembershipNumber": with_role.formatted_membership_number,
+                            "contactEmail": with_role.contact_email,
+                        }
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
+
+    def test_query__filter__has_role__group_sub_team(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+        locality = LocalityFactory()
+        group = GroupFactory(district=district, locality=locality, local_unit_number=21)
+        parent = GroupTeamFactory(group=group)
+        sub_team = GroupSubTeamFactory(parent_team=parent)
+
+        with_role = PersonFactory()
+        RoleFactory(person=with_role, team=sub_team)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "order": {"displayName": "ASC"},
+                    "filters": {
+                        "hasRole": {"group": {"localUnitNumber": {"exact": 21}}},
+                    },
+                },
+            )
+
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data == {
+            "people": {
+                "edges": [
+                    {
+                        "node": {
+                            "displayName": with_role.display_name,
+                            "firstName": with_role.first_name,
+                            "formattedMembershipNumber": with_role.formatted_membership_number,
+                            "contactEmail": with_role.contact_email,
+                        }
+                    }
+                ],
+                "totalCount": 1,
+            }
+        }
+
+    def test_query__filter__has_role__empty_nested_filter_matches_nobody(self, user_with_person: User) -> None:
+        """`hasRole` with no real role criteria is treated as unsatisfiable (avoids matching every role)."""
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+        locality = LocalityFactory()
+        group = GroupFactory(district=district, locality=locality, local_unit_number=22)
+        with_role = PersonFactory()
+        RoleFactory(person=with_role, team=GroupTeamFactory(group=group))
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            result = client.query(
+                self.QUERY,
+                variables={
+                    "order": {"displayName": "ASC"},
+                    "filters": {"hasRole": {}},
+                },
+            )
+
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data == {"people": {"edges": [], "totalCount": 0}}
 
 
 @pytest.mark.django_db

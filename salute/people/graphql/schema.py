@@ -4,7 +4,7 @@ from strawberry_django.permissions import HasPerm, HasRetvalPerm
 
 from salute.people import models as people_models
 
-from .graph_types import Person
+from .graph_types import Permit, PermitActivity, PermitCategory, PermitStatus, PermitType, Person
 
 
 @sb.type
@@ -22,4 +22,26 @@ class PeopleQuery:
     people: sd.relay.DjangoListConnection[Person] = sd.connection(
         description="List people",
         extensions=[HasPerm("person.list", message="You don't have permission to list people.", fail_silently=False)],
+    )
+
+    permits: sd.relay.DjangoListConnection[Permit] = sd.connection(
+        description="List permits",
+        extensions=[HasPerm("permit.list", message="You don't have permission to list permits.", fail_silently=False)],
+    )
+
+    permit_activities: sd.relay.DjangoListConnection[PermitActivity] = sd.connection(
+        description="List permit activities",
+        extensions=[HasPerm("permit.list", message="You don't have permission to list permits.", fail_silently=False)],
+    )
+    permit_categories: sd.relay.DjangoListConnection[PermitCategory] = sd.connection(
+        description="List permit categories",
+        extensions=[HasPerm("permit.list", message="You don't have permission to list permits.", fail_silently=False)],
+    )
+    permit_types: sd.relay.DjangoListConnection[PermitType] = sd.connection(
+        description="List permit types",
+        extensions=[HasPerm("permit.list", message="You don't have permission to list permits.", fail_silently=False)],
+    )
+    permit_statuses: sd.relay.DjangoListConnection[PermitStatus] = sd.connection(
+        description="List permit statuses",
+        extensions=[HasPerm("permit.list", message="You don't have permission to list permits.", fail_silently=False)],
     )

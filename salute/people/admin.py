@@ -2,10 +2,11 @@ from django.contrib import admin
 from django.db import models
 from django.http import HttpRequest
 
+from salute.core.admin import BaseModelAdminMixin
 from salute.integrations.tsa.admin import TSAObjectModelAdminMixin
 from salute.integrations.tsa.models import TSATimestampedObject
 from salute.mailing_groups.models import SystemMailingGroupMembership
-from salute.people.models import Person
+from salute.people.models import Permit, PermitActivity, PermitCategory, PermitStatus, PermitType, Person
 from salute.roles.models import Accreditation, Role
 
 
@@ -77,3 +78,57 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
 
     def get_readonly_fields(self, request: HttpRequest, obj: TSATimestampedObject | None = None) -> list[str]:  # type: ignore[override]
         return super().get_readonly_fields(request, obj) + ["contact_email", "workspace_account"]
+
+
+@admin.register(PermitActivity)
+class PermitActivityAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+
+
+@admin.register(PermitCategory)
+class PermitCategoryAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+
+
+@admin.register(PermitType)
+class PermitTypeAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+
+
+@admin.register(PermitStatus)
+class PermitStatusAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+    fieldsets = ((None, {"fields": ("name",)}),) + BaseModelAdminMixin.FIELDSETS
+
+
+@admin.register(Permit)
+class PermitAdmin(BaseModelAdminMixin, admin.ModelAdmin):
+    list_display = ("person", "activity", "category", "type", "status", "start_date", "granted_on", "expiry_date")
+    list_filter = ("activity", "category", "type", "status")
+    search_fields = (
+        "person__display_name",
+        "person__membership_number",
+        "activity__name",
+        "category__name",
+        "type__name",
+    )
+
+    fieldsets = (
+        (
+            None,
+            {"fields": ("person", "activity", "category", "type", "status", "start_date")},
+        ),
+        ("Details", {"fields": ("assessor_name", "restriction_details")}),
+        ("Dates", {"fields": ("date_of_permit_application", "granted_on", "expiry_date")}),
+    ) + BaseModelAdminMixin.FIELDSETS

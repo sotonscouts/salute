@@ -6,11 +6,27 @@ from django.db import models
 from django.db.models.functions import Concat
 from phonenumber_field.modelfields import PhoneNumberField
 
+from salute.core.models import BaseModel, Taxonomy
 from salute.integrations.tsa.models import TSAObject
 from salute.roles.models import Role
 
 if TYPE_CHECKING:
     from salute.accounts.models import User
+    from salute.hierarchy.models import Group
+
+
+def role_team_in_groups_q(groups: models.QuerySet | list, *, team_lookup_prefix: str = "") -> models.Q:
+    """Match rows where the role's team is scoped to one of the given groups.
+
+    ``team_lookup_prefix`` prefixes each ``team__`` segment (e.g. ``\"roles__\"`` when
+    filtering from ``Team`` through the ``roles`` relation).
+    """
+    p = team_lookup_prefix
+    return (
+        models.Q(**{f"{p}team__group__in": groups})
+        | models.Q(**{f"{p}team__section__group__in": groups})
+        | models.Q(**{f"{p}team__parent_team__group__in": groups})
+    )
 
 
 class PersonQuerySet(models.QuerySet):
@@ -47,6 +63,17 @@ class PersonQuerySet(models.QuerySet):
                     person=models.OuterRef("pk"),
                     role_type__is_youth_member=True,
                 ).only("id")
+            )
+        )
+
+    def has_role_in_group(self, groups: list[Group]) -> PersonQuerySet:
+        """True if the person has a role on a team in one of the groups (group or section team).
+
+        Sub-teams exist only under group teams, not section teams.
+        """
+        return self.annotate(
+            has_role_in_group=models.Exists(
+                Role.objects.filter(person=models.OuterRef("pk")).filter(role_team_in_groups_q(groups)).only("id")
             )
         )
 
@@ -136,3 +163,68 @@ class Person(TSAObject):
     @property
     def formatted_membership_number(self) -> str:
         return str(self.membership_number).zfill(10)
+
+
+# "MembershipNumber",
+#     "PermitActivity",
+#     "PermitCategory",
+#     "PermitType",
+#     "ExpiryDate",
+#     "Status",
+#     "PermitRestrictionDetails",
+#     "StartDate",
+#     "AssessorName",
+#     "DateOfPermitApplication",
+#     "GrantedOn"
+
+
+class PermitActivity(Taxonomy):
+    pass
+
+
+class PermitCategory(Taxonomy):
+    pass
+
+
+class PermitType(Taxonomy):
+    pass
+
+
+class PermitStatus(Taxonomy):
+    pass
+
+
+class PermitQuerySet(models.QuerySet):
+    def for_user(self, user: User) -> PermitQuerySet:
+        if user.district_role_list:
+            return self.all()
+
+        return self.filter(person__id=user.person_id)
+
+
+PermitManager = models.Manager.from_queryset(PermitQuerySet)
+
+
+class Permit(BaseModel):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="permits")
+    activity = models.ForeignKey(PermitActivity, on_delete=models.CASCADE, related_name="permits")
+    category = models.ForeignKey(PermitCategory, on_delete=models.CASCADE, related_name="permits")
+    type = models.ForeignKey(PermitType, on_delete=models.CASCADE, related_name="permits")
+
+    status = models.ForeignKey(PermitStatus, on_delete=models.CASCADE, related_name="permits")
+
+    start_date = models.DateField()
+    date_of_permit_application = models.DateTimeField()
+    granted_on = models.DateTimeField(null=True)
+    expiry_date = models.DateField(null=True)
+
+    assessor_name = models.CharField(max_length=255)
+    restriction_details = models.TextField()
+
+    objects = PermitManager()
+
+    def __str__(self) -> str:
+        return f"{self.person} - {self.activity} - {self.category}"
+
+    class Meta:
+        ordering = ("activity__name", "category__name", "type__name", "status__name", "start_date")

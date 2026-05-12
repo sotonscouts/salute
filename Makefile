@@ -3,7 +3,7 @@
 CMD:=poetry run
 PYMODULE:=salute
 MANAGEPY:=$(CMD) ./manage.py
-SETTINGS_MODULE:=salute.settings.dev
+SETTINGS_MODULE ?= salute.settings.dev
 
 all: type test format lint
 fix: lint-fix format
@@ -15,7 +15,7 @@ lint-fix:
 	$(CMD) ruff check --fix $(PYMODULE)
 
 check:
-	$(MANAGEPY) check
+	DJANGO_SETTINGS_MODULE=$(SETTINGS_MODULE) $(MANAGEPY) check
 
 dev:
 	$(MANAGEPY) runserver

@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from zoneinfo import ZoneInfo
 
 import pytest
 import pytest_django
@@ -9,7 +10,7 @@ from strawberry_django.test.client import Response, TestClient
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
 from salute.hierarchy.factories import DistrictFactory
 from salute.integrations.workspace.factories import WorkspaceAccountFactory
-from salute.people.factories import PersonFactory
+from salute.people.factories import PermitFactory, PersonFactory
 from salute.people.utils import format_phone_number
 from salute.roles.factories import AccreditationFactory, RoleFactory
 from salute.wifi.factories import WifiAccountGroupFactory
@@ -570,5 +571,247 @@ class TestPersonJoinWorkspaceAccountQuery:
             "person": {
                 "displayName": user_with_person.person.display_name,
                 "workspaceAccount": {"id": to_base64("WorkspaceAccount", workspace_account.id)},
+            }
+        }
+
+
+@pytest.mark.django_db
+class TestPersonPermitsQuery:
+    url = reverse("graphql")
+
+    QUERY = """
+    query getPerson($id: ID!) {
+        person(personId: $id) {
+            displayName
+            permits {
+                edges {
+                    node {
+                        activity {
+                            name
+                        }
+                        category {
+                            name
+                        }
+                        type {
+                            name
+                        }
+                        status {
+                            name
+                        }
+                        startDate
+                        dateOfPermitApplication
+                        grantedOn
+                        expiryDate
+                        assessorName
+                        restrictionDetails
+                    }
+                }
+                totalCount
+            }
+        }
+    }
+    """
+
+    def test_query__no_permits(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "permits": {
+                    "edges": [],
+                    "totalCount": 0,
+                },
+            }
+        }
+
+    def test_query__with_permits(self, user_with_person: User) -> None:
+        assert user_with_person.person is not None
+        permits = PermitFactory.create_batch(size=3, person=user_with_person.person)
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        # Sort to match model's Meta.ordering: activity, category, type, status, start_date
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
+
+        utc = ZoneInfo("UTC")
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": user_with_person.person.display_name,
+                "permits": {
+                    "edges": [
+                        {
+                            "node": {
+                                "activity": {"name": permit.activity.name},
+                                "category": {"name": permit.category.name},
+                                "type": {"name": permit.type.name},
+                                "status": {"name": permit.status.name},
+                                "startDate": permit.start_date.isoformat(),
+                                "dateOfPermitApplication": permit.date_of_permit_application.astimezone(
+                                    utc
+                                ).isoformat(),  # noqa: E501
+                                "grantedOn": permit.granted_on.astimezone(utc).isoformat()
+                                if permit.granted_on
+                                else None,  # noqa: E501
+                                "expiryDate": permit.expiry_date.isoformat() if permit.expiry_date else None,
+                                "assessorName": permit.assessor_name,
+                                "restrictionDetails": permit.restriction_details,
+                            }
+                        }
+                        for permit in sorted_permits
+                    ],
+                    "totalCount": 3,
+                },
+            }
+        }
+
+    def test_query__other_person__no_permission(self, user_with_person: User) -> None:
+        """Test that a user without permissions cannot view another person's permits."""
+        person = PersonFactory()
+        PermitFactory.create_batch(size=2, person=person)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        # User without district role cannot view other people at all
+        assert results.errors == [
+            {
+                "message": "You don't have permission to view that person.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["person"],
+            }
+        ]
+        assert results.data is None
+
+    def test_query__district_manager__can_view_permits(self, user_with_person: User) -> None:
+        """Test that a district manager can view another person's permits."""
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.MANAGER)
+
+        person = PersonFactory()
+        permits = PermitFactory.create_batch(size=2, person=person)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        # Sort to match model's Meta.ordering: activity, category, type, status, start_date
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
+
+        utc = ZoneInfo("UTC")
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": person.display_name,
+                "permits": {
+                    "edges": [
+                        {
+                            "node": {
+                                "activity": {"name": permit.activity.name},
+                                "category": {"name": permit.category.name},
+                                "type": {"name": permit.type.name},
+                                "status": {"name": permit.status.name},
+                                "startDate": permit.start_date.isoformat(),
+                                "dateOfPermitApplication": permit.date_of_permit_application.astimezone(
+                                    utc
+                                ).isoformat(),  # noqa: E501
+                                "grantedOn": permit.granted_on.astimezone(utc).isoformat()
+                                if permit.granted_on
+                                else None,  # noqa: E501
+                                "expiryDate": permit.expiry_date.isoformat() if permit.expiry_date else None,
+                                "assessorName": permit.assessor_name,
+                                "restrictionDetails": permit.restriction_details,
+                            }
+                        }
+                        for permit in sorted_permits
+                    ],
+                    "totalCount": 2,
+                },
+            }
+        }
+
+    def test_query__district_admin__can_view_permits(self, user_with_person: User) -> None:
+        """Test that a district admin can view another person's permits."""
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+
+        person = PersonFactory()
+        permits = PermitFactory.create_batch(size=2, person=person)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+            )
+
+        assert isinstance(results, Response)
+
+        # Sort to match model's Meta.ordering: activity, category, type, status, start_date
+        sorted_permits = sorted(
+            permits, key=lambda p: (p.activity.name, p.category.name, p.type.name, p.status.name, p.start_date)
+        )
+
+        utc = ZoneInfo("UTC")
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": person.display_name,
+                "permits": {
+                    "edges": [
+                        {
+                            "node": {
+                                "activity": {"name": permit.activity.name},
+                                "category": {"name": permit.category.name},
+                                "type": {"name": permit.type.name},
+                                "status": {"name": permit.status.name},
+                                "startDate": permit.start_date.isoformat(),
+                                "dateOfPermitApplication": permit.date_of_permit_application.astimezone(
+                                    utc
+                                ).isoformat(),  # noqa: E501
+                                "grantedOn": permit.granted_on.astimezone(utc).isoformat()
+                                if permit.granted_on
+                                else None,  # noqa: E501
+                                "expiryDate": permit.expiry_date.isoformat() if permit.expiry_date else None,
+                                "assessorName": permit.assessor_name,
+                                "restrictionDetails": permit.restriction_details,
+                            }
+                        }
+                        for permit in sorted_permits
+                    ],
+                    "totalCount": 2,
+                },
             }
         }

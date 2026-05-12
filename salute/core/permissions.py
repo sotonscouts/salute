@@ -48,6 +48,8 @@ rules.add_perm(
     can_view_person & (has_district_role(DistrictUserRoleType.MANAGER) | has_district_role(DistrictUserRoleType.ADMIN)),
 )
 
+rules.add_perm("permit.list", user_has_related_person)
+
 # Roles
 rules.add_perm("accreditation_type.list", user_has_related_person)
 rules.add_perm("accreditation_type.view", user_has_related_person)

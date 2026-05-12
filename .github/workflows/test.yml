@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    env:
+      # GitHub Actions ``postgres`` service listens on 5432; ``dev`` uses 5433 for local Docker.
+      SETTINGS_MODULE: salute.settings.ci
     strategy:
       matrix:
         os: [ubuntu-latest]

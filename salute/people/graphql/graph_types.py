@@ -1,3 +1,4 @@
+from datetime import datetime
 from string import Template
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
@@ -10,6 +11,7 @@ from strawberry_django.permissions import HasPerm, HasRetvalPerm, HasSourcePerm
 
 from salute.accounts.models import User
 from salute.people import models
+from salute.people.graphql.person_filters import PersonFilter
 from salute.people.utils import format_phone_number
 from salute.wifi.repository import get_wifi_account_for_person
 
@@ -19,10 +21,91 @@ if TYPE_CHECKING:
     from salute.wifi.graphql.graph_types import WifiAccount
 
 
-@sd.filter_type(models.Person, lookups=True)
-class PersonFilter:
+@sd.filter_type(models.PermitActivity, lookups=True)
+class PermitActivityFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
-    display_name: sb.auto = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitActivity, filters=PermitActivityFilter)
+class PermitActivity(sb.relay.Node):
+    name: str
+
+
+@sd.filter_type(models.PermitCategory, lookups=True)
+class PermitCategoryFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitCategory, filters=PermitCategoryFilter)
+class PermitCategory(sb.relay.Node):
+    name: str
+
+
+@sd.filter_type(models.PermitType, lookups=True)
+class PermitTypeFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitType, filters=PermitTypeFilter)
+class PermitType(sb.relay.Node):
+    name: str
+
+
+@sd.filter_type(models.PermitStatus, lookups=True)
+class PermitStatusFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    name: sb.auto = sb.UNSET
+
+
+@sd.type(models.PermitStatus, filters=PermitStatusFilter)
+class PermitStatus(sb.relay.Node):
+    name: str
+
+
+@sd.filter_type(models.Permit, lookups=True)
+class PermitFilter:
+    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    person: PersonFilter | None = sb.UNSET
+    activity: PermitActivityFilter | None = sb.UNSET
+    category: PermitCategoryFilter | None = sb.UNSET
+    type: PermitTypeFilter | None = sb.UNSET
+    status: PermitStatusFilter | None = sb.UNSET
+
+
+@sd.type(
+    models.Permit,
+    filters=PermitFilter,
+)
+class Permit(sb.relay.Node):
+    person: Annotated["Person", sb.lazy("salute.people.graphql.graph_types")]
+    activity: PermitActivity
+    category: PermitCategory
+    type: PermitType
+    status: PermitStatus
+    start_date: datetime
+    date_of_permit_application: datetime
+    granted_on: datetime | None
+    expiry_date: datetime | None
+    assessor_name: str
+    restriction_details: str
+
+    @classmethod
+    def get_queryset(
+        cls, queryset: models.PermitQuerySet | QuerySet, info: sb.Info, **kwargs: Any
+    ) -> models.PermitQuerySet | QuerySet:
+        user = get_current_user(info)
+        if not user.is_authenticated:
+            return queryset.none()
+
+        user = cast(User, user)
+        # When the strawberry optimiser is determining the queryset relations, it will call this method.
+        # In such calls, the queryset is not a PermitQuerySet, but a Django QuerySet.
+        if hasattr(queryset, "for_user"):
+            return queryset.for_user(user)
+        return queryset
 
 
 @sd.order_type(models.Person)
@@ -57,6 +140,11 @@ class Person(sb.relay.Node):
                 "accreditation.list", message="You don't have permission to list accreditations.", fail_silently=False
             )
         ],
+    )
+
+    permits: sd.relay.DjangoListConnection[Permit] = sd.connection(
+        description="List permits",
+        extensions=[HasSourcePerm("person.view", fail_silently=True)],
     )
 
     workspace_account: (  # type: ignore[misc]
