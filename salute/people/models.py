@@ -12,6 +12,21 @@ from salute.roles.models import Role
 
 if TYPE_CHECKING:
     from salute.accounts.models import User
+    from salute.hierarchy.models import Group
+
+
+def role_team_in_groups_q(groups: models.QuerySet | list, *, team_lookup_prefix: str = "") -> models.Q:
+    """Match rows where the role's team is scoped to one of the given groups.
+
+    ``team_lookup_prefix`` prefixes each ``team__`` segment (e.g. ``\"roles__\"`` when
+    filtering from ``Team`` through the ``roles`` relation).
+    """
+    p = team_lookup_prefix
+    return (
+        models.Q(**{f"{p}team__group__in": groups})
+        | models.Q(**{f"{p}team__section__group__in": groups})
+        | models.Q(**{f"{p}team__parent_team__group__in": groups})
+    )
 
 
 class PersonQuerySet(models.QuerySet):
@@ -48,6 +63,17 @@ class PersonQuerySet(models.QuerySet):
                     person=models.OuterRef("pk"),
                     role_type__is_youth_member=True,
                 ).only("id")
+            )
+        )
+
+    def has_role_in_group(self, groups: list[Group]) -> PersonQuerySet:
+        """True if the person has a role on a team in one of the groups (group or section team).
+
+        Sub-teams exist only under group teams, not section teams.
+        """
+        return self.annotate(
+            has_role_in_group=models.Exists(
+                Role.objects.filter(person=models.OuterRef("pk")).filter(role_team_in_groups_q(groups)).only("id")
             )
         )
 

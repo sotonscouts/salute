@@ -3,9 +3,13 @@ from __future__ import annotations
 import strawberry as sb
 import strawberry_django as sd
 from django.db.models import Q
+from strawberry import UNSET
+from strawberry_django.filters import apply as apply_filters
 
+from salute.hierarchy import models as hierarchy_models
 from salute.hierarchy.graphql.graph_filters import GroupFilter, SectionFilter
-from salute.people.graphql.graph_types import PersonFilter
+from salute.people.graphql.person_filters import group_filter_defines_criteria
+from salute.people.models import role_team_in_groups_q
 from salute.roles import models
 
 
@@ -50,6 +54,23 @@ class RoleFilter:
     person: PersonFilter | None = sb.UNSET
     team: TeamFilter | None = sb.UNSET
 
+    @sd.filter_field(
+        filter_none=True,
+        description=(
+            "Role's team is scoped to a group matching this filter "
+            "(group team, section team in that group, or sub-team of a group team)."
+        ),
+    )
+    def group(self, value: GroupFilter | None, prefix: str) -> Q:
+        if value is None or value is UNSET:
+            return Q()
+        if not group_filter_defines_criteria(value):
+            return Q(pk__in=[])
+        group_qs = apply_filters(value, hierarchy_models.Group.objects.all(), None)
+        if not group_qs.exists():
+            return Q(pk__in=[])
+        return role_team_in_groups_q(group_qs, team_lookup_prefix=prefix)
+
     @sd.filter_field(description="Filter by whether the role is automatically assigned based on another role")
     def is_automatic(self, value: bool, prefix: str) -> Q:  # noqa: FBT001
         expr = Q(**{f"{prefix}status__name": "-"})
@@ -73,3 +94,11 @@ class AccreditationTypeFilter:
 @sd.filter_type(models.RoleType)
 class RoleTypeFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+
+
+# PersonFilter is imported here so ``RoleFilter`` / ``AccreditationFilter`` annotations resolve
+# without a circular import (``person_filters`` must not import this module at load time).
+from salute.people.graphql import person_filters as _person_filters  # noqa: E402
+from salute.people.graphql.person_filters import PersonFilter  # noqa: E402
+
+_person_filters.RoleFilter = RoleFilter  # type: ignore

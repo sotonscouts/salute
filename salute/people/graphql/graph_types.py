@@ -11,6 +11,7 @@ from strawberry_django.permissions import HasPerm, HasRetvalPerm, HasSourcePerm
 
 from salute.accounts.models import User
 from salute.people import models
+from salute.people.graphql.person_filters import PersonFilter
 from salute.people.utils import format_phone_number
 from salute.wifi.repository import get_wifi_account_for_person
 
@@ -67,6 +68,7 @@ class PermitStatus(sb.relay.Node):
 @sd.filter_type(models.Permit, lookups=True)
 class PermitFilter:
     id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
+    person: PersonFilter | None = sb.UNSET
     activity: PermitActivityFilter | None = sb.UNSET
     category: PermitCategoryFilter | None = sb.UNSET
     type: PermitTypeFilter | None = sb.UNSET
@@ -104,12 +106,6 @@ class Permit(sb.relay.Node):
         if hasattr(queryset, "for_user"):
             return queryset.for_user(user)
         return queryset
-
-
-@sd.filter_type(models.Person, lookups=True)
-class PersonFilter:
-    id: sd.BaseFilterLookup[sb.relay.GlobalID] | None = sb.UNSET
-    display_name: sb.auto = sb.UNSET
 
 
 @sd.order_type(models.Person)
