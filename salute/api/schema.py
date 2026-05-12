@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 import strawberry
 from django.conf import settings
 from graphql.validation import NoSchemaIntrospectionCustomRule
@@ -32,16 +34,15 @@ APP_QUERIES = (
 
 
 class DisableAnonymousIntrospection(strawberry.extensions.SchemaExtension):
-    async def on_validation_start(self) -> None:
+    def on_validate(self) -> Generator[None, None, None]:
+        """Block schema introspection for anonymous users when GraphiQL is off."""
         schema_context = self.execution_context.context
         request = schema_context.request
-        user = await request.auser()
-
-        # Block use of Query Introspection for unauthenticated users
-        if not user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:  # type: ignore[misc]
+        if not request.user.is_authenticated and not settings.ALLOW_UNAUTHENTICATED_GRAPHIQL:  # type: ignore[misc]
             self.execution_context.validation_rules = self.execution_context.validation_rules + (
                 NoSchemaIntrospectionCustomRule,
             )
+        yield
 
 
 schema = strawberry.Schema(

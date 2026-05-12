@@ -129,7 +129,7 @@ class TestGroupListQuery:
                     }
                 }
                 """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                variables={"order": ordering},
             )
 
         assert isinstance(result, Response)
@@ -168,7 +168,7 @@ class TestGroupListQuery:
                     }
                 }
                 """,
-                variables={"idlist": [to_base64("Group", g.id) for g in expected_groups]},  # type: ignore[dict-item]
+                variables={"idlist": [to_base64("Group", g.id) for g in expected_groups]},
             )
 
         assert isinstance(result, Response)
@@ -207,7 +207,7 @@ class TestGroupListQuery:
                     }
                 }
                 """,
-                variables={"groupType": group_type.upper()},  # type: ignore[dict-item]
+                variables={"groupType": group_type.upper()},
             )
 
         assert isinstance(result, Response)

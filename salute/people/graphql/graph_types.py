@@ -147,7 +147,7 @@ class Person(sb.relay.Node):
         extensions=[HasSourcePerm("person.view", fail_silently=True)],
     )
 
-    workspace_account: (  # type: ignore[misc]
+    workspace_account: (
         Annotated["WorkspaceAccount", sb.lazy("salute.integrations.workspace.graphql.graph_types")] | None
     ) = sd.field(
         description="Workspace account",

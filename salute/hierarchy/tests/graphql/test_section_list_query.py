@@ -223,7 +223,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                variables={"order": ordering},
             )
 
         assert isinstance(result, Response)
@@ -270,7 +270,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                variables={"order": ordering},
             )
 
         assert isinstance(result, Response)
@@ -327,7 +327,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"order": ordering},  # type: ignore[dict-item]
+                variables={"order": ordering},
             )
 
         assert isinstance(result, Response)
@@ -382,7 +382,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"sectionType": SectionType.BEAVERS.name},  # type: ignore[dict-item]
+                variables={"sectionType": SectionType.BEAVERS.name},
             )
 
         assert isinstance(result, Response)
@@ -421,7 +421,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"usualWeekday": [Weekday.FRIDAY.name, Weekday.SATURDAY.name]},  # type: ignore[dict-item]
+                variables={"usualWeekday": [Weekday.FRIDAY.name, Weekday.SATURDAY.name]},
             )
 
         assert isinstance(result, Response)
@@ -467,7 +467,7 @@ class TestSectionListQuery:
                     }
                 }
                 """,
-                variables={"groupID": to_base64("Group", section.group.id)},  # type: ignore[dict-item]
+                variables={"groupID": to_base64("Group", section.group.id)},
             )
 
         assert isinstance(result, Response)

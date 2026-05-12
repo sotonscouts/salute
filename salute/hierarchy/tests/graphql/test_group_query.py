@@ -38,7 +38,7 @@ class TestGroupQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"groupId": group_id},  # type: ignore[dict-item]
+            variables={"groupId": group_id},
             assert_no_errors=False,
         )
 
@@ -60,7 +60,7 @@ class TestGroupQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
                 assert_no_errors=False,
             )
 
@@ -82,7 +82,7 @@ class TestGroupQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
                 assert_no_errors=False,
             )
 
@@ -104,7 +104,7 @@ class TestGroupQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
                 assert_no_errors=False,
             )
 
@@ -146,8 +146,7 @@ class TestGroupYoungPersonCountQuery:
         group_id = to_base64("Group", group.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"groupId": group_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"groupId": group_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -162,8 +161,7 @@ class TestGroupYoungPersonCountQuery:
         group_id = to_base64("Group", group.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"groupId": group_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"groupId": group_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -184,8 +182,7 @@ class TestGroupYoungPersonCountQuery:
         group_id = to_base64("Group", group.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"groupId": group_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"groupId": group_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -217,7 +214,7 @@ class TestGroupTSADetailsLinkQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
             )
 
         assert isinstance(results, Response)
@@ -258,7 +255,7 @@ class TestGroupJoinSectionsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
             )
 
         assert isinstance(result, Response)
@@ -282,7 +279,7 @@ class TestGroupJoinSectionsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
             )
 
         assert isinstance(result, Response)
@@ -329,7 +326,7 @@ class TestGroupJoinTeamsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
             )
 
         assert isinstance(result, Response)
@@ -353,7 +350,7 @@ class TestGroupJoinTeamsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"groupId": group_id},  # type: ignore[dict-item]
+                variables={"groupId": group_id},
             )
 
         assert isinstance(result, Response)

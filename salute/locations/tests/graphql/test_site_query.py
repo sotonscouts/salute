@@ -52,7 +52,7 @@ class TestSiteQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"siteId": site_id},  # type: ignore[dict-item]
+            variables={"siteId": site_id},
             assert_no_errors=False,
         )
 
@@ -74,7 +74,7 @@ class TestSiteQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
                 assert_no_errors=False,
             )
 
@@ -96,7 +96,7 @@ class TestSiteQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
                 assert_no_errors=False,
             )
 
@@ -120,7 +120,7 @@ class TestSiteQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
                 assert_no_errors=False,
             )
 
@@ -128,7 +128,7 @@ class TestSiteQuery:
 
         # Extract location for separate floating point comparison
         site_data = result.data["site"]  # type: ignore
-        location = site_data.pop("location")  # type: ignore
+        location = site_data.pop("location")
         assert location is not None
 
         # Check non-floating point fields
@@ -171,7 +171,7 @@ class TestSiteQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -185,7 +185,7 @@ class TestSiteQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -223,7 +223,7 @@ class TestSiteJoinOperatorQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -249,7 +249,7 @@ class TestSiteJoinOperatorQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -277,7 +277,7 @@ class TestSiteJoinOperatorQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -324,7 +324,7 @@ class TestSiteJoinGroupsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -347,7 +347,7 @@ class TestSiteJoinGroupsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)
@@ -396,7 +396,7 @@ class TestSiteJoinSectionsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"siteId": site_id},  # type: ignore[dict-item]
+                variables={"siteId": site_id},
             )
 
         assert isinstance(result, Response)

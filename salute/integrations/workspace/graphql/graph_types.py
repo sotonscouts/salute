@@ -29,7 +29,7 @@ class WorkspaceAccount(sb.relay.Node):
 
     # Read Only Attributes
     agreed_to_terms: bool = sb.field(description="Agreed to Google Terms of Service")
-    is_enrolled_in_2sv: bool = sd.field(  # type: ignore[misc]
+    is_enrolled_in_2sv: bool = sd.field(
         name="is2svConfigured",
         description="Is 2SV correctly configured",
     )

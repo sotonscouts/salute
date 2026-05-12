@@ -33,7 +33,7 @@ class TestSystemMailingGroupQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"systemMailingGroupId": system_mailing_group_id},  # type: ignore[dict-item]
+            variables={"systemMailingGroupId": system_mailing_group_id},
             assert_no_errors=False,
         )
 
@@ -55,7 +55,7 @@ class TestSystemMailingGroupQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"systemMailingGroupId": system_mailing_group_id},  # type: ignore[dict-item]
+                variables={"systemMailingGroupId": system_mailing_group_id},
                 assert_no_errors=False,
             )
 
@@ -76,7 +76,7 @@ class TestSystemMailingGroupQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"systemMailingGroupId": system_mailing_group_id},  # type: ignore[dict-item]
+                variables={"systemMailingGroupId": system_mailing_group_id},
                 assert_no_errors=False,
             )
 
@@ -98,7 +98,7 @@ class TestSystemMailingGroupQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"systemMailingGroupId": system_mailing_group_id},  # type: ignore[dict-item]
+                variables={"systemMailingGroupId": system_mailing_group_id},
                 assert_no_errors=False,
             )
 
@@ -122,7 +122,7 @@ class TestSystemMailingGroupQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"systemMailingGroupId": system_mailing_group_id},  # type: ignore[dict-item]
+                variables={"systemMailingGroupId": system_mailing_group_id},
                 assert_no_errors=False,
             )
 
