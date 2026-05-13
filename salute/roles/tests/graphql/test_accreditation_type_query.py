@@ -27,7 +27,7 @@ class TestAccreditationTypeQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},  # type: ignore[dict-item]
+            variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},
             assert_no_errors=False,
         )
 
@@ -48,7 +48,7 @@ class TestAccreditationTypeQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},  # type: ignore[dict-item]
+                variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},
                 assert_no_errors=False,
             )
 
@@ -69,7 +69,7 @@ class TestAccreditationTypeQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},  # type: ignore[dict-item]
+                variables={"accreditationTypeId": to_base64("AccreditationType", accreditation_type.id)},
             )
 
         assert isinstance(result, Response)
@@ -87,7 +87,7 @@ class TestAccreditationTypeQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"accreditationTypeId": to_base64("AccreditationType", UUID(int=0))},  # type: ignore[dict-item]
+                variables={"accreditationTypeId": to_base64("AccreditationType", UUID(int=0))},
                 assert_no_errors=False,
             )
 

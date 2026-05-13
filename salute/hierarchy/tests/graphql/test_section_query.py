@@ -40,7 +40,7 @@ class TestSectionQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"sectionId": section_id},  # type: ignore[dict-item]
+            variables={"sectionId": section_id},
             assert_no_errors=False,
         )
 
@@ -62,7 +62,7 @@ class TestSectionQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -83,7 +83,7 @@ class TestSectionQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -105,7 +105,7 @@ class TestSectionQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -133,7 +133,7 @@ class TestSectionQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -172,8 +172,7 @@ class TestSectionYoungPersonCountQuery:
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"sectionId": section_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -189,8 +188,7 @@ class TestSectionYoungPersonCountQuery:
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"sectionId": section_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -208,8 +206,7 @@ class TestSectionYoungPersonCountQuery:
         section_id = to_base64("DistrictOrGroupSection", section.id)
         client = TestClient(self.url)
         with client.login(user_with_person):
-            result = client.query(self.QUERY, variables={"sectionId": section_id})  # type: ignore[dict-item]
-
+            result = client.query(self.QUERY, variables={"sectionId": section_id})
         assert isinstance(result, Response)
 
         assert result.errors is None
@@ -245,7 +242,7 @@ class TestSectionTypeInfoQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -271,7 +268,7 @@ class TestSectionTypeInfoQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -313,7 +310,7 @@ class TestSectionTSADetailsLinkQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -356,7 +353,7 @@ class TestSectionTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 
@@ -386,7 +383,7 @@ class TestSectionTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"sectionId": section_id},  # type: ignore[dict-item]
+                variables={"sectionId": section_id},
                 assert_no_errors=False,
             )
 

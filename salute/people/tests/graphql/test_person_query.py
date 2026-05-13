@@ -39,7 +39,7 @@ class TestPersonQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"id": "UGVyc29uTm9kZTox"},  # type: ignore[dict-item]
+            variables={"id": "UGVyc29uTm9kZTox"},
             assert_no_errors=False,
         )
 
@@ -60,7 +60,7 @@ class TestPersonQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -81,7 +81,7 @@ class TestPersonQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -105,7 +105,7 @@ class TestPersonQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -129,7 +129,7 @@ class TestPersonQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -157,7 +157,7 @@ class TestPersonQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -186,7 +186,7 @@ class TestPersonQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -230,7 +230,7 @@ class TestPersonTSAProfileLinkQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -272,7 +272,7 @@ class TestPersonWifiAccountQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -302,7 +302,7 @@ class TestPersonWifiAccountQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -333,7 +333,7 @@ class TestPersonWifiAccountQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -393,7 +393,7 @@ class TestPersonJoinRolesQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -416,7 +416,7 @@ class TestPersonJoinRolesQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -474,7 +474,7 @@ class TestPersonJoinAccreditationsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -497,7 +497,7 @@ class TestPersonJoinAccreditationsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -544,7 +544,7 @@ class TestPersonJoinWorkspaceAccountQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -561,7 +561,7 @@ class TestPersonJoinWorkspaceAccountQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -618,7 +618,7 @@ class TestPersonPermitsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -641,7 +641,7 @@ class TestPersonPermitsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", user_with_person.person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", user_with_person.person.id)},
             )
 
         assert isinstance(results, Response)
@@ -692,7 +692,7 @@ class TestPersonPermitsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
                 assert_no_errors=False,
             )
 
@@ -720,7 +720,7 @@ class TestPersonPermitsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
             )
 
         assert isinstance(results, Response)
@@ -774,7 +774,7 @@ class TestPersonPermitsQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Person", person.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Person", person.id)},
             )
 
         assert isinstance(results, Response)

@@ -63,7 +63,7 @@ class TestRoleQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"id": "UGVyc29uTm9kZTox"},  # type: ignore[dict-item]
+            variables={"id": "UGVyc29uTm9kZTox"},
             assert_no_errors=False,
         )
 
@@ -84,7 +84,7 @@ class TestRoleQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Role", role.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Role", role.id)},
                 assert_no_errors=False,
             )
 
@@ -105,7 +105,7 @@ class TestRoleQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Role", role.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Role", role.id)},
             )
 
         assert isinstance(results, Response)
@@ -122,7 +122,7 @@ class TestRoleQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Role", role.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Role", role.id)},
                 assert_no_errors=False,
             )
 
@@ -147,7 +147,7 @@ class TestRoleQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"id": to_base64("Role", role.id)},  # type: ignore[dict-item]
+                variables={"id": to_base64("Role", role.id)},
             )
 
         assert isinstance(results, Response)

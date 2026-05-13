@@ -56,7 +56,7 @@ class TestTeamQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            variables={"teamId": to_base64("Team", team.id)},
             assert_no_errors=False,
         )
 
@@ -77,7 +77,7 @@ class TestTeamQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
                 assert_no_errors=False,
             )
 
@@ -100,7 +100,7 @@ class TestTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", UUID(int=0))},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", UUID(int=0))},
                 assert_no_errors=False,
             )
 
@@ -124,7 +124,7 @@ class TestTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -152,7 +152,7 @@ class TestTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -182,7 +182,7 @@ class TestTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -215,7 +215,7 @@ class TestTeamQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -256,7 +256,7 @@ class TestTeamPersonCountQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -275,7 +275,7 @@ class TestTeamPersonCountQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -296,7 +296,7 @@ class TestTeamPersonCountQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -331,7 +331,7 @@ class TestTeamTSAProfileLinkQuery:
         with client.login(user_with_person):
             results = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(results, Response)
@@ -378,7 +378,7 @@ class TestTeamJoinRolesQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            variables={"teamId": to_base64("Team", team.id)},
             assert_no_errors=False,
         )
 
@@ -399,7 +399,7 @@ class TestTeamJoinRolesQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
                 assert_no_errors=False,
             )
 
@@ -423,7 +423,7 @@ class TestTeamJoinRolesQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -452,7 +452,7 @@ class TestTeamJoinRolesQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -489,7 +489,7 @@ class TestTeamJoinRolesQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -547,7 +547,7 @@ class TestTeamJoinAccreditationsQuery:
         client = TestClient(self.url)
         results = client.query(
             self.QUERY,
-            variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+            variables={"teamId": to_base64("Team", team.id)},
             assert_no_errors=False,
         )
 
@@ -568,7 +568,7 @@ class TestTeamJoinAccreditationsQuery:
         with client.login(user):
             results = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
                 assert_no_errors=False,
             )
 
@@ -592,7 +592,7 @@ class TestTeamJoinAccreditationsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -621,7 +621,7 @@ class TestTeamJoinAccreditationsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
@@ -660,7 +660,7 @@ class TestTeamJoinAccreditationsQuery:
         with client.login(user_with_person):
             result = client.query(
                 self.QUERY,
-                variables={"teamId": to_base64("Team", team.id)},  # type: ignore[dict-item]
+                variables={"teamId": to_base64("Team", team.id)},
             )
 
         assert isinstance(result, Response)
