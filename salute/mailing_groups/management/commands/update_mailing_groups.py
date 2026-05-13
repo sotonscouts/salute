@@ -10,6 +10,7 @@ from salute.mailing_groups.models import (
     GroupSectionSystemMailingPreference,
     SystemMailingGroup,
 )
+from salute.people.models import PermitActivityGroup
 from salute.roles.models import RoleType, Team, TeamType
 
 ROLES = {
@@ -498,6 +499,25 @@ class MailingGroupUpdater:
         )
         section_mailing_group.teams.set([section.teams.get()])
 
+    def update_permit_activity_group(self, permit_activity_group: PermitActivityGroup) -> None:
+        mailing_group, _ = SystemMailingGroup.objects.update_or_create(
+            composite_key=f"permit_activity_group_{permit_activity_group.id}",
+            defaults={
+                "name": f"permit-holders-{permit_activity_group.mailing_slug}",
+                "display_name": f"{permit_activity_group.name} Permit Holders",
+                "short_name": f"{permit_activity_group.name} Permit Holders",
+                "can_receive_external_email": False,
+                "can_members_send_as": False,
+                "config": {
+                    "permit_activity_group_id": str(permit_activity_group.id),
+                },
+                # Fallback - not used
+                "fallback_group_composite_key": "",
+                "always_include_fallback_group": False,
+            },
+        )
+        mailing_group.teams.set([])  # Intentionally not linked to a team.
+
 
 class Command(BaseCommand):
     help = "Update Mail Groups"
@@ -513,6 +533,10 @@ class Command(BaseCommand):
         updater.update_explorer_teams()
         updater.update_network()
         # TODO: District - All Scout Leaders, Sections etc. - blocked by restricted access
+
+        # Permits
+        for permit_activity_group in PermitActivityGroup.objects.all():
+            updater.update_permit_activity_group(permit_activity_group)
 
         # Groups
         for group in district.groups.all():

@@ -8,7 +8,7 @@ from uuid import UUID
 from django.db.models import Q, QuerySet
 from pydantic import BaseModel
 
-from salute.people.models import Person
+from salute.people.models import Permit, Person
 from salute.roles.models import Role, Team
 
 
@@ -44,6 +44,7 @@ class MailGroupConfig(BaseModel):
 
     role_type_id: UUID | None = None
     team_type_id: UUID | None = None
+    permit_activity_group_id: UUID | None = None
     include_sub_teams: bool = False
     is_all_members_list: bool = False
     units: list[DistrictUnitRef | GroupUnitRef | SectionUnitRef] | None = (
@@ -80,4 +81,10 @@ class MailGroupConfig(BaseModel):
 
     def get_members(self) -> QuerySet[Person]:
         roles = self.get_roles()
-        return Person.objects.filter(id__in=roles.values("person"))
+        people = Person.objects.filter(id__in=roles.values("person"))
+
+        if self.permit_activity_group_id is not None:
+            permits = Permit.objects.filter(activity__group_id=self.permit_activity_group_id)
+            people = people.filter(id__in=permits.values("person"))
+
+        return people

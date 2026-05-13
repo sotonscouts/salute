@@ -165,21 +165,14 @@ class Person(TSAObject):
         return str(self.membership_number).zfill(10)
 
 
-# "MembershipNumber",
-#     "PermitActivity",
-#     "PermitCategory",
-#     "PermitType",
-#     "ExpiryDate",
-#     "Status",
-#     "PermitRestrictionDetails",
-#     "StartDate",
-#     "AssessorName",
-#     "DateOfPermitApplication",
-#     "GrantedOn"
+class PermitActivityGroup(Taxonomy):
+    mailing_slug = models.SlugField(max_length=255, unique=True)
 
 
 class PermitActivity(Taxonomy):
-    pass
+    group = models.ForeignKey(
+        PermitActivityGroup, on_delete=models.PROTECT, related_name="activities", null=True, blank=True
+    )
 
 
 class PermitCategory(Taxonomy):
