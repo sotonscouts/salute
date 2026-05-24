@@ -4,12 +4,20 @@ from datetime import date
 from uuid import UUID
 
 from asgiref.sync import sync_to_async
-from django.db.models import F, Max, Q, Sum
+from django.db.models import F, Max, OuterRef, Q, QuerySet, Subquery, Sum
 from django.db.models.functions import TruncMonth, TruncWeek, TruncYear
 from strawberry.dataloader import DataLoader
 
 from salute.integrations.osm.graphql.graph_types import HeadcountAggregationPeriod
 from salute.integrations.osm.models import OSMSectionHeadcountRecord
+
+
+def _latest_headcount_records(queryset: QuerySet[OSMSectionHeadcountRecord]) -> QuerySet[OSMSectionHeadcountRecord]:
+    """One headcount record per section: the row with the most recent date."""
+    latest_pk = (
+        OSMSectionHeadcountRecord.objects.filter(section_id=OuterRef("section_id")).order_by("-date").values("pk")[:1]
+    )
+    return queryset.filter(pk=Subquery(latest_pk))
 
 
 async def load_total_young_person_count_for_district(keys: list[tuple[UUID, bool]]) -> list[int]:
@@ -37,22 +45,8 @@ async def load_total_young_person_count_for_district(keys: list[tuple[UUID, bool
             else:
                 section_filter = Q(section__district_id=district_id, section__group__isnull=True)
 
-            # Get the latest records for each section
-            latest_dates = (
-                OSMSectionHeadcountRecord.objects.filter(section_filter)
-                .values("section_id")
-                .annotate(latest_date=Max("date"))
-            )
-
-            # Get the total count using a join to the latest dates
-            result = (
-                OSMSectionHeadcountRecord.objects.filter(section_filter)
-                .filter(
-                    id__in=OSMSectionHeadcountRecord.objects.filter(
-                        section_id__in=latest_dates.values("section_id")
-                    ).filter(date__in=latest_dates.values("latest_date"))
-                )
-                .aggregate(total=Sum("young_person_count"))
+            result = _latest_headcount_records(OSMSectionHeadcountRecord.objects.filter(section_filter)).aggregate(
+                total=Sum("young_person_count")
             )
 
             results[(district_id, include_group_sections)] = result["total"] or 0
@@ -70,21 +64,8 @@ async def load_latest_young_person_count_for_groups(pks: list[UUID]) -> list[int
     """Load the latest young person count for each group."""
 
     def _get_group_counts(pks: list[UUID]) -> dict[UUID, int]:
-        # Get the latest records for each section
-        latest_dates = (
-            OSMSectionHeadcountRecord.objects.filter(section__group_id__in=pks)
-            .values("section_id")
-            .annotate(latest_date=Max("date"))
-        )
-
-        # Get the total count for each group using a join to the latest dates
         group_sums = (
-            OSMSectionHeadcountRecord.objects.filter(section__group_id__in=pks)
-            .filter(
-                id__in=OSMSectionHeadcountRecord.objects.filter(
-                    section_id__in=latest_dates.values("section_id")
-                ).filter(date__in=latest_dates.values("latest_date"))
-            )
+            _latest_headcount_records(OSMSectionHeadcountRecord.objects.filter(section__group_id__in=pks))
             .values("section__group_id")
             .annotate(total_count=Sum("young_person_count"))
             .values_list("section__group_id", "total_count")
@@ -103,23 +84,9 @@ async def load_latest_young_person_count_for_sections(pks: list[UUID]) -> list[i
 
     # Get the latest records using sync_to_async since distinct() is sync-only
     def _get_section_counts(pks: list[UUID]) -> dict[UUID, int]:
-        # Get the latest records for each section
-        latest_dates = (
+        section_counts = _latest_headcount_records(
             OSMSectionHeadcountRecord.objects.filter(section_id__in=pks)
-            .values("section_id")
-            .annotate(latest_date=Max("date"))
-        )
-
-        # Get the latest count for each section
-        section_counts = (
-            OSMSectionHeadcountRecord.objects.filter(section_id__in=pks)
-            .filter(
-                id__in=OSMSectionHeadcountRecord.objects.filter(
-                    section_id__in=latest_dates.values("section_id")
-                ).filter(date__in=latest_dates.values("latest_date"))
-            )
-            .values_list("section_id", "young_person_count")
-        )
+        ).values_list("section_id", "young_person_count")
 
         return dict(section_counts)
 
