@@ -20,6 +20,11 @@ def user_has_related_person(user: User) -> bool:
 
 
 @rules.predicate
+def user_is_service_account(user: User) -> bool:
+    return user.service_account is not None
+
+
+@rules.predicate
 def user_is_person(user: User, person: Person | None) -> bool:
     if person is None:
         return False

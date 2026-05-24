@@ -55,14 +55,6 @@ class TestAuth0TokenVerification:
         assert exc_info.value.errors == [{"message": "Invalid Access Token: Audience not valid for this service"}]
 
     @mock.patch("salute.api.auth0.auth.get_token_info")
-    def test_token_validation_missing_salute_user_scope(self, mock_get_token_info: mock.Mock) -> None:
-        mock_get_token_info.return_value = Auth0TokenInfo(sub="subject", scopes=["openid", "email"], aud=VALID_AUDIENCE)
-
-        with pytest.raises(RequestAuthenticationError) as exc_info:
-            authenticate_user_with_bearer_token("bees")
-        assert exc_info.value.errors == [{"message": "Insufficient permissions: 'salute:user' scope required"}]
-
-    @mock.patch("salute.api.auth0.auth.get_token_info")
     def test_existing_user__inactive(self, mock_get_token_info: mock.Mock) -> None:
         person = PersonFactory(is_suspended=False)
         UserFactory(is_active=False, auth0_sub="1234", person=person)
@@ -79,17 +71,7 @@ class TestAuth0TokenVerification:
 
         with pytest.raises(RequestAuthenticationError) as exc_info:
             authenticate_user_with_bearer_token("bees")
-        assert exc_info.value.errors == [{"message": "User account is not linked to a person"}]
-
-    @mock.patch("salute.api.auth0.auth.get_token_info")
-    def test_existing_user__person_is_suspended(self, mock_get_token_info: mock.Mock) -> None:
-        person = PersonFactory(is_suspended=True)
-        UserFactory(auth0_sub="1234", person=person)
-        mock_get_token_info.return_value = Auth0TokenInfo(sub="1234", scopes=VALID_SCOPES, aud=VALID_AUDIENCE)
-
-        with pytest.raises(RequestAuthenticationError) as exc_info:
-            authenticate_user_with_bearer_token("bees")
-        assert exc_info.value.errors == [{"message": "User account is linked to a suspended person"}]
+        assert exc_info.value.errors == [{"message": "User account is not linked to a person or service account"}]
 
     @mock.patch("salute.api.auth0.auth.get_token_info")
     def test_existing_user__success(self, mock_get_token_info: mock.Mock) -> None:

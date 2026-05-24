@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from salute.accounts.factories import UserFactory
+from salute.accounts.factories import ServiceAccountFactory, UserFactory
 from salute.people.factories import PersonFactory
 
 if TYPE_CHECKING:
@@ -19,3 +19,8 @@ def user() -> User:
 @pytest.fixture
 def user_with_person() -> User:
     return UserFactory(person=PersonFactory())
+
+
+@pytest.fixture
+def user_with_service_account() -> User:
+    return UserFactory(person=None, service_account=ServiceAccountFactory())

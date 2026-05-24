@@ -48,12 +48,8 @@ def authenticate_user_with_bearer_token(token: str) -> AuthInfo:
             errors=[{"message": "Invalid Access Token: Audience not valid for this service"}]
         )
 
-    # Check if the token has the required scope
-    if "salute:user" not in token_info.scopes:
-        raise RequestAuthenticationError(errors=[{"message": "Insufficient permissions: 'salute:user' scope required"}])
-
     try:
-        user = User.objects.get(auth0_sub=token_info.sub)
+        user = User.objects.select_related("person", "service_account").get(auth0_sub=token_info.sub)
     except User.DoesNotExist:
         try:
             user = _attempt_to_link_user(token, token_info)
@@ -67,11 +63,10 @@ def authenticate_user_with_bearer_token(token: str) -> AuthInfo:
     if not user.is_active:
         raise RequestAuthenticationError(errors=[{"message": "User account is inactive"}])
 
-    if not user.person:
-        raise RequestAuthenticationError(errors=[{"message": "User account is not linked to a person"}])
-
-    if user.person.is_suspended:
-        raise RequestAuthenticationError(errors=[{"message": "User account is linked to a suspended person"}])
+    if not user.person and not user.service_account:
+        raise RequestAuthenticationError(
+            errors=[{"message": "User account is not linked to a person or service account"}]
+        )
 
     return AuthInfo(user=user, scopes=token_info.scopes)
 

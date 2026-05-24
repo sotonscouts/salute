@@ -22,6 +22,17 @@ from salute.core.models import BaseModel
 _T = TypeVar("_T", bound=models.Model)
 
 
+class ServiceAccount(BaseModel):
+    """
+    A service account defines a user that is used to authenticate external services.
+    """
+
+    description = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return f"Service Account: {self.description}"
+
+
 class UserManager[_T](DjangoUserManager):  # noqa: UP049
     def _create_user(self, email: str, password: str | None, **extra_fields: Any) -> _T:
         """
@@ -66,6 +77,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         unique=True,
     )
     person = models.OneToOneField("people.Person", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    service_account = models.OneToOneField(
+        ServiceAccount, null=True, blank=True, on_delete=models.SET_NULL, related_name="user"
+    )
 
     objects = UserManager()
 
@@ -76,6 +90,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(service_account__isnull=True)
+                | models.Q(person__isnull=True, service_account__isnull=False),
+                name="user_must_have_only_one_account_type",
+                violation_error_message="A user must have either a service account or a person, but not both.",
+            ),
+        ]
 
     @property
     def is_staff(self) -> bool:
