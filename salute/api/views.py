@@ -49,7 +49,14 @@ class SaluteAsyncGraphQLView(AsyncGraphQLView):
 
         :returns: An error response, or None if the request may continue.
         """
+        request.scopes = []  # type: ignore[attr-defined]
+
         if request.user.is_authenticated:
+            if request.user.service_account_id:
+                return {
+                    "data": None,
+                    "errors": [{"message": "Service accounts must authenticate with a bearer token"}],
+                }
             return None
 
         # Check for a Bearer token Authorization header

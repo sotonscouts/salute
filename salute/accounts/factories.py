@@ -2,7 +2,14 @@ import zoneinfo
 
 import factory
 
-from salute.accounts.models import User
+from salute.accounts.models import ServiceAccount, User
+
+
+class ServiceAccountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceAccount
+
+    description = factory.Faker("sentence", nb_words=3)
 
 
 class UserFactory(factory.django.DjangoModelFactory):

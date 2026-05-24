@@ -1,8 +1,12 @@
+from unittest import mock
+
 import pytest
 from django.urls import reverse
 from strawberry_django.test.client import Response, TestClient
 
 from salute.accounts.models import DistrictUserRoleType, User
+from salute.api.auth0.auth import AuthInfo
+from salute.api.scopes import ApiScope
 from salute.hierarchy.factories import DistrictFactory
 
 
@@ -33,14 +37,17 @@ class TestGetCurrentUserQuery:
 
     def test_current_user_query__not_authenticated(self) -> None:
         client = TestClient(self.url)
-        results = client.query(self.CURRENT_USER_QUERY, assert_no_errors=False)
+        result = client.query(self.CURRENT_USER_QUERY, assert_no_errors=False)
 
-        assert isinstance(results, Response)
-
-        assert results.errors == [
-            {"message": "User is not authenticated.", "locations": [{"line": 3, "column": 9}], "path": ["currentUser"]}
+        assert isinstance(result, Response)
+        assert result.data is None
+        assert result.errors == [
+            {
+                "message": "User is not a person or a service account with the required scope.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["currentUser"],
+            }
         ]
-        assert results.data is None
 
     def test_current_user_query__authenticated(self, user: User) -> None:
         client = TestClient(self.url)
@@ -97,3 +104,42 @@ class TestGetCurrentUserQuery:
 
         assert result.errors is None
         assert result.data["currentUser"]["userRoles"] == [{"__typename": "UserDistrictRole", "level": role_type.name}]  # type: ignore
+
+    @mock.patch("salute.api.views.authenticate_user_with_bearer_token")
+    def test_current_user_query__service_account_bearer_with_user_read(
+        self, mock_auth: mock.Mock, user_with_service_account: User
+    ) -> None:
+        mock_auth.return_value = AuthInfo(user=user_with_service_account, scopes=[ApiScope.USER_READ])
+        client = TestClient(self.url)
+
+        result = client.query(
+            self.CURRENT_USER_QUERY,
+            headers={"Authorization": "Bearer token"},
+        )
+
+        assert isinstance(result, Response)
+        assert result.errors is None
+        assert result.data["currentUser"]["email"] == user_with_service_account.email  # type: ignore[index]
+
+    @mock.patch("salute.api.views.authenticate_user_with_bearer_token")
+    def test_current_user_query__service_account_bearer_without_user_read(
+        self, mock_auth: mock.Mock, user_with_service_account: User
+    ) -> None:
+        mock_auth.return_value = AuthInfo(user=user_with_service_account, scopes=[])
+        client = TestClient(self.url)
+
+        result = client.query(
+            self.CURRENT_USER_QUERY,
+            headers={"Authorization": "Bearer token"},
+            assert_no_errors=False,
+        )
+
+        assert isinstance(result, Response)
+        assert result.data is None
+        assert result.errors == [
+            {
+                "message": "User is not a person or a service account with the required scope.",
+                "locations": [{"line": 3, "column": 9}],
+                "path": ["currentUser"],
+            }
+        ]
