@@ -13,6 +13,7 @@ from salute.locations.graphql.schema import LocationsQuery
 from salute.mailing_groups.graphql.schema import MailingGroupsQuery
 from salute.people.graphql.schema import PeopleQuery
 from salute.roles.graphql.schema import RolesQuery
+from salute.wifi.graphql.schema import WifiQuery
 
 
 @strawberry.type
@@ -30,6 +31,7 @@ APP_QUERIES = (
     PeopleQuery,
     PingQuery,
     RolesQuery,
+    WifiQuery,
 )
 
 

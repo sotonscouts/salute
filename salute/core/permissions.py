@@ -85,3 +85,6 @@ rules.add_perm("system_mailing_group.view", user_has_related_person)
 rules.add_perm("workspace_account.list", can_list_workspace_accounts)
 rules.add_perm("workspace_account.view", can_view_workspace_account)
 rules.add_perm("workspace_account.view_pii", can_view_workspace_account_pii)
+
+# WiFi
+rules.add_perm("wifi_account.list", user_has_related_person)

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 
 import strawberry as sb
@@ -21,10 +22,18 @@ class WifiAccountGroup(sb.relay.Node):
         return self.name
 
 
-@sd.type(models.WifiAccount)
+@sd.filter(models.WifiAccount)
+class WifiAccountFilter:
+    username: sd.StrFilterLookup | None = sb.UNSET
+    is_active: sd.FilterLookup[bool] | None = sb.UNSET
+
+
+@sd.type(models.WifiAccount, filters=WifiAccountFilter)
 class WifiAccount(sb.relay.Node):
     person: Annotated["Person", sb.lazy("salute.people.graphql.graph_types")]
     group: WifiAccountGroup
     username: str
     password: str
     is_active: bool
+
+    updated_at: datetime
