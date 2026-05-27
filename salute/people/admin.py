@@ -60,7 +60,10 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     inlines = (PersonRoleInlineAdmin, PersonAccreditationInlineAdmin, SystemMailingGroupMembershipInline)
 
     fieldsets = (
-        (None, {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended")}),
+        (
+            None,
+            {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended", "is_young_person")},
+        ),
         (
             "Contact Info",
             {

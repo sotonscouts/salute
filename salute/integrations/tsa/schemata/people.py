@@ -18,6 +18,7 @@ class PersonDetail(BaseModel):
     is_suspended: bool = Field(alias="suspended")
     phone_number: str | None = Field(alias="defaultphone>>phone")
     alternate_phone_number: str | None = Field(alias="alternatephone>>phone")
+    is_young_person: bool = Field(alias="dob")
 
     @field_validator("preferred_name", "default_email", "alternate_email", mode="after")
     @classmethod
@@ -35,6 +36,25 @@ class PersonDetail(BaseModel):
             except phonenumbers.phonenumberutil.NumberParseException:
                 return None
         return None
+
+    @field_validator("is_young_person", mode="before")
+    @classmethod
+    def determine_is_young_person_from_dob(cls, val: str) -> bool:
+        val = val.strip()
+        try:
+            dob_dt = datetime.strptime(val, "%m/%d/%Y %H:%M:%S")  # noqa: DTZ007
+        except ValueError:
+            dob_dt = datetime.strptime(val, "%m/%d/%Y")  # noqa: DTZ007
+
+        tz = ZoneInfo("UTC")  # Timezone is irrelevant for age calculation
+        dob = dob_dt.replace(tzinfo=tz).date()
+        today = datetime.now(tz).date()
+
+        # Precise age calculation:
+        # Compares the birth month/day to today's month/day to see if they've had their birthday yet this year
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+        return age < 25
 
 
 class PermitDetail(BaseModel):

@@ -92,6 +92,11 @@ class Person(TSAObject):
     alternate_email = models.EmailField(verbose_name="TSA Communication Email", blank=True, editable=False)  # noqa: DJ001
     phone_number = PhoneNumberField(null=True, editable=False)
     alternate_phone_number = PhoneNumberField(null=True, editable=False)
+    is_young_person = models.BooleanField(
+        editable=False,
+        default=False,
+        help_text="Young people are under 25 years old. Only adults are imported into Salute.",
+    )
 
     # Generated Fields
     first_name = models.GeneratedField(
@@ -135,6 +140,7 @@ class Person(TSAObject):
         "alternate_email",
         "phone_number",
         "alternate_phone_number",
+        "is_young_person",
     )
 
     objects = PersonManager()
