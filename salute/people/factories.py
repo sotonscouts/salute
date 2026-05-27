@@ -37,6 +37,7 @@ class PersonFactory(factory.django.DjangoModelFactory):
         factory.Faker("phone_number", locale="en_GB"),  # Force UK format
         None,
     )
+    is_young_person = factory.Faker("boolean")
 
     tsa_id = factory.LazyFunction(uuid.uuid4)
 

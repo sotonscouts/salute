@@ -123,6 +123,7 @@ class Person(sb.relay.Node):
     first_name: str
     display_name: str
     formatted_membership_number: str = sd.field(only="membership_number")
+    is_young_person: bool | None = sd.field(extensions=[HasSourcePerm("person.view_pii", fail_silently=True)])
 
     roles: sd.relay.DjangoListConnection[Annotated["Role", sb.lazy("salute.roles.graphql.graph_types")]] = (
         sd.connection(

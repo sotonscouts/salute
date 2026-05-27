@@ -31,6 +31,7 @@ class TestPersonQuery:
             contactEmail
             phoneNumber
             alternatePhoneNumber
+            isYoungPerson
         }
     }
     """
@@ -96,6 +97,7 @@ class TestPersonQuery:
                 # User can see their own phone numbers
                 "phoneNumber": format_phone_number(user_with_person.person.phone_number),
                 "alternatePhoneNumber": format_phone_number(user_with_person.person.alternate_phone_number),
+                "isYoungPerson": user_with_person.person.is_young_person,
             }
         }
 
@@ -145,6 +147,7 @@ class TestPersonQuery:
                 # District Admin can see phone numbers
                 "phoneNumber": format_phone_number(person.phone_number),
                 "alternatePhoneNumber": format_phone_number(person.alternate_phone_number),
+                "isYoungPerson": person.is_young_person,
             }
         }
 
@@ -170,9 +173,10 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": None,  # no workspace account, so no contact email
-                # District Manager cannot see other's phone numbers
+                # District Manager cannot see other's phone numbers or age status
                 "phoneNumber": None,
                 "alternatePhoneNumber": None,
+                "isYoungPerson": None,
             }
         }
 
@@ -199,9 +203,10 @@ class TestPersonQuery:
                 "firstName": person.first_name,
                 "formattedMembershipNumber": person.formatted_membership_number,
                 "contactEmail": workspace_account.primary_email,  # workspace email
-                # District Manager cannot see other's phone numbers
+                # District Manager cannot see other's phone numbers or age status
                 "phoneNumber": None,
                 "alternatePhoneNumber": None,
+                "isYoungPerson": None,
             }
         }
 
