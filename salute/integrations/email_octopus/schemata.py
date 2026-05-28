@@ -13,6 +13,7 @@ class ContactFields(BaseModel):
     is_member: str | None = Field(None, alias="IsMember")
     salute_id: str | None = Field(None, alias="SaluteId")
     tsa_id: str | None = Field(None, alias="TSAId")
+    is_young_person: str | None = Field(None, alias="IsYoungPerson")
 
     class Config:
         populate_by_name = True

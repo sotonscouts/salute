@@ -222,6 +222,7 @@ class Command(BaseCommand):
                             "LastName": person.last_name,
                             "MembershipNumber": person.formatted_membership_number,
                             "IsMember": "Yes" if person.is_member else "No",
+                            "IsYoungPerson": "Yes" if person.is_young_person else "No",
                             "SaluteId": str(person.id),
                         },
                         tags=tags,
@@ -269,6 +270,10 @@ class Command(BaseCommand):
         expected_salute_id = str(person.id)
         if contact.fields.salute_id != expected_salute_id:
             differences.append(f"SaluteId: '{contact.fields.salute_id}' → '{expected_salute_id}'")
+
+        expected_is_young_person = "Yes" if person.is_young_person else "No"
+        if contact.fields.is_young_person != expected_is_young_person:
+            differences.append(f"IsYoungPerson: '{contact.fields.is_young_person}' → '{expected_is_young_person}'")
 
         return differences
 
@@ -333,6 +338,7 @@ class Command(BaseCommand):
                 "LastName": person.last_name,
                 "MembershipNumber": person.formatted_membership_number,
                 "IsMember": "Yes" if person.is_member else "No",
+                "IsYoungPerson": "Yes" if person.is_young_person else "No",
                 "SaluteId": str(person.id),
             }
 
