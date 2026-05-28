@@ -39,7 +39,10 @@ class PersonDetail(BaseModel):
 
     @field_validator("is_young_person", mode="before")
     @classmethod
-    def determine_is_young_person_from_dob(cls, val: str) -> bool:
+    def determine_is_young_person_from_dob(cls, val: str | bool) -> bool:  # noqa: FBT001
+        if isinstance(val, bool):
+            return val
+
         val = val.strip()
         try:
             dob_dt = datetime.strptime(val, "%m/%d/%Y %H:%M:%S")  # noqa: DTZ007
