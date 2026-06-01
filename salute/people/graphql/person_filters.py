@@ -91,6 +91,10 @@ class PersonFilter:
             return Q(pk__in=[])
         return Q(Exists(Role.objects.filter(person_id=OuterRef(f"{prefix}pk")).filter(inner_q).only("id")))
 
+    @sd.filter_field(description="Filter by search query")
+    def search(self, value: str, prefix: str) -> Q:
+        return Q(**{f"{prefix}display_name__icontains": value}) | Q(**{f"{prefix}membership_number__icontains": value})
+
 
 # ``RoleFilter`` is assigned by ``salute.roles.graphql.graph_filters`` after that module loads
 # (see module tail there); avoids a circular import if declared here.

@@ -47,6 +47,14 @@ class TeamFilter:
             return expr
         return ~expr
 
+    @sd.filter_field(description="Filter by search query")
+    def search(self, value: str, prefix: str) -> Q:
+        return (
+            Q(**{f"{prefix}team_type__display_name__icontains": value})
+            | Q(**{f"{prefix}group__unit_name__icontains": value})
+            | Q(**{f"{prefix}group__location_name__icontains": value})
+        )
+
 
 @sd.filter_type(models.Role)
 class RoleFilter:

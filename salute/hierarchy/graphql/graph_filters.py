@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import strawberry as sb
 import strawberry_django as sd
+from django.db.models import Q
 
 from salute.hierarchy import models
 from salute.hierarchy.constants import SectionType
@@ -14,6 +15,10 @@ class GroupFilter:
     local_unit_number: sd.ComparisonFilterLookup[int] | None = sb.UNSET
     group_type: models.GroupType | None = sb.UNSET
 
+    @sd.filter_field(description="Filter by search query")
+    def search(self, value: str, prefix: str) -> Q:
+        return Q(**{f"{prefix}unit_name__icontains": value}) | Q(**{f"{prefix}location_name__icontains": value})
+
 
 @sd.filter_type(models.Section)
 class SectionFilter:
@@ -23,3 +28,12 @@ class SectionFilter:
     group: GroupFilter | None = sd.filter_field(
         filter_none=True, description="Filter by group. Set to null for district sections"
     )
+
+    @sd.filter_field(description="Filter by search query")
+    def search(self, value: str, prefix: str) -> Q:
+        return (
+            Q(**{f"{prefix}group__unit_name__icontains": value})
+            | Q(**{f"{prefix}group__location_name__icontains": value})
+            | Q(**{f"{prefix}nickname__icontains": value})
+            | Q(**{f"{prefix}unit_name__icontains": value})
+        )
