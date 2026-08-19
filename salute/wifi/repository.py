@@ -12,14 +12,10 @@ def generate_wifi_username(person: Person) -> str:
     """
     try:
         # Use primary email username
-        username_base = person.workspace_account.primary_email.split("@")[0]
+        username_base = person.workspace_account.primary_email.split("@")[0].lower()
     except Person.workspace_account.RelatedObjectDoesNotExist:
         # Use cleaned display name if no workspace account is found
-        username_base = (
-            person.display_name.replace(" ", ".").replace("..", ".").replace("\\", "").replace("/", "").replace("'", "")
-        )
-
-    username_base = username_base.lower()
+        username_base = person.username_base
 
     if not WifiAccount.objects.filter(username=username_base).exists():
         return username_base

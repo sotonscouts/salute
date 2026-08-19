@@ -170,6 +170,11 @@ class Person(TSAObject):
     def formatted_membership_number(self) -> str:
         return str(self.membership_number).zfill(10)
 
+    @property
+    def username_base(self) -> str:
+        name = self.display_name.replace(" ", ".").replace("..", ".").replace("\\", "").replace("/", "").replace("'", "")
+        return name.lower()
+
 
 class PermitActivityGroup(Taxonomy):
     mailing_slug = models.SlugField(max_length=255, unique=True)
