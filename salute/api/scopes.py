@@ -7,3 +7,4 @@ class ApiScope(StrEnum):
     SALUTE_USER = "salute:user"
     USER_READ = "user:read"
     WIFI_ACCOUNTS_READ = "wifi_accounts:read"
+    HIERARCHY_READ = "hierarchy:read"

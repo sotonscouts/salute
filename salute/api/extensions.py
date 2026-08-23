@@ -60,6 +60,54 @@ class IsPersonOrHasScope(DjangoPermissionExtension):
         return resolver()
 
 
+class HasPermOrScope(DjangoPermissionExtension):
+    """Mark a field as resolvable by a user with the given permission, or a service account with the given scope."""
+
+    DEFAULT_ERROR_MESSAGE: ClassVar[str] = "User does not have permission."
+    SCHEMA_DIRECTIVE_DESCRIPTION: ClassVar[str | None] = _desc(  # type: ignore[no-untyped-call]
+        "Can be resolved by a user with the required permission or a service account with the required scope.",
+    )
+
+    def __init__(
+        self,
+        perm: str,
+        scope: ApiScope,
+        *,
+        message: str | None = None,
+        use_directives: bool = True,
+        fail_silently: bool = True,
+    ) -> None:
+        super().__init__(
+            message=message,
+            use_directives=use_directives,
+            fail_silently=fail_silently,
+        )
+        self.perm = perm
+        self.scope = scope
+
+    @django_resolver(qs_hook=None)
+    def resolve_for_user(
+        self,
+        resolver: Callable,
+        user: User | AnonymousUser | None,  # type: ignore[override]
+        *,
+        info: Info,
+        source: Any,
+    ) -> Any:
+        scopes: list[str] = info.context.request.scopes
+
+        if user is None or not user.is_authenticated or not user.is_active:
+            raise DjangoNoPermission
+
+        if user.service_account:
+            if self.scope not in scopes:
+                raise DjangoNoPermission
+        elif not user.has_perm(self.perm):
+            raise DjangoNoPermission
+
+        return resolver()
+
+
 class IsServiceAccountWithScope(DjangoPermissionExtension):
     """Mark a field as only resolvable by a service account with the given scope."""
 

@@ -2,6 +2,8 @@ import strawberry as sb
 import strawberry_django as sd
 from strawberry_django.permissions import HasPerm
 
+from salute.api.extensions import HasPermOrScope
+from salute.api.scopes import ApiScope
 from salute.hierarchy import models as hierarchy_models
 from salute.hierarchy.constants import SECTION_TYPE_INFO
 
@@ -17,7 +19,13 @@ from .graph_types import (
 class HierarchyQuery:
     @sd.field(
         description="Get the district",
-        extensions=[HasPerm("district.view", message="You don't have permission to view the district.")],
+        extensions=[
+            HasPermOrScope(
+                "district.view",
+                ApiScope.HIERARCHY_READ,
+                message="You don't have permission to view the district.",
+            ),
+        ],
     )
     def district(self, info: sb.Info) -> District:
         return hierarchy_models.District.objects.filter()  # type: ignore[return-value]
@@ -32,7 +40,14 @@ class HierarchyQuery:
 
     groups: sd.relay.DjangoListConnection[Group] = sd.connection(
         description="List groups",
-        extensions=[HasPerm("group.list", message="You don't have permission to list groups.", fail_silently=False)],
+        extensions=[
+            HasPermOrScope(
+                "group.list",
+                ApiScope.HIERARCHY_READ,
+                message="You don't have permission to list groups.",
+                fail_silently=False,
+            )
+        ],
     )
 
     @sd.field(
@@ -46,15 +61,23 @@ class HierarchyQuery:
     sections: sd.relay.DjangoListConnection[DistrictOrGroupSection] = sd.connection(
         description="List sections",
         extensions=[
-            HasPerm("section.list", message="You don't have permission to list sections.", fail_silently=False)
+            HasPermOrScope(
+                "section.list",
+                ApiScope.HIERARCHY_READ,
+                message="You don't have permission to list sections.",
+                fail_silently=False,
+            )
         ],
     )
 
     @sb.field(
         description="Get all possible section types",
         extensions=[
-            HasPerm(
-                "section_type.list", message="You don't have permission to list section types.", fail_silently=False
+            HasPermOrScope(
+                "section_type.list",
+                ApiScope.HIERARCHY_READ,
+                message="You don't have permission to list section types.",
+                fail_silently=False,
             )
         ],
     )
