@@ -1,15 +1,12 @@
 import argparse
-from typing import Any
-
 from django.core.management.base import BaseCommand
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from django.conf import settings
 from salute.integrations.workspace.models import WorkspaceAccount
-from salute.integrations.workspace.service import WorkspaceService
 from salute.people.models import Person
-import xkcdpass as xp
+from xkcdpass import xkcd_password as xp
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
@@ -27,7 +24,7 @@ class Command(BaseCommand):
         parser.add_argument("membership_number", type=str, help="The membership number of the person to create a Workspace user for")
 
 
-    def generate_workspace_password() -> str:
+    def generate_workspace_password(self) -> str:
         wordfile = xp.locate_wordfile()
         mywords = xp.generate_wordlist(wordfile=wordfile, min_length=5, max_length=8)
 
@@ -38,9 +35,10 @@ class Command(BaseCommand):
         delegated_credentials = credentials.with_subject("service-salute@southamptoncityscouts.org.uk")
         service = build("admin", "directory_v1", credentials=delegated_credentials)
 
-        person = Person.objects.get(membership_number=options["membership_number"])
-        if person.workspace_account is not None:
-            self.stdout.write(self.style.WARNING(f"Person {person} already has a Workspace account"))
+        try:
+            person = Person.objects.filter(workspace_account__isnull=True).get(membership_number=options["membership_number"])
+        except Person.DoesNotExist:
+            self.stdout.write(self.style.ERROR(f"Person {options['membership_number']} does not exist"))
             return
 
         self.stdout.write(self.style.SUCCESS(f"Creating Workspace user for {person}"))
@@ -65,7 +63,7 @@ class Command(BaseCommand):
             },
             "changePasswordAtNextLogin": True,
             "recoveryEmail": person.tsa_email,
-            "recoveryPhone": person.phone_number,
+            "recoveryPhone": person.phone_number.as_e164,
             "orgUnitPath": DEFAULT_OU_PATH,
             "externalIds": [
                 {
@@ -73,12 +71,26 @@ class Command(BaseCommand):
                     "value": person.formatted_membership_number,
                 },
             ],
+            "emails": [
+                {
+                    "address": person.tsa_email,
+                    "type": "home",
+                    "primary": False,
+                },
+            ],
+            "phones": [
+                {
+                    "value": person.phone_number.as_e164,
+                    "type": "home",
+                    "primary": True,
+                },
+            ],
         }
 
         print(payload)
 
-        return
+        response = service.users().insert(body=payload).execute()
 
-        response = service.users().insert(body=).execute()
+        print(response)
 
         self.stdout.write(self.style.SUCCESS(f"Created Workspace user {expected_username} with password {password}"))
