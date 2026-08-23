@@ -47,6 +47,9 @@ RUN chown salute /start
 RUN mkdir /app/staticfiles
 RUN chown salute:salute /app/staticfiles
 
+RUN mkdir /app/.requests-cache
+RUN chown salute:salute /app/.requests-cache
+
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY --chown=salute:salute salute /app/salute
