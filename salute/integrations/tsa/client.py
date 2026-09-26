@@ -1,9 +1,11 @@
 import json
 from collections.abc import Generator
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 from uuid import UUID
 
+from django.conf import settings
 from pydantic import BaseModel, TypeAdapter
 from requests import Session
 
@@ -168,6 +170,14 @@ class MembershipAPIClient:
 
             page_no = page.next_page
 
+    @lru_cache(maxsize=1)
+    @staticmethod
+    def _get_roles_to_ignore() -> set[UUID]:
+        return {
+            UUID(role_id)
+            for role_id in settings.TSA_ROLE_IDS_TO_IGNORE  # type: ignore[misc]
+        }
+
     def get_team_roles(self, *, unit_id: UUID, team_id: UUID) -> list[TeamMemberListingEntry]:
         cache_key = f"get_team_roles__{unit_id}_{team_id}"
         ta = TypeAdapter(list[TeamMemberListingEntry])
@@ -175,7 +185,11 @@ class MembershipAPIClient:
         if cached_data is not None:
             return ta.validate_python(cached_data)
 
-        data = list(self.fetch_team_roles(unit_id=unit_id, team_id=team_id))
+        data = [
+            role
+            for role in self.fetch_team_roles(unit_id=unit_id, team_id=team_id)
+            if role.role_id not in self._get_roles_to_ignore()
+        ]
 
         self._set_cache_data(cache_key, ta.dump_python(data, mode="json", by_alias=True))
         return data

@@ -124,6 +124,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
 
+TSA_ROLE_IDS_TO_IGNORE = []
+
 # django-phonenumber-field
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 PHONENUMBER_DEFAULT_REGION = "GB"

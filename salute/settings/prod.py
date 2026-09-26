@@ -77,6 +77,11 @@ TSA_TEAM_LINK_TEMPLATE = env(
     str,
     default="https://example.com/teams/$unitid/$teamtypeid/details/",
 )
+TSA_ROLE_IDS_TO_IGNORE = env(
+    "TSA_ROLE_IDS_TO_IGNORE",
+    list,
+    default=[],
+)
 
 OSM_CLIENT_ID = env("OSM_CLIENT_ID", str)
 OSM_CLIENT_SECRET = env("OSM_CLIENT_SECRET", str)
