@@ -320,9 +320,7 @@ class TestTeamTSAProfileLinkQuery:
     """
 
     @pytest.fixture(autouse=True)
-    def use_dummy_tsa_team_link_template(
-        self, settings: Generator[pytest_django.fixtures.SettingsWrapper, None, None]
-    ) -> None:
+    def use_dummy_tsa_team_link_template(self, settings: Generator[pytest_django.Settings, None, None]) -> None:
         settings.TSA_TEAM_LINK_TEMPLATE = "https://example.com/units/$unitid/teams/$teamtypeid/"  # type: ignore[attr-defined]
 
     def test_query_tsa_details_link(self, user_with_person: User) -> None:

@@ -29,5 +29,5 @@ def user_with_service_account() -> User:
 
 
 @pytest.fixture()
-def use_dummy_tsa_unit_link_template(settings: Generator[pytest_django.fixtures.SettingsWrapper, None, None]) -> None:
+def use_dummy_tsa_unit_link_template(settings: Generator[pytest_django.Settings, None, None]) -> None:
     settings.TSA_UNIT_LINK_TEMPLATE = "https://example.com/units/$tsaid/"  # type: ignore[attr-defined]

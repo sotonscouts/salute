@@ -225,7 +225,7 @@ class TestPersonTSAProfileLinkQuery:
 
     @pytest.fixture(autouse=True)
     def use_dummy_tsa_person_profile_link_template(
-        self, settings: Generator[pytest_django.fixtures.SettingsWrapper, None, None]
+        self, settings: Generator[pytest_django.Settings, None, None]
     ) -> None:
         settings.TSA_PERSON_PROFILE_LINK_TEMPLATE = "https://example.com/people/$tsaid/"  # type: ignore[attr-defined]
 

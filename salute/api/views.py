@@ -66,7 +66,7 @@ class SaluteAsyncGraphQLView(AsyncGraphQLView):
                 try:
                     auth_info = authenticate_user_with_bearer_token(token)
                 except RequestAuthenticationError as e:
-                    return {"data": None, "errors": e.errors}  # type: ignore[typeddict-item]
+                    return {"data": None, "errors": e.errors}  # type: ignore[return-value]
 
                 # Mutate the request with the data we need.
                 request.user = auth_info["user"]

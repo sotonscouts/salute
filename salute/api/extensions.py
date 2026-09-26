@@ -34,10 +34,10 @@ class IsPersonOrHasScope(DjangoPermissionExtension):
         self.scope = scope
 
     @django_resolver(qs_hook=None)
-    def resolve_for_user(
+    def resolve_for_user(  # type: ignore[override]
         self,
         resolver: Callable,
-        user: User | AnonymousUser | None,  # type: ignore[override]
+        user: User | AnonymousUser | None,
         *,
         info: Info,
         source: Any,
@@ -86,10 +86,10 @@ class HasPermOrScope(DjangoPermissionExtension):
         self.scope = scope
 
     @django_resolver(qs_hook=None)
-    def resolve_for_user(
+    def resolve_for_user(  # type: ignore[override]
         self,
         resolver: Callable,
-        user: User | AnonymousUser | None,  # type: ignore[override]
+        user: User | AnonymousUser | None,
         *,
         info: Info,
         source: Any,
@@ -132,10 +132,10 @@ class IsServiceAccountWithScope(DjangoPermissionExtension):
         self.scope = scope
 
     @django_resolver(qs_hook=None)
-    def resolve_for_user(
+    def resolve_for_user(  # type: ignore[override]
         self,
         resolver: Callable,
-        user: User | AnonymousUser | None,  # type: ignore[override]
+        user: User | AnonymousUser | None,
         *,
         info: Info,
         source: Any,
