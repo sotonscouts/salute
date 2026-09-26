@@ -12,6 +12,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="person",
             name="is_young_person",
-            field=models.BooleanField(default=False, editable=False),
+            field=models.BooleanField(
+                default=False,
+                editable=False,
+                help_text="Young people are under 25 years old. Only adults are imported into Salute.",
+            ),
         ),
     ]
