@@ -188,7 +188,7 @@ class MembershipAPIClient:
         data = [
             role
             for role in self.fetch_team_roles(unit_id=unit_id, team_id=team_id)
-            if role.role_id not in self._get_roles_to_ignore()
+            if role.role_id not in MembershipAPIClient._get_roles_to_ignore()
         ]
 
         self._set_cache_data(cache_key, ta.dump_python(data, mode="json", by_alias=True))
