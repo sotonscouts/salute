@@ -46,6 +46,10 @@ class TeamType(TSATaxonomy):
         default=True,
         help_text="If true, this team type can be used to filter mailing lists.",
     )
+    display_automatic_roles_by_default = models.BooleanField(
+        default=False,
+        help_text="If true, display automatic roles for this team type by default.",
+    )
 
     def __str__(self) -> str:
         return self.display_name

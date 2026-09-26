@@ -40,7 +40,7 @@ class TeamTypeAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
     list_filter = ("mailing_list_filterable",)
 
     fieldsets = (
-        (None, {"fields": ("name", "display_name", "nickname")}),
+        (None, {"fields": ("name", "display_name", "nickname", "display_automatic_roles_by_default")}),
         ("Description", {"fields": ("description",)}),
         (
             "Mail Settings",

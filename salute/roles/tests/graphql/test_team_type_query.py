@@ -18,6 +18,7 @@ class TestTeamTypeQuery:
         teamType(teamTypeId: $teamTypeId) {
             id
             displayName
+            displayAutomaticRolesByDefault
         }
     }
     """
@@ -79,6 +80,7 @@ class TestTeamTypeQuery:
             "teamType": {
                 "id": to_base64("TeamType", team_type.id),
                 "displayName": team_type.name,
+                "displayAutomaticRolesByDefault": team_type.display_automatic_roles_by_default,
             }
         }
 
@@ -99,6 +101,7 @@ class TestTeamTypeQuery:
             "teamType": {
                 "id": to_base64("TeamType", team_type.id),
                 "displayName": "Bees",
+                "displayAutomaticRolesByDefault": team_type.display_automatic_roles_by_default,
             }
         }
 
