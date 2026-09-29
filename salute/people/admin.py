@@ -65,6 +65,12 @@ class PersonAdmin(TSAObjectModelAdminMixin, admin.ModelAdmin):
             {"fields": ("first_name", "last_name", "formatted_membership_number", "is_suspended", "is_young_person")},
         ),
         (
+            "Days of Service",
+            {
+                "fields": ("days_of_service_recording", "days_of_service_recording_last_updated"),
+            },
+        ),
+        (
             "Contact Info",
             {
                 "fields": (

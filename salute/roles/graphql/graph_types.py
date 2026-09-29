@@ -59,7 +59,9 @@ class RoleType(sb.relay.Node):
 @sd.type(models.TeamType, filters=TeamTypeFilter)
 class TeamType(sb.relay.Node):
     display_name: str = sd.field(description="Formatted name for the team type")
-    display_automatic_roles_by_default: bool = sd.field(description="Whether to display automatic roles for this team type by default")
+    display_automatic_roles_by_default: bool = sd.field(
+        description="Whether to display automatic roles for this team type by default"
+    )
 
     @sd.field(description="Description of the team type as markdown", only="description")
     def description(self, info: sb.Info) -> str | None:

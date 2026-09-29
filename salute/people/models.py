@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django.db.models.functions import Concat
+from django.db.models.functions import Concat, ExtractDay
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 from salute.core.models import BaseModel, Taxonomy
@@ -63,6 +64,39 @@ class PersonQuerySet(models.QuerySet):
                     person=models.OuterRef("pk"),
                     role_type__is_youth_member=True,
                 ).only("id")
+            )
+        )
+
+    def annotate_days_of_service(self) -> PersonQuerySet:
+        qs = self.annotate_is_member()
+        today = timezone.now().date()
+
+        # Subtract dates and extract the integer day count using ExtractDay
+        days_since_update = ExtractDay(
+            models.ExpressionWrapper(
+                models.Value(today, output_field=models.DateField())
+                - models.F("days_of_service_recording_last_updated"),
+                output_field=models.DurationField(),
+            )
+        )
+
+        qs = qs.annotate(
+            accumulated_service=models.Case(
+                models.When(
+                    days_of_service_recording__isnull=False,
+                    days_of_service_recording_last_updated__isnull=False,
+                    is_member=True,
+                    then=days_since_update,
+                ),
+                default=models.Value(0),
+                output_field=models.IntegerField(),
+            )
+        )
+
+        return qs.annotate(
+            days_of_service=models.ExpressionWrapper(
+                models.F("days_of_service_recording") + models.F("accumulated_service"),
+                output_field=models.PositiveIntegerField(),
             )
         )
 
@@ -130,6 +164,13 @@ class Person(TSAObject):
         verbose_name="TSA Preferred Email",
     )
 
+    days_of_service_recording = models.PositiveIntegerField(
+        null=True, editable=False, help_text="Number of days of service recorded in TSA."
+    )
+    days_of_service_recording_last_updated = models.DateField(
+        null=True, editable=False, help_text="The last date that the days of service recording was updated from TSA."
+    )
+
     TSA_FIELDS = (
         "legal_name",
         "preferred_name",
@@ -141,6 +182,8 @@ class Person(TSAObject):
         "phone_number",
         "alternate_phone_number",
         "is_young_person",
+        "days_of_service_recording",
+        "days_of_service_recording_last_updated",
     )
 
     objects = PersonManager()
@@ -149,6 +192,17 @@ class Person(TSAObject):
         verbose_name = "Person"
         verbose_name_plural = "People"
         ordering = ("display_name", "membership_number")
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(
+                    days_of_service_recording__isnull=True, days_of_service_recording_last_updated__isnull=True
+                )
+                | models.Q(
+                    days_of_service_recording__isnull=False, days_of_service_recording_last_updated__isnull=False
+                ),
+                name="person_days_of_service_recording_last_updated_check",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.display_name} ({self.formatted_membership_number})"

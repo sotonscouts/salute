@@ -1,4 +1,5 @@
 import pytest
+import time_machine
 
 from salute.accounts.factories import UserFactory
 from salute.accounts.models import DistrictUserRole, DistrictUserRoleType, User
@@ -156,3 +157,86 @@ class TestPersonQuerysetHasRoleInGroup:
         person = PersonFactory()
 
         assert self._has_role_flag(person, [fourteenth_group]) is False
+
+
+@pytest.mark.django_db
+class TestPersonQuerysetAnnotateIsMember:
+    def test_annotate_is_member__true(self) -> None:
+        person = PersonFactory()
+        RoleFactory(person=person, role_type__is_member_role=True)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_is_member().get()
+
+        assert bool(annotated.is_member) is True
+
+    def test_annotate_is_member__false(self) -> None:
+        person = PersonFactory()
+        RoleFactory(person=person, role_type__is_member_role=False)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_is_member().get()
+
+        assert bool(annotated.is_member) is False
+
+
+@pytest.mark.django_db
+class TestPersonQuerysetAnnotateDaysOfService:
+    def test_annotate_days_of_service__no_data(self) -> None:
+        person = PersonFactory()
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service is None
+
+    @time_machine.travel("2022-01-01")
+    def test_annotate_days_of_service__no_service__no_roles(self) -> None:
+        person = PersonFactory(
+            days_of_service_recording=0,
+            days_of_service_recording_last_updated="2021-11-30",
+        )
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service == 0
+
+    @time_machine.travel("2022-01-01")
+    def test_annotate_days_of_service__no_service__no_eligible_roles(self) -> None:
+        person = PersonFactory(
+            days_of_service_recording=0,
+            days_of_service_recording_last_updated="2021-11-30",
+        )
+        RoleFactory(person=person, role_type__is_member_role=False)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service == 0
+
+    @time_machine.travel("2022-01-01")
+    def test_annotate_days_of_service__no_service__one_eligible_role(self) -> None:
+        person = PersonFactory(
+            days_of_service_recording=0,
+            days_of_service_recording_last_updated="2021-11-30",
+        )
+        RoleFactory(person=person, role_type__is_member_role=True)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service == 32
+
+    @time_machine.travel("2022-01-01")
+    def test_annotate_days_of_service__no_service_data__one_eligible_role(self) -> None:
+        person = PersonFactory()
+        RoleFactory(person=person, role_type__is_member_role=True)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service is None
+
+    @time_machine.travel("2022-01-01")
+    def test_annotate_days_of_service__some_service_data__one_eligible_role(self) -> None:
+        person = PersonFactory(
+            days_of_service_recording=30,
+            days_of_service_recording_last_updated="2021-11-30",
+        )
+        RoleFactory(person=person, role_type__is_member_role=True)
+
+        annotated = Person.objects.filter(pk=person.pk).annotate_days_of_service().get()
+
+        assert annotated.days_of_service == 62
