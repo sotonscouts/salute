@@ -227,6 +227,10 @@ class Person(sb.relay.Node):
     async def is_included_in_census(self, info: sb.Info) -> bool | None:
         return await info.context.people_dataloaders["latest_is_included_in_census_for_people"].load(self.id)  # type: ignore[attr-defined]
 
+    @sd.field(only="id")
+    async def days_of_service(self, info: sb.Info) -> int | None:
+        return await info.context.people_dataloaders["days_of_service_for_people"].load(self.id)  # type: ignore[attr-defined]
+
     @sd.field(
         description="WiFi account",
         select_related="wifi_account",

@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 import pytest_django
+import time_machine
 from django.urls import reverse
 from strawberry.relay import to_base64
 from strawberry_django.test.client import Response, TestClient
@@ -32,6 +33,7 @@ class TestPersonQuery:
             phoneNumber
             alternatePhoneNumber
             isYoungPerson
+            daysOfService
         }
     }
     """
@@ -98,6 +100,7 @@ class TestPersonQuery:
                 "phoneNumber": format_phone_number(user_with_person.person.phone_number),
                 "alternatePhoneNumber": format_phone_number(user_with_person.person.alternate_phone_number),
                 "isYoungPerson": user_with_person.person.is_young_person,
+                "daysOfService": None,
             }
         }
 
@@ -148,6 +151,7 @@ class TestPersonQuery:
                 "phoneNumber": format_phone_number(person.phone_number),
                 "alternatePhoneNumber": format_phone_number(person.alternate_phone_number),
                 "isYoungPerson": person.is_young_person,
+                "daysOfService": None,
             }
         }
 
@@ -177,6 +181,7 @@ class TestPersonQuery:
                 "phoneNumber": None,
                 "alternatePhoneNumber": None,
                 "isYoungPerson": None,
+                "daysOfService": None,
             }
         }
 
@@ -207,6 +212,43 @@ class TestPersonQuery:
                 "phoneNumber": None,
                 "alternatePhoneNumber": None,
                 "isYoungPerson": None,
+                "daysOfService": None,
+            }
+        }
+
+    @time_machine.travel("2022-01-01")
+    def test_query_has_days_of_service(self, user_with_person: User) -> None:
+        district = DistrictFactory()
+        DistrictUserRole.objects.create(user=user_with_person, district=district, level=DistrictUserRoleType.ADMIN)
+
+        person = PersonFactory(
+            days_of_service_recording=30,
+            days_of_service_recording_last_updated="2021-11-30",
+        )
+        RoleFactory(person=person, role_type__is_member_role=True)
+
+        client = TestClient(self.url)
+        with client.login(user_with_person):
+            results = client.query(
+                self.QUERY,
+                variables={"id": to_base64("Person", person.id)},
+                assert_no_errors=False,
+            )
+
+        assert isinstance(results, Response)
+
+        assert results.errors is None
+        assert results.data == {
+            "person": {
+                "displayName": person.display_name,
+                "firstName": person.first_name,
+                "formattedMembershipNumber": person.formatted_membership_number,
+                "contactEmail": person.contact_email,
+                # District Admin can see phone numbers
+                "phoneNumber": format_phone_number(person.phone_number),
+                "alternatePhoneNumber": format_phone_number(person.alternate_phone_number),
+                "isYoungPerson": person.is_young_person,
+                "daysOfService": 62,
             }
         }
 
