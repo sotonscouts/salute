@@ -15,7 +15,7 @@ class WaitingListEntry(BaseModel):
 
 
 class AirTableWaitingListEntryFields(BaseModel):
-    date_of_birth: date = Field(alias="D.O.B.")
+    date_of_birth: date | None = Field(alias="D.O.B.", default=None)
     which_group_would_you_like_to_join: list[str] = Field(alias="Which group would you like to join", default=[])
     postcode: str | None = Field(alias="Postcode", default=None)
     created: datetime = Field(alias="Created")
@@ -28,7 +28,10 @@ class AirTableWaitingListRecord(BaseModel):
     fields: AirTableWaitingListEntryFields
     created_time: datetime = Field(alias="createdTime")
 
-    def to_waiting_list_entry(self) -> WaitingListEntry:
+    def to_waiting_list_entry(self) -> WaitingListEntry | None:
+        if self.fields.date_of_birth is None:
+            return None
+
         # Convert date to datetime if fourteen_wl_start_date is used
         if self.fields.fourteen_wl_start_date is not None:
             joined_at = datetime.combine(self.fields.fourteen_wl_start_date, datetime.min.time())
@@ -90,4 +93,6 @@ class AirTableClient:
             offset = response.offset
             if offset is None:
                 break
-        return [record.to_waiting_list_entry() for record in all_records]
+
+        iterator = (record.to_waiting_list_entry() for record in all_records)
+        return [record for record in iterator if record is not None]
